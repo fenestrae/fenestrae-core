@@ -1,0 +1,46 @@
+{
+  "name": "fenestrae",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "The desktop window management experience the web always needed.",
+  "main": "./dist/fenestrae.cjs.js",
+  "module": "./dist/fenestrae.es.js",
+  "style": "./dist/fenestrae.css",
+  "exports": {
+    ".": {
+      "import": "./dist/fenestrae.es.js",
+      "require": "./dist/fenestrae.cjs.js"
+    },
+    "./dist/fenestrae.css": "./dist/fenestrae.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build"
+  },
+  "peerDependencies": {
+    "clsx": "^2.1.1",
+    "idb-keyval": "^6.0.0",
+    "immer": "^10.0.0",
+    "prop-types": "^15.8.1",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "react-icons": "^5.0.0",
+    "react-router-dom": "^6.0.0",
+    "uuid": "^10.0.0",
+    "zustand": "^4.0.0 || ^5.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.15",
+    "prop-types": "^15.8.1",
+    "react-icons": "^5.6.0",
+    "tailwindcss": "^4.3.1",
+    "vite": "^7.2.5"
+  }
+}

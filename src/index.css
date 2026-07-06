@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+
+@theme {
+  /* ==========================================================================
+     1. VARIABLES GLOBALES / FALLBACKS DE CONTENEDOR (CONTRATO BASE ERP)
+     ========================================================================== */
+ --color-window-bg: var(--win-bg, #ffffff);
+  --color-window-content: var(--win-content, #fafafa);
+  --color-window-border: var(--win-border, #d1d5db);
+  --color-window-text: var(--win-text, #1f2937);
+  --color-fn-canvas: var(--fn-canvas, #f3f4f6);
+
+  /* 1. AGREGADO: ESTADOS DE FOCO PARA VENTANAS FLOTANTES (MDI) */
+  --color-fn-float-header-active: var(--fn-float-header-active, #1e293b);
+  --color-fn-float-header-inactive: var(--fn-float-header-inactive, #cbd5e1);
+  --color-fn-float-text-active: var(--fn-float-text-active, #ffffff);
+  --color-fn-float-text-inactive: var(--fn-float-text-inactive: #64748b);
+
+  /* 2. ENRIQUECIMIENTO: RADIOS INDEPENDIENTES */
+  --radius-window-radius: var(--win-radius, 8px);          /* Estructura de ventanas */
+  --radius-fn-tab-radius: var(--fn-tab-radius, 6px);        /* Las pestañas */
+  --radius-fn-btn-radius: var(--fn-btn-radius, 4px);        /* Los botones de control */
+
+  /* 3. AGREGADO: MAQUETACIÓN E INDEPENDENCIA DE PESTAÑAS (Estilo Mac vs Windows) */
+  --fn-tab-direction: var(--tab-direction, row);            /* 'row-reverse' para poner el botón X a la izquierda tipo Mac */
+  --fn-tab-height: var(--tab-height, 36px);
+  --fn-tab-indicator-weight: var(--tab-indicator-weight, 0px); /* Para la línea inferior azul gruesa típica de SAP Fiori */
+  --color-fn-tab-indicator: var(--fn-tab-indicator, #0a6ed1);
+
+  /* 4. SUBSISTEMA DE BOTONES DE CONTROL (Aquí está la magia que te faltaba) */
+  --fn-btn-control-size: var(--fn-btn-size, 16px);
+  /* Botón Cerrar (X) */
+  --color-fn-btn-close-bg: var(--fn-btn-close-bg, transparent);
+  --color-fn-btn-close-text: var(--fn-btn-close-text, #1f2937);
+  --color-fn-btn-close-hover: var(--fn-btn-close-hover, #ef4444);
+  --color-fn-btn-close-hover-text: var(--fn-btn-close-hover-text, #ffffff);
+
+  /* Botones Acción (Minimizar/Maximizar) */
+  --color-fn-btn-action-bg: var(--fn-btn-action-bg, transparent);
+  --color-fn-btn-action-text: var(--fn-btn-action-text, #1f2937);
+  --color-fn-btn-action-hover: var(--fn-btn-action-hover, rgba(0, 0, 0, 0.06));
+  --color-fn-btn-action-hover-text: var(--fn-btn-action-hover-text, #1f2937)
+  /* ==========================================================================
+     4. COMPONENTES: CAPAS CAPTURADAS / SUPERPUESTAS (MODAL & FLOATING)
+     ========================================================================== */
+  /* Ventanas Modales Clásicas (CTWinModal) */
+  --color-fn-modal-bg: var(--fn-modal-bg, var(--win-bg, #ffffff));
+  --color-fn-modal-header: var(--fn-modal-header, var(--win-header, #0a6ed1));
+  --color-fn-modal-header-text: var(--fn-modal-header-text, var(--win-header-text, #ffffff));
+  --color-fn-modal-border: var(--fn-modal-border, var(--win-border, #d1d5db));
+  --color-fn-modal-shadow: var(--fn-modal-shadow, 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04));
+
+  /* Ventanas Flotantes Libres / MDI (CTWinFloating) */
+  --color-fn-float-bg: var(--fn-float-bg, var(--win-bg, #ffffff));
+  --color-fn-float-header: var(--fn-float-header, #1e293b); /* Por defecto gris pizarra para diferenciarlas de las tabs */
+  --color-fn-float-header-text: var(--fn-float-header-text, var(--win-header-text, #ffffff));
+  --color-fn-float-border: var(--fn-float-border, var(--win-border, #cbd5e1));
+  --color-fn-float-shadow: var(--fn-float-shadow, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05));
+
+  /* ==========================================================================
+     5. COMPONENTES: CAPAS DE CONTORNO ACORDIONADAS (TOP, SIDE & PANEL)
+     ========================================================================== */
+  /* Paneles Superiores fijos o desanclados (CTWinTop / Barras de herramientas) */
+  --color-fn-top-bg: var(--fn-top-bg, var(--win-content, #fafafa));
+  --color-fn-top-border: var(--fn-top-border, var(--win-border, #e2e8f0));
+  --color-fn-top-text: var(--fn-top-text, var(--win-text, #1f2937));
+
+  /* Paneles Laterales de Información o Menús (CTWinSide) */
+  --color-fn-side-bg: var(--fn-side-bg, var(--win-bg, #ffffff));
+  --color-fn-side-border: var(--fn-side-border, var(--win-border, #d1d5db));
+  --color-fn-side-header: var(--fn-side-header, var(--win-content, #f3f4f6));
+  --color-fn-side-header-text: var(--fn-side-header-text, var(--win-text, #1f2937));
+
+  /* Paneles de Configuración o Consolas (CTWinPanel) */
+  --color-fn-panel-bg: var(--fn-panel-bg, #f8fafc);
+  --color-fn-panel-border: var(--fn-panel-border, var(--win-border, #cbd5e1));
+  --color-fn-panel-text: var(--fn-panel-text, var(--win-text, #334155));
+}
