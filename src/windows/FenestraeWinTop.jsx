@@ -70,7 +70,7 @@ const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId })
     const onHint = (e) => {
       if (!e.detail) return;
       if (e.detail.winId === win.id) {
-        setDockHint(e.detail.zone); 
+        setDockHint(e.detail.zone);
       }
     };
 
@@ -124,7 +124,7 @@ const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId })
     display: win.visible ? "flex" : "none",
     flexDirection: "column",
     willChange: isDragging || isResizing ? "transform, width, height" : "auto",
-    pointerEvents: "auto", 
+    pointerEvents: "auto",
     backgroundColor: "var(--color-window-bg, #ffffff)",
   };
 
@@ -133,8 +133,8 @@ const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId })
       style={combinedStyle}
       className={clsx(
         "shadow-xl border rounded-md overflow-hidden flex flex-col transition-shadow duration-150",
-        isActive 
-          ? "border-[var(--color-window-active-border,#4b5563)] ring-1 ring-[var(--color-window-active-border,#4b5563)] shadow-2xl" 
+        isActive
+          ? "border-[var(--color-window-active-border,#4b5563)] ring-1 ring-[var(--color-window-active-border,#4b5563)] shadow-2xl"
           : "border-[var(--color-window-border,#cbd5e1)] opacity-95",
         dockHint && "ring-2 ring-blue-500 ring-offset-1",
       )}
@@ -144,14 +144,22 @@ const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId })
       <div
         className={clsx(
           "handle-movible h-7 flex justify-between items-center select-none",
-          "cursor-move shrink-0 px-2 transition-colors duration-200",
-          isActive
-            ? "bg-gradient-to-r from-gray-800 to-gray-700 text-white"
-            : "bg-gray-200 text-gray-600",
+          "cursor-move shrink-0 px-2 transition-colors duration-200"
+          // He eliminado las clases de background/text de Tailwind de aquí para que no colisionen
         )}
         style={{
-          backgroundColor: isActive ? "var(--color-window-header,#1f2937)" : "var(--color-window-header-inactive,#e2e8f0)",
-          color: isActive ? "var(--color-window-header-text,#ffffff)" : "var(--color-window-header-inactive-text,#4b5563)"
+          // 1. Usamos 'background' (permite colores planos AND linear-gradients de tus temas)
+          background: isActive
+            ? "var(--color-window-header, linear-gradient(to right, #1f2937, #374151))" // Tu degradado gris por defecto va aquí como fallback
+            : "var(--color-window-header-inactive, #e2e8f0)",
+
+          // 2. Control del color de texto nativo por tema con fallback
+          color: isActive
+            ? "var(--color-window-header-text, #ffffff)"
+            : "var(--color-window-header-inactive-text, #4b5563)",
+
+          // 3. Opcional: Inyectar la dirección anatómica si deseas soportar presets tipo macOS
+          //flexDirection: "var(--fn-header-direction, row)",
         }}
         onMouseDown={handleHeaderMouseDown}
         onDoubleClick={() => showMaximize && maximizeWin(win.id)}
@@ -161,7 +169,7 @@ const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId })
           <div className={clsx(
             "w-2 h-2 rounded-full shadow-inner flex-shrink-0",
             dockHint ? "bg-blue-500 animate-ping" :
-            isActive ? "bg-yellow-400 animate-pulse" : "bg-gray-400",
+              isActive ? "bg-yellow-400 animate-pulse" : "bg-gray-400",
           )} />
           <span className="text-[10px] font-bold uppercase tracking-tight truncate">
             {dockHint ? `Acoplar en ${dockHint.toUpperCase()}` : (win.title || "Ventana")}
@@ -177,13 +185,13 @@ const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId })
               title="Desacoplar Ventana"
             >
               <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current">
-                <path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/>
+                <path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z" />
               </svg>
             </button>
           )}
-          
+
           {(showMinimize || showMaximize || showClose) && <div className="h-5 w-px bg-gray-400/40 mx-1" />}
-          
+
           {showMinimize && (
             <button
               onClick={() => minimizeWin(win.id)}

@@ -35,55 +35,74 @@ export const createApiSlice = (set, get) => ({
       safeCallbacks: {},
     });
   },
-
+// -------------------------------------------------------------------------
+  // show — Opens any window type: float, modal, panel, side, ext
+  // Modificado para detectar el contexto físico del Popup secundario
   // -------------------------------------------------------------------------
+ // -------------------------------------------------------------------------
   // show — Opens any window type: float, modal, panel, side, ext
   // -------------------------------------------------------------------------
-  show: (winIdParent, name, params = {}, callbacks = {}, typeshow = "float") => {
+show: (winIdParent, name, params = {}, callbacks = {}, typeshow = "float") => {
     return new Promise((resolve, reject) => {
       const validParentId = winIdParent && winIdParent !== "" ? winIdParent : "0";
+      
+      // 1. Buscamos si el componente padre pertenece a una ventana externa (popup)
+      const currentWins = get().wins || {};
+      const parentWin = currentWins[validParentId];
+      
+      // 2. Averiguamos si el padre está corriendo dentro de un popup externo
+      const isParentPopup = parentWin && (parentWin.type === "ext" || parentWin.params?.extSubtype === "popup");
+      
+      // Si el padre es un popup, extraemos su ventana nativa, si no, es el window principal
+      const targetNativeWindow = isParentPopup && parentWin.params?.popupWindowInstance 
+        ? parentWin.params.popupWindowInstance 
+        : window;
+
       const componentName = name?.toLowerCase();
- 
       const entry = formsRegistry.get(componentName);
       if (!entry) return reject({ status: "error", message: `[Fenestrae] Component not registered: "${name}"` });
- 
+
       const safeCallbacks = {
         ...callbacks,
-        onSave:   (data)   => { callbacks?.onSave?.(data);       resolve({ status: "saved",      data }); },
-        onClose:  (data)   => { callbacks?.onClose?.(data);      resolve({ status: "closed",     data }); },
-        onCancel: (reason) => { callbacks?.onCancel?.(reason);   resolve({ status: "cancelled",  reason }); },
-        onError:  (err)    => { callbacks?.onError?.(err);       reject ({ status: "error",      error: err }); },
-        onApply:  (data)   => { callbacks?.onApply?.(data);      resolve({ status: "applied",    data }); },
-        onDelete: (data)   => { callbacks?.onDelete?.(data);     resolve({ status: "deleted",    data }); },
-        onNext:   (data)   => { callbacks?.onNext?.(data);       resolve({ status: "navigated",  direction: "next", data }); },
-        onPrev:   (data)   => { callbacks?.onPrev?.(data);       resolve({ status: "navigated",  direction: "prev", data }); },
+        onSave: (data) => { callbacks?.onSave?.(data); resolve({ status: "saved", data }); },
+        onClose: (data) => { callbacks?.onClose?.(data); resolve({ status: "closed", data }); },
+        onCancel: (reason) => { callbacks?.onCancel?.(reason); resolve({ status: "cancelled", reason }); },
+        onError: (err) => { callbacks?.onError?.(err); reject({ status: "error", error: err }); },
+        onApply: (data) => { callbacks?.onApply?.(data); resolve({ status: "applied", data }); },
+        onDelete: (data) => { callbacks?.onDelete?.(data); resolve({ status: "deleted", data }); },
+        onNext: (data) => { callbacks?.onNext?.(data); resolve({ status: "navigated", direction: "next", data }); },
+        onPrev: (data) => { callbacks?.onPrev?.(data); resolve({ status: "navigated", direction: "prev", data }); },
       };
- 
-      // Promote layout values to winData root so lifecycle.js can read them
-      // directly, regardless of window type. params keeps them too for
-      // components that read their own geometry from params.
-      const x      = params.x      ?? 100;
-      const y      = params.y      ?? 100;
-      const width  = params.width  ?? 600;
+
+      const x = params.x ?? 100;
+      const y = params.y ?? 100;
+      const width = params.width ?? 600;
       const height = params.height ?? 450;
- 
+
+      // 3. Si abrimos una ventana normal pero su padre es un popup, mutamos su tipo a 'float' 
+      // pero guardamos la referencia de su targetWindow para que el renderizador principal sepa 
+      // que tiene que enviarla mediante un createPortal al popup secundario.
       get().createWin(validParentId, {
         type: typeshow,
         name: componentName,
         title: params.titulo || params.title || componentName.toUpperCase(),
         visible: true,
         x, y, width, height,
+        // Inyectamos la ventana física de destino
+        targetWindow: targetNativeWindow, 
         params: {
-          ...params, name: componentName, this: params.initialData || {},
+          ...params, 
+          name: componentName, 
+          this: params.initialData || {},
           x, y, width, height,
+          isInsideExternalPopup: isParentPopup,
         },
         ...safeCallbacks,
       });
     });
   },
-
   // -------------------------------------------------------------------------
-  // Atajos por tipo (mapeo imperativo a show)
+  // Atajos por tipo (mapeo imperativo a show) — Permanecen limpios e intactos
   // -------------------------------------------------------------------------
   showModal: (winIdParent, name, params = {}, callbacks = {}) => get().show(winIdParent, name, params, callbacks, "modal"),
   showFloat: (winIdParent, name, params = {}, callbacks = {}) => get().show(winIdParent, name, params, callbacks, "float"),
@@ -91,7 +110,9 @@ export const createApiSlice = (set, get) => ({
   showPanel: (winIdParent, name, params = {}, callbacks = {}) => get().show(winIdParent, name, params, callbacks, "panel"),
   showSide:  (winIdParent, name, params = {}, callbacks = {}) => get().show(winIdParent, name, params, callbacks, "side"),
   showExt:   (winIdParent, name, params = {}, callbacks = {}) => get().show(winIdParent, name, params, callbacks, "ext"),
-
+  // -------------------------------------------------------------------------
+  // showPopup — Opens in a native browser window (window.open)
+  // -------------------------------------------------------------------------
   // -------------------------------------------------------------------------
   // showPopup — Opens in a native browser window (window.open)
   // -------------------------------------------------------------------------
@@ -110,19 +131,25 @@ export const createApiSlice = (set, get) => ({
         usePip: false, ...options,
       };
 
+      let titleInterval = null;
+
       const safeCallbacks = {
         ...callbacks,
-        onSave:   (data)   => { callbacks?.onSave?.(data);     resolve({ status: 'saved',     data }); },
-        onClose:  (data)   => { callbacks?.onClose?.(data);    resolve({ status: 'closed',    data }); },
+        onSave: (data) => { callbacks?.onSave?.(data); resolve({ status: 'saved', data }); },
         onCancel: (reason) => { callbacks?.onCancel?.(reason); resolve({ status: 'cancelled', reason }); },
-        onError:  (err)    => { callbacks?.onError?.(err);     reject ({ status: 'error',     error: err }); },
-        onDelete: (data)   => { callbacks?.onDelete?.(data);   resolve({ status: 'deleted',   data }); },
-        onNext:   (data)   => { callbacks?.onNext?.(data);     resolve({ status: 'navigated', direction: 'next', data }); },
-        onPrev:   (data)   => { callbacks?.onPrev?.(data);     resolve({ status: 'navigated', direction: 'prev', data }); },
+        onError: (err) => { callbacks?.onError?.(err); reject({ status: 'error', error: err }); },
+        onDelete: (data) => { callbacks?.onDelete?.(data); resolve({ status: 'deleted', data }); },
+        onNext: (data) => { callbacks?.onNext?.(data); resolve({ status: 'navigated', direction: 'next', data }); },
+        onPrev: (data) => { callbacks?.onPrev?.(data); resolve({ status: 'navigated', direction: 'prev', data }); },
+        onClose: (data) => {
+          if (titleInterval) clearInterval(titleInterval);
+          callbacks?.onClose?.(data);
+          resolve({ status: 'closed', data });
+        },
       };
 
       const left = defaultOptions.left ?? 500;
-      const top  = defaultOptions.top  ?? 400;
+      const top = defaultOptions.top ?? 400;
 
       const features = [
         `width=${defaultOptions.width}`, `height=${defaultOptions.height}`,
@@ -140,30 +167,39 @@ export const createApiSlice = (set, get) => ({
       try {
         const windowName = `erp_${componentName}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
         nativeWindow = window.open('', windowName, features);
-
+        console.log("NATIVE ", nativeWindow);
         if (!nativeWindow) return get().showModal(winIdParent, name, params, safeCallbacks);
 
         const title = params.titulo || params.title || componentName.toUpperCase();
 
         nativeWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <title>${title}</title>
-              <meta charset="utf-8">
-              <base href="${window.location.origin}">
-              <style>
-                body { margin: 0; padding: 0; overflow: hidden; font-family: system-ui, sans-serif; }
-                #root { width: 100vw; height: 100vh; overflow: auto; }
-              </style>
-            </head>
-            <body><div id="root"></div></body>
-          </html>
-        `);
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>${title}</title>
+            <meta charset="utf-8">
+            <base href="${window.location.origin}">
+            <style>
+              body { margin: 0; padding: 0; overflow: hidden; font-family: system-ui, sans-serif; }
+              #root { width: 100vw; height: 100vh; overflow: auto; }
+            </style>
+          </head>
+          <body><div id="root"></div></body>
+        </html>
+      `);
         nativeWindow.document.close();
 
-        // Keep title in sync (some browsers reset it)
-        const titleInterval = setInterval(() => {
+        // Control del Bridge inmediato si el documento ya está listo
+        if (nativeWindow.document.readyState === 'complete') {
+          injectPopupBridge(nativeWindow, componentName, params, get());
+        } else {
+          nativeWindow.addEventListener('load', () => {
+            injectPopupBridge(nativeWindow, componentName, params, get());
+          }, { once: true });
+        }
+
+        // Sync del título resguardando el intervalo localmente para su desmantelamiento
+        titleInterval = setInterval(() => {
           if (nativeWindow && !nativeWindow.closed) {
             if (nativeWindow.document.title !== title) nativeWindow.document.title = title;
           } else {
@@ -172,9 +208,9 @@ export const createApiSlice = (set, get) => ({
         }, 100);
 
         nativeWindow._erpTitleInterval = titleInterval;
-        nativeWindow.addEventListener('load', () => { injectPopupBridge(nativeWindow); }, { once: true });
 
       } catch (err) {
+        if (titleInterval) clearInterval(titleInterval);
         return get().showModal(winIdParent, name, params, safeCallbacks);
       }
 
@@ -187,7 +223,7 @@ export const createApiSlice = (set, get) => ({
         params: {
           ...params, nativeWindow,
           extSubtype: 'popup', this: params.initialData || {},
-          ...defaultOptions, titleInterval: nativeWindow._erpTitleInterval,
+          ...defaultOptions, titleInterval,
         },
         ...safeCallbacks,
       });

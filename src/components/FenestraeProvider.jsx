@@ -2,6 +2,12 @@ import React, { useEffect, createContext, useContext, useState, useMemo } from '
 import { win } from '../core'
 import { mapThemeToCSSVariables } from '../core/themeMapper' // El mapper que creamos antes
 
+import FenestraeWinRenderer from "../windows/FenestraeWinRenderer";
+
+// Exponerlo al entorno global para el ecosistema multi-ventana de Fenestrae
+window.__FenestraeRendererComponent__ = FenestraeWinRenderer;
+
+
 // 🌟 Creamos el contexto para los temas
 const FenestraeThemeContext = createContext(null)
 

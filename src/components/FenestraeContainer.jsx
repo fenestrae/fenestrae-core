@@ -63,9 +63,9 @@ const FenestraeContainer = () => {
       {hasWindowsInZone("top") && (
         <div 
           className="flex-shrink-0 border-b border-[var(--color-window-border,#d1d5db)] bg-[var(--color-window-header,#0a6ed1)]"
-          style={{ height: "var(--fn-dock-top-height, 32px)" }}
+       
         >
-          <FenestraeDockZone zone="top" />
+          <FenestraeDockZone zone="top" initialSize={80} />
         </div>
       )}
 
@@ -76,9 +76,9 @@ const FenestraeContainer = () => {
         {hasWindowsInZone("left") && (
           <div 
             className="flex-shrink-0 border-r border-[var(--color-window-border,#d1d5db)] bg-[var(--color-window-header,#0a6ed1)]"
-            style={{ width: "var(--fn-dock-left-width, 250px)" }}
+          
           >
-            <FenestraeDockZone zone="left" />
+            <FenestraeDockZone zone="left" initialSize={300} />
           </div>
         )}
 
@@ -88,7 +88,7 @@ const FenestraeContainer = () => {
           {/* BARRA DE PESTAÑAS (TAB BAR) */}
           <nav 
             className="bg-[var(--color-window-content,#fafafa)] border-b border-[var(--color-window-border,#d1d5db)] flex-shrink-0 z-10 shadow-sm flex items-center"
-            style={{ height: "var(--fn-tab-height, 40px)" }}
+          
           >
             <div className="flex items-center px-2 pt-1 w-full gap-1 overflow-x-auto no-scrollbar h-full">
               {/* 🌟 Mapea desde el array inmutable estabilizado para que no se muevan */}
@@ -140,7 +140,7 @@ const FenestraeContainer = () => {
         {hasWindowsInZone("right") && (
           <div 
             className="flex-shrink-0 border-l border-[var(--color-window-border,#d1d5db)] bg-[var(--color-window-header,#0a6ed1)]"
-            style={{ width: "var(--fn-dock-right-width, 250px)" }}
+           
           >
             <FenestraeDockZone zone="right" />
           </div>
@@ -152,7 +152,7 @@ const FenestraeContainer = () => {
       {hasWindowsInZone("bottom") && (
         <div 
           className="flex-shrink-0 border-t border-[var(--color-window-border,#d1d5db)] bg-[var(--color-window-header,#0a6ed1)]"
-          style={{ height: "var(--fn-dock-bottom-height, 200px)" }}
+         
         >
           <FenestraeDockZone zone="bottom" />
         </div>

@@ -28,6 +28,7 @@ const FenestraeWinModal = React.memo(({ win, index, activeWinId, setActiveWinId 
     (layout) => updateWinLayout(self.id, layout)
   );
 
+    const isActive = activeWinId === win.id;
   // 3. Hook de Arrastre con callback de sincronización
   const { position, isDragging, handleMouseDown } = useDraggable(
     currentX,
@@ -97,37 +98,84 @@ const FenestraeWinModal = React.memo(({ win, index, activeWinId, setActiveWinId 
       onMouseDown={handleFocus}
     >
       <div
-        style={modalBoxStyles}
+        style={{
+          ...modalBoxStyles,
+          // Delegamos la pintura y el radio de borde al motor de temas
+          backgroundColor: "var(--color-window-bg, #ffffff)",
+          // En XP el borde activo cambia de color, así que usamos una condición para el color del borde
+          borderColor: activeWinId === self.id
+            ? "var(--color-window-active-border, #0054e3)"
+            : "var(--color-window-border, #cbd5e1)",
+          // Permitimos que cada tema decida si es cuadrado (XP abajo) o redondeado completo
+          borderRadius: "var(--radius-window, 4px)",
+        }}
         className={clsx(
-          "bg-[var(--color-window-bg,#ffffff)] border-[var(--color-window-border,#d1d5db)] rounded-xl shadow-2xl overflow-hidden border",
-          activeWinId === self.id ? "ring-2 ring-blue-500/40" : "shadow-md",
+          // Dejamos en Tailwind solo el layout físico y el comportamiento
+          "border overflow-hidden select-none",
+          // Las sombras de XP son muy sutiles o inexistentes, pero puedes modularlas si quieres
+          activeWinId === self.id ? "shadow-2xl" : "shadow-md",
           isDragging && "opacity-90 cursor-grabbing"
         )}
         onMouseDown={(e) => e.stopPropagation()}
       >
         {/* Cabecera del Modal (Zona de arrastre activa) */}
         <div
-          className="flex-shrink-0 border-b p-3 flex justify-between items-center bg-[var(--color-window-header,#fafafa)] border-[var(--color-window-border,#cbd5e1)] select-none cursor-grab active:cursor-grabbing"
+          className="flex-shrink-0 border-b p-2 flex justify-between items-center select-none cursor-grab active:cursor-grabbing"
+          style={{
+            // 1. Permite cargar el gradiente lineal Luna de XP o colores planos de temas modernos
+            background: isActive
+              ? "var(--color-window-header, #fafafa)"
+              : "var(--color-window-header-inactive, #e2e8f0)",
+            borderColor: "var(--color-window-border, #cbd5e1)",
+          }}
           onMouseDown={handleMouseDown}
         >
-          <h3 className="font-bold text-[var(--color-window-text,#1f2937)] flex items-center gap-2 uppercase text-[10px] font-mono tracking-wider">
-            <span className="text-blue-500">■</span>
+          <h3
+            className="font-bold flex items-center gap-2"
+            style={{
+              // 2. Control dinámico del texto de cabecera y tipografía heredada (Tahoma en XP)
+              color: isActive
+                ? "var(--color-window-header-text, #ffffff)"
+                : "var(--color-window-header-inactive-text, #4b5563)",
+              fontSize: "var(--fn-header-font-size, 13px)",
+            }}
+          >
+            {/* Icono decorativo opcional o dinámico por tema */}
+            <span className="text-blue-500 var(--color-fn-header-bullet)">■</span>
             {self.title || "Formulario Flotante"}
           </h3>
 
-          <FenestraeButton
-            variant="ghost"
-            iconIndex={3} // Icono de X / Cerrar universal de Fenestrae
-            className="hover:bg-red-50 hover:text-red-600 transition-colors"
+          {/* 3. Botón de cerrar nativo que consume el gradiente efervescente de Windows XP */}
+          <button
             onClick={(e) => {
               e.stopPropagation();
               closeWin(self.id);
             }}
-          />
+            className="flex items-center justify-center font-bold text-center transition-all"
+            style={{
+              width: "var(--fn-btn-control-size, 21px)",
+              height: "var(--fn-btn-control-size, 21px)",
+              borderRadius: "var(--radius-fn-btn-radius, 3px)",
+              background: "var(--color-fn-btn-close-bg, #ef4444)",
+              border: "1px solid var(--fn-btn-close-border, #dc2626)",
+              color: "var(--color-fn-btn-action-text, #ffffff)",
+              fontSize: "11px",
+              lineHeight: "1",
+            }}
+            // Pequeño truco nativo para soportar el hover tridimensional de XP usando variables dinámicas
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--color-fn-btn-close-hover-bg, #dc2626)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "var(--color-fn-btn-close-bg, #ef4444)";
+            }}
+          >
+            ✕
+          </button>
         </div>
 
         {/* Contenedor del Módulo / Vista de Negocio */}
-        <div 
+        <div
           ref={contentRef}
           className="flex-1 overflow-auto bg-[var(--color-window-content,#ffffff)] min-h-0"
           style={{ padding: "var(--spacing-window-padding, 0rem)" }}

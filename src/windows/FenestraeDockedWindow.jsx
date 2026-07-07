@@ -11,17 +11,25 @@ const ZONE_BASE_CONFIG = {
   bottom: { axis: "horizontal", cls: "w-full flex-shrink-0 flex-col-reverse", resizeDir: "n" },
 };
 
-const FenestraeDockZone = React.memo(({ zone }) => {
+const FenestraeDockZone = React.memo(({ zone, initialSize }) => {
   const config = ZONE_BASE_CONFIG[zone];
   const [hint, setHint] = useState(false);
-  const [customSize, setCustomSize] = useState(config.axis === "vertical" ? 256 : 192);
+  const defaultFallback = config.axis === "vertical" ? 256 : 192;
+  const [customSize, setCustomSize] = useState(initialSize ?? defaultFallback);
   const isResizingRef = useRef(false);
 
   // 🔹 Selectores atómicos de Zustand para optimizar rendimiento de renderizado
-  const wins = winStore((s) => s.wins);
-  const closeWin = winStore((s) => s.closeWin);
+  const wins = winStore((self) => self.wins);
+  const closeWin = winStore((self) => self.closeWin);
+
+  useEffect(() => {
+    if (initialSize !== undefined) {
+      setCustomSize(initialSize);
+    }
+  }, [initialSize]);
 
   const dockedWins = useMemo(
+    // Estructura Map de Zustand optimizada
     () => Array.from(wins.values()).filter((w) => w.docked && w.dockZone === zone),
     [wins, zone]
   );
@@ -60,8 +68,8 @@ const FenestraeDockZone = React.memo(({ zone }) => {
       if (zone === "top")    newSize = startSize + deltaY;
       if (zone === "bottom") newSize = startSize - deltaY;
 
-      const minSize = 140;
-      const maxSize = config.axis === "vertical" ? window.innerWidth * 0.4 : window.innerHeight * 0.4;
+      const minSize = 40; // Un poco más de margen para evitar colapsos visuales de headers
+      const maxSize = config.axis === "vertical" ? window.innerWidth * 0.45 : window.innerHeight * 0.45;
       setCustomSize(Math.max(minSize, Math.min(newSize, maxSize)));
     };
 
@@ -135,14 +143,14 @@ const FenestraeDockZone = React.memo(({ zone }) => {
 
 FenestraeDockZone.propTypes = {
   zone: PropTypes.oneOf(["left", "right", "top", "bottom"]).isRequired,
+  initialSize: PropTypes.number
 };
 
 FenestraeDockZone.displayName = "FenestraeDockZone";
 
 // ─────────────────────────────────────────────────────────────────────────────
-
 const FenestraeDockedWindow = React.memo(({ win, config, closeWin }) => {
-  const undockWin = winStore((s) => s.undockWin);
+  const undockWin = winStore((self) => self.undockWin);
 
   return (
     <div
@@ -153,14 +161,11 @@ const FenestraeDockedWindow = React.memo(({ win, config, closeWin }) => {
     >
       {/* Encabezado con soporte completo de variables de Contrato Visual */}
       <div 
-        className="h-6 flex items-center justify-between px-2 flex-shrink-0 border-b border-[var(--color-window-border,#cbd5e1)]"
-        style={{
-          backgroundColor: "var(--color-window-header, #1f2937)",
-        }}
+        className="h-6 flex items-center justify-between px-2 flex-shrink-0 border-b border-[var(--color-window-border,#cbd5e1)] bg-[var(--color-window-header,#1f2937)]"
       >
         <div className="flex items-center gap-1.5 min-w-0">
           <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
-          <span className="text-[10px] font-bold uppercase tracking-wide text-white truncate">
+          <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--color-window-header-text,#ffffff)] truncate">
             {win.title || "Panel Acoplado"}
           </span>
         </div>

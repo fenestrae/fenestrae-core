@@ -1,10 +1,24 @@
 import React from "react";
 import {
-  MdClose,
-  MdMinimize,
-  MdCropSquare,
-  MdFilterNone,
-  MdDragIndicator
+  // --- Controles Clásicos de Gestión (Ya incluidos) ---
+  MdClose,          // Cerrar ventana
+  MdMinimize,       // Minimizar a la barra de tareas
+  MdCropSquare,     // Maximizar ventana
+  MdFilterNone,     // Restaurar tamaño (antiguo doble cuadrado)
+  MdDragIndicator,  // Zona de arrastre / Grip del Header
+
+  // --- Gestión de Estados (Docking & Desacople) ---
+  MdPushPin,        // Anclar / Pin ventana en zonas Docker
+  MdLaunch,         // Desacoplar / Convertir en ventana flotante externa
+  MdOpenInNew,      // Abrir en una ventana independiente del navegador (Pop-out)
+
+  // --- Comportamiento y Visualización (Roll-up / Colapsar) ---
+  MdKeyboardArrowUp,   // Colapsar / Enrollar contenido (Shading/Roll-up)
+  MdKeyboardArrowDown, // Expandir contenido enrollado
+  
+  // --- Utilidades de Ventana ---
+  MdRefresh,        // Recargar datos / Resetear estado interno del formulario
+  MdMoreVert        // Menú contextual de la ventana (Acciones del sistema)
 } from "react-icons/md";
 
 const icons = {
