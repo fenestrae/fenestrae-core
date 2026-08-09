@@ -4,9 +4,8 @@
 // ============================================================================
 
 import { produce } from "immer";
-import { LAUNCHPAD_ID } from "../constants";
 import { initialState } from "../constants";
-
+import { getLaunchpadId } from "../index";
 // Global component registry (equivalent to Win32 class registration)
 export const formsRegistry = new Map();
 
@@ -47,16 +46,16 @@ export const createMiscSlice = (set, get) => ({
   })),
 
   setEmpresa: (newTitle) => set(produce((self) => {
-    const launchpad = self.wins.get(LAUNCHPAD_ID);
+    const launchpad = self.wins.get(getLaunchpadId());
     if (launchpad) {
       launchpad.title = newTitle;
-      if (self.activeTabId === LAUNCHPAD_ID) document.title = newTitle;
+      if (self.activeTabId === getLaunchpadId()) document.title = newTitle;
     }
   })),
 
   setUser: (userData) => set(produce((self) => {
     self.user = userData;
-    const launchpad = self.wins.get(LAUNCHPAD_ID);
+    const launchpad = self.wins.get(getLaunchpadId());
     if (launchpad && userData?.empresa) launchpad.title = userData.empresa;
   })),
 
@@ -76,6 +75,7 @@ export const createMiscSlice = (set, get) => ({
 
   isModal: (id) => get().wins.get(id)?.type === "modal",
   isFloat: (id) => get().wins.get(id)?.type === "float",
+  isRestored: (id) => get().wins.get(id)?.isRestored || false,
 
   resetStore: () => {
     localStorage.removeItem("erp_session_backup");

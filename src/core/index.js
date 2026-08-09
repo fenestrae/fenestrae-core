@@ -4,8 +4,11 @@
 // Satisface las exportaciones requeridas por Vite/Rollup en producción.
 // ============================================================================
 
-import { winStore, externalWindowInstances } from "./winStore";
-import { mapThemeToCSSVariables, THEME_PRESETS, getThemeStyles } from "./themeMapper";
+import { winStore, externalWindowInstances} from "./winStore";
+
+import { mapThemeToCSSVariables, THEME_PRESETS, getThemeStyles } from "../themes/themeMapper";
+import {  contextRepository} from "../database/ContextRepository";
+import { formsRegistry } from './slices/misc';
 
 const s = () => winStore.getState();
 
@@ -45,12 +48,14 @@ export const win = {
     } = {}
   ) => {
 
-    const entry = s().formsRegistry.get(component?.toLowerCase());
+   
+    
+    const entry = formsRegistry.get(component?.toLowerCase());
     if (!entry) {
       console.warn(`[Fenestrae] Componente no registrado previamente en el sistema: ${component}`);
       return null;
     }
-
+   
     const winId = s().createWin(parentId, {
       type: typeshow,
       name: component.toLowerCase(),
@@ -88,23 +93,6 @@ export const win = {
   destroyWindow: (winId) => {
     s().closeWin(winId);
   },
-
-
-  // --------------------------------------------------------------------------
-  // APERTURA RÁPIDA (API de consumo directo)
-  // --------------------------------------------------------------------------
-
-  showTab:   (parent, name, params = {}, route = "") => s().showTab(parent, name, params, route),
-  showModal: (parent, name, params = {}, cb = {}) => s().showModal(parent, name, params, cb),
-  showFloat: (parent, name, params = {}, cb = {}) => s().showFloat(parent, name, params, cb),
-  showSide:  (parent, name, params = {}, cb = {}) => s().showSide(parent, name, params, cb),
-  showTop:   (parent, name, params = {}, cb = {}) => s().showTop(parent, name, params, cb),
-  showPanel: (parent, name, params = {}, cb = {}) => s().showPanel(parent, name, params, cb),
-  showExt:   (parent, name, params = {}, cb = {}) => s().showExt(parent, name, params, cb),
-  showPopup: (parent, name, params = {}, cb = {}, opt = {}) => s().showPopup(parent, name, params, cb, opt),
-  showPopupSimple: (name, params = {}, opt = {}) => s().showPopupSimple(name, params, opt),
-
-
   // --------------------------------------------------------------------------
   // LAYOUT GEOMÉTRICO
   // --------------------------------------------------------------------------
@@ -142,6 +130,25 @@ export const win = {
   getActiveTab: () =>
     s().getActiveTab(),
 
+  
+
+  // --------------------------------------------------------------------------
+  // APERTURA RÁPIDA (API de consumo directo)
+  // --------------------------------------------------------------------------
+
+  showTab: (parent, name, params = {}, route = "") => s().showTab(parent, name, params, route),
+  showModal: (parent, name, params = {}, cb = {}) => s().showModal(parent, name, params, cb),
+  showFloat: (parent, name, params = {}, cb = {}) => s().showFloat(parent, name, params, cb),
+  showSide: (parent, name, params = {}, cb = {}) => s().showSide(parent, name, params, cb),
+  showTop: (parent, name, params = {}, cb = {}) => s().showTop(parent, name, params, cb),
+  showPanel: (parent, name, params = {}, cb = {}) => s().showPanel(parent, name, params, cb),
+  showExt: (parent, name, params = {}, cb = {}) => s().showExt(parent, name, params, cb),
+  showPopup: (parent, name, params = {}, cb = {}, opt = {}) => s().showPopup(parent, name, params, cb, opt),
+  showPopupSimple: (name, params = {}, opt = {}) => s().showPopupSimple(name, params, opt),
+
+
+
+
 
   // --------------------------------------------------------------------------
   // CONTEXTOS Y UTILIDADES DE SISTEMA
@@ -153,6 +160,7 @@ export const win = {
   setCache: (winId, data) => s().setCache(winId, data),
   isModal: (winId) => s().isModal(winId),
   isFloat: (winId) => s().isFloat(winId),
+  isRestored: (winId) => s().isRestored(winId),
 
   /** Purga por completo el Workspace restableciendo el almacén a su estado original. */
   reset: () => s().resetStore(),
@@ -163,18 +171,47 @@ export const win = {
   // --------------------------------------------------------------------------
 
   /** Acopla una ventana flotante a una zona perimetral del Workspace reteniendo su geometría previa. */
-  dock:   (winId, zone) => s().dockWin(winId, zone),
+  dock: (winId, zone) => s().dockWin(winId, zone),
 
   /** Libera una ventana encajada devolviéndola al espacio flotante con su tamaño original. */
   undock: (winId) => s().undockWin(winId),
 
+  /** Acopla una ventana a la zona fixed de la ventana */
+  fixed: (winId, zone) => s().fixedWin(winId, zone),
+
+  /** Libera una ventana encajada devolviéndola al espacio flotante con su tamaño original. */
+  unfixed: (winId) => s().unfixedWin(winId),
+
+
+
 };
 
+
+// ---------------------------------------------------------------------------
+// API DE INICIALIZACIÓN EMPRESARIAL
+// ---------------------------------------------------------------------------
 
 // --------------------------------------------------------------------------
 // EXPORTACIONES COMPORTAMIENTALES (Para consumo interno y avanzado)
 // --------------------------------------------------------------------------
-export { LAUNCHPAD_ID } from "../store/types";
+export function getLaunchpadId() {
+  return sessionStorage.getItem("fenestrae_launchpadId");
+} 
+
+
+
+//export { LAUNCHPAD_ID } from "./constants";
 export { winStore, externalWindowInstances };
 export { mapThemeToCSSVariables, THEME_PRESETS, getThemeStyles };
 export { getStandardLayout } from "./geometry";
+
+
+export const context = {
+  save: contextRepository.save.bind(contextRepository),
+  saveDebounced: contextRepository.saveDebounced.bind(contextRepository),
+  load: contextRepository.load.bind(contextRepository),
+  clear: contextRepository.remove.bind(contextRepository),
+  clearAll: contextRepository.clearWindow.bind(contextRepository),
+};
+
+

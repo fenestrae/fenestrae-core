@@ -1,8 +1,8 @@
 import React, { useEffect, createContext, useContext, useState, useMemo } from 'react'
 import { win } from '../core'
-import { mapThemeToCSSVariables } from '../core/themeMapper' // El mapper que creamos antes
+import { mapThemeToCSSVariables } from '../themes/themeMapper' // El mapper que creamos antes
 
-import FenestraeWinRenderer from "../windows/FenestraeWinRenderer";
+import FenestraeWinRenderer from "./FenestraeWinRenderer";
 
 // Exponerlo al entorno global para el ecosistema multi-ventana de Fenestrae
 window.__FenestraeRendererComponent__ = FenestraeWinRenderer;
@@ -33,6 +33,7 @@ const FenestraeProvider = ({
 }) => {
 
   useEffect(() => {
+    console.log("Fenestrae Registre Components",components);
     win.register(components)
   }, [components])
 

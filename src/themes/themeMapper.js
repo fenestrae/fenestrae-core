@@ -422,62 +422,61 @@ export const THEME_PRESETS = {
     "--color-fn-btn-minimize-bg": "#f39c12",
     "--color-fn-btn-maximize-bg": "#27ae60",
   },
-
- // 🪟🟦 WINDOWS XP - El auténtico estilo Luna (Azul) purificado
-  windowsXP: {
-    // Canvas & Workspace - El clásico fondo azul verdoso de escritorio XP (Bliss / Redondel)
-    "--fn-canvas": "#245edb", // O el verde azulado plano clásico de carga: #008080
-    "--color-window-bg": "#ece9d8", // Color beige/arena característico del marco y diálogos de XP
-    "--color-window-content": "#ffffff", // El fondo blanco limpio de las áreas de trabajo de XP
-    "--color-window-border": "#0054e3", // Azul XP Luna brillante para los bordes activos
+   windowsXP: {
+    // Canvas & Workspace - El clásico fondo azul verdoso de escritorio XP
+    "--fn-canvas": "#245edb",
+    "--color-window-bg": "#ece9d8", // Beige/arena característico
+    "--color-window-content": "#ffffff", // Blanco limpio
+    "--color-window-border": "#0054e3", // Azul XP Luna brillante
     "--color-window-text": "#000000",
     
-    // Títulos unificados - Header con el degradado satinado Luna exacto (brillante arriba, oscuro abajo)
+    // Títulos unificados - Degradado satinado Luna exacto
     "--color-window-header": "linear-gradient(180deg, #1e70e4 0%, #155ae0 12%, #0a46d8 45%, #0030c6 75%, #0037da 100%)",
     "--color-window-header-text": "#ffffff",
-    "--color-window-header-inactive": "linear-gradient(180deg, #7ea1ee 0%, #638ae6 12%, #4a73df 45%, #3d64d5 75%, #426be0 100%)", // El clásico gris azulado inactivo de XP
+    "--color-window-header-inactive": "linear-gradient(180deg, #7ea1ee 0%, #638ae6 12%, #4a73df 45%, #3d64d5 75%, #426be0 100%)",
     "--color-window-header-inactive-text": "#d6e3ff",
     "--color-window-active-border": "#0054e3",
-    "--spacing-window-padding": "0px", // XP tiene un marco grueso alrededor del contenido
+    "--spacing-window-padding": "0px",
 
-    // Docking Zones - Estilo XP clásico (Barra de tareas / Luna Blue)
+    // Docking Zones - Estilo XP clásico
     "--fn-dock-top-height": "30px",
-    "--fn-dock-bottom-height": "40px", // Altura típica de la barra de tareas de XP
-    "--fn-dock-left-width": "250px", // Ancho ideal si imitas el panel de tareas lateral de las carpetas XP
+    "--fn-dock-bottom-height": "40px",
+    "--fn-dock-left-width": "250px",
     "--fn-dock-right-width": "250px",
 
-    // Tabs - Estilo de pestañas nativas de las propiedades de sistema de XP
-    "--fn-tab-height": "28px",
-    "--fn-tab-min-width": "100px",
-    "--fn-tab-max-width": "160px",
+    // Tabs - 🔥 AHORA MÁS ALTOS (40px en lugar de 28px)
+    "--fn-tab-height": "40px",
+    "--fn-tab-min-width": "110px",
+    "--fn-tab-max-width": "180px",
     "--radius-fn-tab-radius": "4px 4px 0px 0px",
     "--fn-tab-direction": "row",
     
-    // Estados de las Pestañas - Colores de la pestaña nativa XP (Luna)
-    "--color-fn-tab-bg-active": "#ffffff", // La pestaña activa se fusiona con el fondo blanco de XP
+    // Estados de las Pestañas - Colores nativos XP Luna
+    "--color-fn-tab-bg-active": "#ffffff",
     "--color-fn-tab-text-active": "#000000",
-    "--color-fn-tab-bg-inactive": "linear-gradient(180deg, #f4f3ee 0%, #e2dfd1 100%)", // Pestaña apagada con relieve suave
+    "--color-fn-tab-bg-inactive": "linear-gradient(180deg, #f4f3ee 0%, #e2dfd1 100%)",
     "--color-fn-tab-text-inactive": "#666666",
-    "--color-fn-tab-border": "#919b9c", // Gris-azul del borde de pestañas nativas
-    "--fn-tab-indicator-weight": "3px",
-    "--color-fn-tab-indicator": "#ff6600", // El naranja característico de XP para focus/selección (estilo instalador o selección activa)
+    "--color-fn-tab-border": "#919b9c",
+    "--fn-tab-indicator-weight": "5px",
+    "--color-fn-tab-indicator": "#ff6600", // Naranja XP para focus
 
-    // Botones de Control - Fieles al set de botones ovalados de la esquina superior derecha
-    "--fn-btn-control-size": "21px", // Los botones de XP son notablemente más altos y rectangulares-redondeados
+    // Botones de Control - Fieles al estilo XP
+    "--fn-btn-control-size": "21px",
     "--radius-fn-btn-radius": "3px",
     "--color-fn-btn-action-text": "#ffffff",
     
-    // Botón Cerrar (El icónico botón rojo-naranja ovalado con degradado y sombra interna)
+    // Botón Cerrar (rojo-naranja ovalado)
     "--color-fn-btn-close-bg": "linear-gradient(180deg, #f3795c 0%, #e0431f 40%, #c41e00 100%)",
     "--fn-btn-close-border": "#7a1a00",
-    "--color-fn-btn-close-hover-bg": "linear-gradient(180deg, #f99a82 0%, #f15f3e 40%, #e6310b 100%)", // Brillo extra al hacer hover
+    "--color-fn-btn-close-hover-bg": "linear-gradient(180deg, #f99a82 0%, #f15f3e 40%, #e6310b 100%)",
     "--color-fn-btn-close-hover-text": "#ffffff",
     
-    // Botón Minimizar y Maximizar (Las características esferas/cápsulas azules con degradado Luna)
+    // Botón Minimizar (azul Luna)
     "--color-fn-btn-minimize-bg": "linear-gradient(180deg, #7fa7f7 0%, #3e79ec 40%, #1c52c7 100%)",
     "--fn-btn-minimize-border": "#163a8b",
     "--color-fn-btn-minimize-hover-bg": "linear-gradient(180deg, #a3c2ff 0%, #5d93ff 40%, #366fe6 100%)",
 
+    // Botón Maximizar (azul Luna)
     "--color-fn-btn-maximize-bg": "linear-gradient(180deg, #7fa7f7 0%, #3e79ec 40%, #1c52c7 100%)",
     "--fn-btn-maximize-border": "#163a8b",
     "--color-fn-btn-maximize-hover-bg": "linear-gradient(180deg, #a3c2ff 0%, #5d93ff 40%, #366fe6 100%)",

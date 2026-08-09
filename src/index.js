@@ -7,17 +7,49 @@
  */
 
 // 🚀 1. Inyectamos los estilos de Tailwind v4 en el empaquetado
-import './index.css'; 
+import './index.css';
 
-// 🧠 2. Exportamos el store y la API global imperativa
-export { winStore, win } from './core';
+
 
 // 🧱 3. Exportamos los componentes estructurales obligatorios
-export { default as FenestraeProvider } from './components/FenestraeProvider';
-export { default as FenestraeContainer } from './components/FenestraeContainer';
+export { default as FenestraeProvider } from './windows/FenestraeProvider';
+export { default as FenestraeContainer } from './windows/FenestraeContainer';
+
 
 // 🔄 4. Exportación por defecto del objeto 'win' para máxima compatibilidad
-import { win } from './core';
+import { winStore, win, context } from './core';
+import {
+    init,
+    getSessionsByUserId,
+    getSessionsByUserAndWorkspace,
+    getSessions,
+    createNewSession,
+    activateSession,
+    setSession,
+    closeSession,
+    delSession,
+    clearSessions,
+    restoreWindows
+} from './database/persistence'
+
+// 🧠 2. Exportamos el store y la API global imperativa
+
+export { winStore, win, context } from './core';
+
+
+export {
+    init,
+    getSessionsByUserId,
+    getSessionsByUserAndWorkspace,
+    getSessions,
+    createNewSession,
+    activateSession,
+    setSession,
+    closeSession,
+    delSession,
+    clearSessions,
+    restoreWindows
+} from './database/persistence'
 
 // --------------------------------------------------------------------------
 // EXPORTACIONES PARA CONSUMIDORES AVANZADOS
@@ -26,8 +58,39 @@ import { win } from './core';
 
 // Alias oficiales (named exports REALES)
 
-export const ae = win;             // técnico elegante
-export const fenestrae = win;      // API pública oficial
+// técnico ae
+export const ae = {
+    ...win,
+    context,
+    init,
+    getSessionsByUserId,
+    getSessionsByUserAndWorkspace,
+    getSessions,
+    createNewSession,
+    activateSession,
+    setSession,
+    closeSession,
+    delSession,
+    clearSessions,
+    restoreWindows
+};
+
+// API pública enriquecida
+export const fenestrae = {
+    ...win,
+    context,
+    init,
+    getSessionsByUserId,
+    getSessionsByUserAndWorkspace,
+    getSessions,
+    createNewSession,
+    activateSession,
+    setSession,
+    closeSession,
+    delSession,
+    clearSessions,
+    restoreWindows
+};
 
 // Default export
 export default fenestrae;

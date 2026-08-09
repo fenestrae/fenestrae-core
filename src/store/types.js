@@ -25,4 +25,3 @@ export const WIN_ALIGN = {
 /**
  * ID reservado para el Launchpad / Escritorio Base (Equivalente al Desktop de Windows)
  */
-export const LAUNCHPAD_ID = 'LAUNCHPAD';

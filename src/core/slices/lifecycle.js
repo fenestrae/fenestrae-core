@@ -6,9 +6,10 @@
 import { produce } from "immer";
 import { v4 as uuidv4 } from "uuid";
 import { injectPopupBridge } from '../../events/injectPopupBridge';
-import { LAUNCHPAD_ID } from "../constants";
+import { getLaunchpadId } from "../index";
 import { calculateAlignment, getStandardLayout } from "../geometry";
 import { getAllDescendants } from "../treeHelpers";
+import { contextRepository } from "../../database/ContextRepository";
 
 // Native window instances (window.open). Not persisted.
 export const externalWindowInstances = new Map();
@@ -62,7 +63,23 @@ export const createLifecycleSlice = (set, get) => ({
       let layout = {};
 
       if (type === "ext") {
-        layout = { width: winData.width ?? 800, height: winData.height ?? 600, x: winData.x ?? 100, y: winData.y ?? 100, isExternal: true };
+        const opts = winData.options || {};
+        layout = {
+          width: winData.width ?? opts.width ?? 800,
+          height: winData.height ?? opts.height ?? 600,
+          x: winData.x ?? opts.left ?? 100,
+          y: winData.y ?? opts.top ?? 100,
+          isExternal: true,
+          modal: !!opts.modal,
+          topMost: !!opts.topMost,
+          toolbox: !!opts.toolbox,
+          borderless: !!opts.borderless,
+          dockable: !!opts.dockable,
+          titlebarStyle: opts.titlebarStyle || "default",
+          externalId: opts.externalId || null,
+          persistLayout: !!opts.persistLayout,
+        };
+
       } else if (type === "modal") {
         layout = getStandardLayout(null, preset || "modal90");
       } else if (type === "side") {
@@ -80,12 +97,12 @@ export const createLifecycleSlice = (set, get) => ({
         layout = preset
           ? getStandardLayout(null, preset)
           : {
-              x:      winData.x      ?? px ?? Math.random() * 100 + 50,
-              y:      winData.y      ?? py ?? Math.random() * 100 + 50,
-              width:  winData.width  ?? pw ?? 700,
-              height: winData.height ?? ph ?? 500,
-              state:  type === "top" ? "z-900" : "normal",
-            };
+            x: winData.x ?? px ?? Math.random() * 100 + 50,
+            y: winData.y ?? py ?? Math.random() * 100 + 50,
+            width: winData.width ?? pw ?? 700,
+            height: winData.height ?? ph ?? 500,
+            state: type === "top" ? "z-900" : "normal",
+          };
       }
 
       const newWin = {
@@ -108,8 +125,13 @@ export const createLifecycleSlice = (set, get) => ({
           isMatchCode: params.isMatchCode || false,
           isExternal: type === "ext",
         },
+
+        // Layout fijo
+        fixed: false,
+        fixedZone: null,    // "top" | "left" | "right" | "bottom"
+
         // Docking state
-        docked:   false,
+        docked: false,
         dockZone: null,
       };
 
@@ -118,27 +140,66 @@ export const createLifecycleSlice = (set, get) => ({
         if (coords) { newWin.x = coords.x; newWin.y = coords.y; }
       }
 
+      const nextIndex = self.wins.size > 0
+        ? Math.max(...Array.from(self.wins.values()).map(w => w.index ?? 0)) + 1
+        : 0;
+
+      newWin.index = nextIndex;
+
+      // Insertar ventana
       self.wins.set(newId, newWin);
-      self.winOrder.push(newId);
+
+      // Ordenar por índice
+      self.winOrder = Array.from(self.wins.keys())
+        .sort((a, b) => self.wins.get(a).index - self.wins.get(b).index);
+
+
       if (type === "tab") self.activeTabId = newId;
       self.activeWinId = newId;
+
+
     }));
 
     // Bind native window events if present
     if (nativeWindow) {
       externalWindowInstances.set(newId, nativeWindow);
+
+      // focus → topMost / active
       nativeWindow.onfocus = () => {
         if (get().activeWinId !== newId) get().setActiveWinId(newId);
       };
+
+      // cierre → lifecycle
       nativeWindow.onbeforeunload = () => {
         setTimeout(() => {
           if (get().wins.has(newId)) get().closeWin(newId);
         }, 100);
       };
     }
-
     return newId;
   },
+
+
+  openExternalWin: (parentId, name, params = {}, options = {}, callbacks = {}) => {
+    const componentName = name?.toLowerCase();
+
+    // aquí no abrimos todavía window.open: solo creamos el registro
+    const winId = get().createWin(parentId || "0", {
+      type: "ext",
+      name: componentName,
+      title: params.title || componentName.toUpperCase(),
+      width: options.width,
+      height: options.height,
+      x: options.left,
+      y: options.top,
+      params,
+      options,      // ← aquí van modal/topMost/toolbox/borderless/dockable...
+      ...callbacks,
+    });
+
+    return winId;
+  },
+
 
   openWin: (winData) => get().createWin("0", winData),
 
@@ -199,7 +260,7 @@ export const createLifecycleSlice = (set, get) => ({
         self.activeWinId = parentId;
       } else {
         const remaining = self.winOrder.filter((oid) => oid !== winId);
-        self.activeWinId = remaining.length > 0 ? remaining[remaining.length - 1] : LAUNCHPAD_ID;
+        self.activeWinId = remaining.length > 0 ? remaining[remaining.length - 1] : getLaunchpadId();
       }
     }
   })),
@@ -232,7 +293,7 @@ export const createLifecycleSlice = (set, get) => ({
         self.activeWinId = parentId;
       } else {
         const remainingWins = self.winOrder.filter((oid) => !toRemove.includes(oid));
-        self.activeWinId = remainingWins.length > 0 ? remainingWins[remainingWins.length - 1] : LAUNCHPAD_ID;
+        self.activeWinId = remainingWins.length > 0 ? remainingWins[remainingWins.length - 1] : getLaunchpadId();
       }
     }
 
@@ -242,16 +303,49 @@ export const createLifecycleSlice = (set, get) => ({
         (w) => w.type === "tab" && !toRemove.includes(w.id)
       );
       const lastTab = remainingTabs[remainingTabs.length - 1];
-      self.activeTabId = lastTab ? lastTab.id : LAUNCHPAD_ID;
+      self.activeTabId = lastTab ? lastTab.id : getLaunchpadId();
       if (toRemove.includes(self.activeWinId)) self.activeWinId = self.activeTabId;
     }
 
     toRemove.forEach((targetId) => {
+
       self.wins.delete(targetId);
-      self.winOrder = self.winOrder.filter((oid) => oid !== targetId);
-      if (self.cache) self.cache.delete(targetId);
+      self.winOrder = self.winOrder.filter(
+        (oid) => oid !== targetId
+      );
+      if (self.cache) {
+        self.cache.delete(targetId);
+      }
+      // eliminar contextos directamente
+      if (self.contexts) {
+        const prefix = `${targetId}:`;
+        Array.from(self.contexts.keys()).forEach((k) => {
+          if (k.startsWith(prefix)) {
+            self.contexts.delete(k);
+          }
+        });
+      }
+      // Eliminar contextos persistidos en IndexedDB
+      contextRepository.clearWindow(targetId);
     });
   })),
+
+  closeAllWin: (includeLaunchPad = false) => {
+    const { wins } = get();
+
+    // recopilar todos los ids
+    let allIds = Array.from(wins.keys());
+
+    // si NO queremos cerrar el LaunchPad, lo excluimos
+    if (!includeLaunchPad) {
+      allIds = allIds.filter((id) => id !== getLaunchpadId());
+    }
+
+    // cerrar cada ventana usando la función oficial
+    allIds.forEach((id) => {
+      get().closeWin(id);
+    });
+  },
 
   // --------------------------------------------------------------------------
   // dockWin — Docks a top window into a zone (left | right | top | bottom).
@@ -264,10 +358,11 @@ export const createLifecycleSlice = (set, get) => ({
 
     // Save current position for later restore
     win.prevLayout = { x: win.x, y: win.y, width: win.width, height: win.height };
-
-    win.docked   = true;
+      win.fixed = false;
+    win.fixedZone = null;
+    win.docked = true;
     win.dockZone = zone;
-    win.visible  = true;
+    win.visible = true;
   })),
 
   // --------------------------------------------------------------------------
@@ -278,14 +373,14 @@ export const createLifecycleSlice = (set, get) => ({
     const win = self.wins.get(winId);
     if (!win || !win.docked) return;
 
-    win.docked   = false;
+    win.docked = false;
     win.dockZone = null;
 
     // Restore previous position
     if (win.prevLayout) {
-      win.x      = win.prevLayout.x;
-      win.y      = win.prevLayout.y;
-      win.width  = win.prevLayout.width;
+      win.x = win.prevLayout.x;
+      win.y = win.prevLayout.y;
+      win.width = win.prevLayout.width;
       win.height = win.prevLayout.height;
       win.prevLayout = null;
     }
@@ -295,6 +390,64 @@ export const createLifecycleSlice = (set, get) => ({
     self.winOrder.push(winId);
     self.activeWinId = winId;
   })),
+
+
+  // --------------------------------------------------------------------------
+  // fixWin — Fija una ventana en una zona (top | left | right | bottom).
+  // Guarda la posición actual en prevLayoutFixed para poder restaurarla.
+  // --------------------------------------------------------------------------
+  fixedWin: (winId, zone) => set(produce((self) => {
+    const win = self.wins.get(winId);
+    if (!win) return;
+    if (!["top", "left", "right", "bottom"].includes(zone)) return;
+
+    // Guardar layout actual para restaurarlo al hacer unfix
+    win.prevLayoutFixed = {
+      x: win.x,
+      y: win.y,
+      width: win.width,
+      height: win.height,
+    };
+
+    // Estado fijo
+    win.fixed = true;
+    win.fixedZone = zone;
+
+    // Las ventanas fijas siempre son visibles
+    win.visible = true;
+
+    // Desactivar docking si estaba activo
+    win.docked = false;
+    win.dockZone = null;
+  })),
+
+  // --------------------------------------------------------------------------
+  // unfixWin — Libera una ventana fija y la devuelve a su estado anterior.
+  // Restaura la posición que tenía antes de fijarse.
+  // --------------------------------------------------------------------------
+  unfixedWin: (winId) => set(produce((self) => {
+    const win = self.wins.get(winId);
+    if (!win || !win.fixed) return;
+
+    win.fixed = false;
+    win.fixedZone = null;
+
+    // Restaurar layout previo
+    if (win.prevLayoutFixed) {
+      win.x = win.prevLayoutFixed.x;
+      win.y = win.prevLayoutFixed.y;
+      win.width = win.prevLayoutFixed.width;
+      win.height = win.prevLayoutFixed.height;
+      win.prevLayoutFixed = null;
+    }
+
+    // Traer al frente
+    self.winOrder = self.winOrder.filter((oid) => oid !== winId);
+    self.winOrder.push(winId);
+    self.activeWinId = winId;
+  })),
+
+
 
   registerExternalInstance: (id, winInstance) => {
     externalWindowInstances.set(id, winInstance);

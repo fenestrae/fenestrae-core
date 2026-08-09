@@ -4,8 +4,8 @@
 // ============================================================================
 
 import { produce } from "immer";
-import { LAUNCHPAD_ID } from "../constants";
 import { externalWindowInstances } from "./lifecycle";
+import {getLaunchpadId} from "../index"
 
 export const createFocusSlice = (set, get) => ({
   setActiveWinId: (id) => set(produce((self) => {
@@ -43,7 +43,7 @@ export const createFocusSlice = (set, get) => ({
 
     // Recalculate visibility for all windows
     const checkVisibility = (win) => {
-      if (win.id === "LAUNCHPAD") return true;
+      if (win.id ===getLaunchpadId()) return true;
       if (win.type === "top")  return true;
       if (win.type === "side") return true;
       if (win.type === "ext")  return true;
@@ -114,6 +114,6 @@ export const createFocusSlice = (set, get) => ({
     while (current && current.type !== "tab" && current.parentId !== "0") {
       current = wins.get(current.parentId);
     }
-    return current?.type === "tab" ? current.id : LAUNCHPAD_ID;
+    return current?.type === "tab" ? current.id : getLaunchpadId();
   },
 });
