@@ -46,10 +46,33 @@ export const createLifecycleSlice = (set, get) => ({
       const validParentId = (type === "tab" || type === "top") ? "0" : winIdParent || "0";
 
       // Side with isMatchCode: replaces any previous side with that flag
-      if (type === "side" && params.isMatchCode === true) {
+      /*if (type === "side" && params.isMatchCode === true) {
         const existingMatchSide = Array.from(self.wins.values()).find(
           (w) => w.type === "side" && w.params?.isMatchCode === true
         );
+        */
+           // ---------------------------------------------------------------------
+      // FENESTRAE RULE: Only ONE active side window can exist at any time.
+      //
+      // A side window is a global workspace tool with its own lifecycle.
+      // It behaves like a full window (with id, params, persistence, focus),
+      // but it is visually attached to a lateral zone of the workspace.
+      //
+      // By workspace design:
+      //   - Only one side window may be active simultaneously.
+      //   - When a new side window is requested, any existing side window
+      //     must be closed first (including all its descendants).
+      //
+      // Previously, only side windows with isMatchCode === true were replaced.
+      // Now, ANY existing side window is replaced when a new one is created.
+      // ---------------------------------------------------------------------
+
+      // Side: replace any existing side window
+      if (type === "side") {
+        const existingMatchSide = Array.from(self.wins.values()).find(
+          (w) => w.type === "side"
+        );
+
         if (existingMatchSide) {
           const toRemove = [existingMatchSide.id, ...getAllDescendants(existingMatchSide.id, self.wins)];
           toRemove.forEach((targetId) => {

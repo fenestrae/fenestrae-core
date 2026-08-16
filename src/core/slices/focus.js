@@ -5,9 +5,26 @@
 
 import { produce } from "immer";
 import { externalWindowInstances } from "./lifecycle";
-import {getLaunchpadId} from "../index"
+import { getLaunchpadId } from "../index"
 
 export const createFocusSlice = (set, get) => ({
+
+  /**
+    * setFocus:
+    * Cuando una TAB se activa, busca la última ventana secundaria
+    */
+  setFocus: (winId) => set(produce((self) => {
+    const win = self.wins.get(winId);
+    if (!win) return;
+
+    self.activeWinId = winId;
+
+    self.winOrder = self.winOrder.filter((oid) => oid !== winId);
+    self.winOrder.push(winId);
+
+    win.visible = true; 
+  })),
+
   setActiveWinId: (id) => set(produce((self) => {
     const targetWin = self.wins.get(id);
     if (!targetWin) return;
@@ -43,10 +60,10 @@ export const createFocusSlice = (set, get) => ({
 
     // Recalculate visibility for all windows
     const checkVisibility = (win) => {
-      if (win.id ===getLaunchpadId()) return true;
-      if (win.type === "top")  return true;
+      if (win.id === getLaunchpadId()) return true;
+      if (win.type === "top") return true;
       if (win.type === "side") return true;
-      if (win.type === "ext")  return true;
+      if (win.type === "ext") return true;
 
       if (win.type === "modal" || win.type === "float" || win.type === "panel") {
         let runner = win;
@@ -68,6 +85,29 @@ export const createFocusSlice = (set, get) => ({
     };
 
     self.wins.forEach((win) => { win.visible = checkVisibility(win); });
+
+    if (targetWin.type === "tab") {
+      const focusableTypes = new Set(["float", "modal", "side", "panel"]);
+      const { wins, winOrder, activeTabId } = self;
+
+      let lastChild = null;
+
+      for (let i = winOrder.length - 1; i >= 0; i--) {
+        const wid = winOrder[i];
+        const w = wins.get(wid);
+        if (!w) continue;
+
+        if (focusableTypes.has(w.type) && w.parentId === activeTabId) {
+          lastChild = w.id;
+          break;
+        }
+      }
+
+      if (lastChild) {
+        get().setFocus(lastChild);
+      }
+    }
+
   })),
 
   setVisible: (id, isVisible) => set(produce((self) => {
@@ -115,5 +155,10 @@ export const createFocusSlice = (set, get) => ({
       current = wins.get(current.parentId);
     }
     return current?.type === "tab" ? current.id : getLaunchpadId();
+  },
+    getActiveWin: () => {
+    const {  activeWinId } = get();
+    let current = wins.get(activeWinId);
+    return current.id ;
   },
 });

@@ -39,7 +39,7 @@ The logo —a classic window with organic lines inspired by **Gaudí**— repres
 
 ## What is Fenestrae (version 0.1.1)
 
-Version **0.1.1** is a **workspace manager** that brings back capabilities the modern web lost:
+Version **0.2.1** is a **workspace manager** that brings back capabilities the modern web lost:
 
 - ✅ **Window management**
 - ✅ **Real multitasking**
@@ -67,6 +67,13 @@ Version **0.1.1** is a **workspace manager** that brings back capabilities the m
 - 🔹 Deep process persistence
 - 🔹 Intelligent workspaces
 - 🔹 Total continuity
+
+
+## Contact & Support
+   fenestrae.ws@gmail.com
+
+## License
+Apache 2.0 — designed for adoption, extensibility, and enterprise integration.
 
 ---
 

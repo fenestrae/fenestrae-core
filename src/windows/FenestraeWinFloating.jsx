@@ -1,15 +1,15 @@
 import React, { useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
-import FenestraeWinRenderer from "./FenestraeWinRenderer"; // 🔹 Vinculación al renderer unificado
-import FenestraeButton from "../components/FenestraeButton"; // 🔹 Vinculación al botón unificado
+import FenestraeWinRenderer from "./FenestraeWinRenderer";
+import FenestraeButton from "../components/FenestraeButton";
 import { useDraggable, ResizeHandles, useResizable } from "./Useresizeble";
 import { winStore } from "../core";
 
 const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWinId }) => {
-  const self = win; // Manteniendo la convención de contexto 'self'
+  const self = win;
 
-  // 🔹 Selectores de Zustand atómicos (evitan renderizados innecesarios)
+  // 🔹 Selectores de Zustand atómicos
   const updateWinLayout = winStore((s) => s.updateWinLayout);
   const closeWin = winStore((s) => s.closeWin);
   const minimizeWin = winStore((s) => s.minimizeWin);
@@ -39,18 +39,15 @@ const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWin
     (pos) => updateWinLayout(self.id, { x: Math.round(pos.x), y: Math.round(pos.y) })
   );
 
-  // 4. Lógica de renderizado combinada (Flotación estricta y reactiva)
+  // 4. Lógica de renderizado combinada
   const finalX = isResizing ? currentX + posAdj.x : position.x;
   const finalY = isResizing ? currentY + posAdj.y : position.y;
-  
-  // Si se está ejecutando un redimensionamiento manual por gestos, usamos el tamaño del hook.
-  // Si está en reposo o auto-calculándose por metadata, mandan las propiedades del store de forma directa.
   const finalW = isResizing ? size.width : currentW;
   const finalH = isResizing ? size.height : currentH;
 
   const contentRef = useRef(null);
 
-  // 5. Auto-ajuste de dimensiones reactivo al contenido interno (Desacoplado vía RAF)
+  // 5. Auto-ajuste de dimensiones reactivo al contenido interno
   useEffect(() => {
     if (!self.autoSize || self.state === "maximized") return;
 
@@ -60,14 +57,12 @@ const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWin
       for (let entry of entries) {
         const { width, height } = entry.target.getBoundingClientRect();
 
-        // 45px de cabecera estándar + Margen de seguridad perimetral
         const targetWidth = Math.ceil(width + 10);
         const targetHeight = Math.ceil(height + 45);
 
         const maxWidth = window.innerWidth * 0.95;
         const maxHeight = window.innerHeight * 0.95;
 
-        // Desacoplamos del bucle de layout síncrono del navegador para evitar Layout Thrashing
         rafId = requestAnimationFrame(() => {
           updateWinLayout(self.id, {
             width: Math.min(targetWidth, maxWidth),
@@ -88,7 +83,7 @@ const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWin
 
   const isTopWindow = self.type === "top";
 
-  // Composición de estilos para la capa flotante acelerada por hardware
+  // Composición de estilos para la capa flotante
   const combinedStyles = {
     width: `${finalW}px`,
     height: `${finalH}px`,
@@ -116,24 +111,35 @@ const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWin
     <div
       style={combinedStyles}
       className={clsx(
-        "shadow-2xl border rounded-lg overflow-hidden transition-shadow duration-150",
-        "bg-[var(--color-window-bg,#ffffff)] border-[var(--color-window-border,#cbd5e1)]",
-        isActive ? "ring-2 ring-blue-500/50 shadow-blue-500/5" : "opacity-95"
+        // Estilos base con variables CSS
+        "shadow-2xl rounded-lg overflow-hidden transition-shadow duration-150",
+        "bg-[var(--color-window-bg,#ffffff)]",
+        "border border-[var(--color-window-border,#d1d5db)]",
+        // Estado activo vs inactivo
+        isActive 
+          ? "ring-2 ring-[var(--color-window-active-border,#0a6ed1)]/50 shadow-[var(--color-window-active-border,#0a6ed1)]/5" 
+          : "opacity-90"
       )}
       onMouseDown={handleFocus}
     >
-      {/* 🖥️ CABECERA DE VENTANA (Manejador de Arrastre) */}
+      {/* 🖥️ CABECERA DE VENTANA */}
       <div
         className="handle-movible px-3 py-1.5 flex justify-between items-center select-none cursor-move shrink-0 border-b"
         style={{
-          background: isActive
-            ? "var(--color-window-header, #1f2937)"
-            : "var(--color-window-header-inactive, #e2e8f0)",
+          // Fondo según estado activo/inactivo
+          backgroundColor: isActive
+            ? "var(--color-window-header, #1e293b)"
+            : "var(--color-window-header-inactive, #94a3b8)",
+          // Color de texto según estado
           color: isActive
             ? "var(--color-window-header-text, #ffffff)"
-            : "var(--color-window-header-inactive-text, #4b5563)",
-          borderColor: "var(--color-window-border, #cbd5e1)",
+            : "var(--color-window-header-inactive-text, #f1f5f9)",
+          // Borde inferior
+          borderBottomColor: "var(--color-window-border, #d1d5db)",
+          // Dirección (para soporte RTL)
           flexDirection: "var(--fn-header-direction, row)",
+          // Transición suave
+          transition: "background-color 150ms ease, color 150ms ease",
         }}
         onMouseDown={(e) => {
           handleFocus();
@@ -145,43 +151,53 @@ const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWin
         onDoubleClick={() => maximizeWin(self.id)}
       >
         {/* Identificador / Título */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          {/* Indicador de estado (activo/inactivo) */}
           <span
             className={clsx(
-              "w-2 h-2 rounded-full transition-colors duration-150",
-              isActive ? "bg-green-400" : "bg-gray-500"
+              "w-2 h-2 rounded-full transition-colors duration-150 shrink-0",
+              isActive 
+                ? "bg-[var(--color-fn-success,#22c55e)]" 
+                : "bg-[var(--color-fn-text-muted,#9ca3af)]"
             )}
           />
-          <span className="text-[11px] font-bold uppercase tracking-wider select-none">
+          <span className="text-[11px] font-bold uppercase tracking-wider select-none truncate">
             {self.title || "Ventana Flotante"}
           </span>
         </div>
 
-        {/* Barra de Controles Universales (Min, Max, Close) */}
-        <div className="flex items-center gap-1">
+        {/* 🔹 Barra de Controles - USANDO LAS NUEVAS VARIANTES */}
+        <div className="flex items-center gap-1 shrink-0 ml-2">
+          {/* Minimizar */}
           <FenestraeButton
-            variant="ghost"
+            className="fn-btn fn-btn-minimize"
             iconIndex={2}
             title="Minimizar"
+            size="md"
             onClick={(e) => {
               e.stopPropagation();
               minimizeWin(self.id);
             }}
           />
+
+          {/* Maximizar / Restaurar */}
           <FenestraeButton
-            variant="ghost"
-            iconIndex={self.state === "maximized" ? 3 : 4}
+            className="fn-btn fn-btn-maximize"
+            iconIndex={self.state === "maximized" ? 4 : 3}
             title={self.state === "maximized" ? "Restaurar" : "Maximizar"}
+            size="md"
             onClick={(e) => {
               e.stopPropagation();
               maximizeWin(self.id);
             }}
           />
+
+          {/* Cerrar */}
           <FenestraeButton
-            variant="ghost"
+            className="fn-btn fn-btn-close"
             iconIndex={1}
             title="Cerrar"
-            className="hover:bg-red-600 hover:text-white transition-colors duration-150"
+            size="md"
             onClick={(e) => {
               e.stopPropagation();
               closeWin(self.id);
@@ -190,11 +206,15 @@ const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWin
         </div>
       </div>
 
-      {/* 📄 CONTENEDOR DE CONTENIDO DE NEGOCIO */}
+      {/* 📄 CONTENEDOR DE CONTENIDO */}
       <div
         ref={contentRef}
-        className="flex-1 overflow-auto bg-[var(--color-window-content,#ffffff)] text-[var(--color-window-text,#1f2937)] min-h-0"
-        style={{ padding: "var(--spacing-window-padding, 1rem)" }}
+        className="flex-1 overflow-auto min-h-0"
+        style={{
+          backgroundColor: "var(--color-window-content, #fafafa)",
+          color: "var(--color-window-text, #1f2937)",
+          padding: "var(--spacing-window-padding, 1rem)",
+        }}
         onMouseDown={(e) => {
           handleFocus();
           e.stopPropagation();
@@ -203,7 +223,7 @@ const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWin
         <FenestraeWinRenderer win={self} closeWin={closeWin} />
       </div>
 
-      {/* 📐 MARCOS ACTIVOS DE REDIMENSIONAMIENTO (BORDES) */}
+      {/* 📐 MARCOS ACTIVOS DE REDIMENSIONAMIENTO */}
       {(isActive || isResizing) && (
         <ResizeHandles
           active={isActive}

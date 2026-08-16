@@ -1,9 +1,13 @@
 {
   "name": "fenestrae",
-  "version": "0.2.3",
+  "version": "0.2.6",
   "type": "module",
   "license": "Apache-2.0",
   "description": "The desktop window management experience the web always needed.",
+  "author": {
+    "name": "Toni Raventós",
+    "email": "fenestrae.ws@gmail.com"
+  },
   "main": "./dist/fenestrae.cjs.js",
   "module": "./dist/fenestrae.es.js",
   "style": "./dist/fenestrae.css",
@@ -40,6 +44,7 @@
     "prop-types": "^15.8.1",
     "react-icons": "^5.6.0",
     "tailwindcss": "^4.3.1",
+    "terser": "^5.49.2",
     "vite": "^7.2.5"
   }
 }

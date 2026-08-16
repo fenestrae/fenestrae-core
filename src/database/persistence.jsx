@@ -561,6 +561,11 @@ export const setWindow = async (winId, data) => {
     const workspace = sessionStorage.getItem("fenestrae_workspace");
     const sessionId = sessionStorage.getItem("fenestrae_session");
 
+      if (!sessionId || sessionId === "null") {
+     
+        return;
+    }
+
     const userId = `${workspace}::${user}`;
     const windowsStore = await dbTable(STORE_WINDOWS);
 

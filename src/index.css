@@ -1,79 +1,383 @@
 @import "tailwindcss";
 
-
 @theme {
   /* ==========================================================================
-     1. VARIABLES GLOBALES / FALLBACKS DE CONTENEDOR (CONTRATO BASE ERP)
+     1. VARIABLES GLOBALES / FALLBACKS DE CONTENEDOR
      ========================================================================== */
- --color-window-bg: var(--win-bg, #ffffff);
-  --color-window-content: var(--win-content, #fafafa);
-  --color-window-border: var(--win-border, #d1d5db);
-  --color-window-text: var(--win-text, #1f2937);
-  --color-fn-canvas: var(--fn-canvas, #f3f4f6);
-
-  /* 1. AGREGADO: ESTADOS DE FOCO PARA VENTANAS FLOTANTES (MDI) */
-  --color-fn-float-header-active: var(--fn-float-header-active, #1e293b);
-  --color-fn-float-header-inactive: var(--fn-float-header-inactive, #cbd5e1);
-  --color-fn-float-text-active: var(--fn-float-text-active, #ffffff);
-  --color-fn-float-text-inactive: var(--fn-float-text-inactive: #64748b);
-
-  /* 2. ENRIQUECIMIENTO: RADIOS INDEPENDIENTES */
-  --radius-window-radius: var(--win-radius, 8px);          /* Estructura de ventanas */
-  --radius-fn-tab-radius: var(--fn-tab-radius, 6px);        /* Las pestañas */
-  --radius-fn-btn-radius: var(--fn-btn-radius, 4px);        /* Los botones de control */
-
-  /* 3. AGREGADO: MAQUETACIÓN E INDEPENDENCIA DE PESTAÑAS (Estilo Mac vs Windows) */
-  --fn-tab-direction: var(--tab-direction, row);            /* 'row-reverse' para poner el botón X a la izquierda tipo Mac */
-  --fn-tab-height: var(--tab-height, 36px);
-  --fn-tab-indicator-weight: var(--tab-indicator-weight, 0px); /* Para la línea inferior azul gruesa típica de SAP Fiori */
-  --color-fn-tab-indicator: var(--fn-tab-indicator, #0a6ed1);
-
-  /* 4. SUBSISTEMA DE BOTONES DE CONTROL (Aquí está la magia que te faltaba) */
-  --fn-btn-control-size: var(--fn-btn-size, 16px);
-  /* Botón Cerrar (X) */
-  --color-fn-btn-close-bg: var(--fn-btn-close-bg, transparent);
-  --color-fn-btn-close-text: var(--fn-btn-close-text, #1f2937);
-  --color-fn-btn-close-hover: var(--fn-btn-close-hover, #ef4444);
-  --color-fn-btn-close-hover-text: var(--fn-btn-close-hover-text, #ffffff);
-
-  /* Botones Acción (Minimizar/Maximizar) */
-  --color-fn-btn-action-bg: var(--fn-btn-action-bg, transparent);
-  --color-fn-btn-action-text: var(--fn-btn-action-text, #1f2937);
-  --color-fn-btn-action-hover: var(--fn-btn-action-hover, rgba(0, 0, 0, 0.06));
-  --color-fn-btn-action-hover-text: var(--fn-btn-action-hover-text, #1f2937)
-  /* ==========================================================================
-     4. COMPONENTES: CAPAS CAPTURADAS / SUPERPUESTAS (MODAL & FLOATING)
-     ========================================================================== */
-  /* Ventanas Modales Clásicas (CTWinModal) */
-  --color-fn-modal-bg: var(--fn-modal-bg, var(--win-bg, #ffffff));
-  --color-fn-modal-header: var(--fn-modal-header, var(--win-header, #0a6ed1));
-  --color-fn-modal-header-text: var(--fn-modal-header-text, var(--win-header-text, #ffffff));
-  --color-fn-modal-border: var(--fn-modal-border, var(--win-border, #d1d5db));
-  --color-fn-modal-shadow: var(--fn-modal-shadow, 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04));
-
-  /* Ventanas Flotantes Libres / MDI (CTWinFloating) */
-  --color-fn-float-bg: var(--fn-float-bg, var(--win-bg, #ffffff));
-  --color-fn-float-header: var(--fn-float-header, #1e293b); /* Por defecto gris pizarra para diferenciarlas de las tabs */
-  --color-fn-float-header-text: var(--fn-float-header-text, var(--win-header-text, #ffffff));
-  --color-fn-float-border: var(--fn-float-border, var(--win-border, #cbd5e1));
-  --color-fn-float-shadow: var(--fn-float-shadow, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05));
+  --color-window-bg: var(--color-window-bg, #ffffff);
+  --color-window-content: var(--color-window-content, #fafafa);
+  --color-window-border: var(--color-window-border, #d1d5db);
+  --color-window-text: var(--color-window-text, #1f2937);
+  --fn-canvas: var(--fn-canvas, #f3f4f6);
 
   /* ==========================================================================
-     5. COMPONENTES: CAPAS DE CONTORNO ACORDIONADAS (TOP, SIDE & PANEL)
+     2. ESTADOS DE FOCO PARA VENTANAS FLOTANTES (MDI)
      ========================================================================== */
-  /* Paneles Superiores fijos o desanclados (CTWinTop / Barras de herramientas) */
-  --color-fn-top-bg: var(--fn-top-bg, var(--win-content, #fafafa));
-  --color-fn-top-border: var(--fn-top-border, var(--win-border, #e2e8f0));
-  --color-fn-top-text: var(--fn-top-text, var(--win-text, #1f2937));
+  --color-window-header: var(--color-window-header, #1e293b);
+  --color-window-header-text: var(--color-window-header-text, #ffffff);
+  --color-window-header-inactive: var(--color-window-header-inactive, #94a3b8);
+  --color-window-header-inactive-text: var(--color-window-header-inactive-text, #f1f5f9);
+  --color-window-active-border: var(--color-window-active-border, #0a6ed1);
+  --spacing-window-padding: var(--spacing-window-padding, 0rem);
 
-  /* Paneles Laterales de Información o Menús (CTWinSide) */
-  --color-fn-side-bg: var(--fn-side-bg, var(--win-bg, #ffffff));
-  --color-fn-side-border: var(--fn-side-border, var(--win-border, #d1d5db));
-  --color-fn-side-header: var(--fn-side-header, var(--win-content, #f3f4f6));
-  --color-fn-side-header-text: var(--fn-side-header-text, var(--win-text, #1f2937));
+  /* ==========================================================================
+     3. RADIOS INDEPENDIENTES
+     ========================================================================== */
+  --radius-window-radius: var(--radius-window-radius, 8px);
+  --radius-fn-tab-radius: var(--radius-fn-tab-radius, 6px);
+  --radius-fn-btn-radius: var(--radius-fn-btn-radius, 4px);
 
-  /* Paneles de Configuración o Consolas (CTWinPanel) */
-  --color-fn-panel-bg: var(--fn-panel-bg, #f8fafc);
-  --color-fn-panel-border: var(--fn-panel-border, var(--win-border, #cbd5e1));
-  --color-fn-panel-text: var(--fn-panel-text, var(--win-text, #334155));
+  /* ==========================================================================
+     4. MAQUETACIÓN E INDEPENDENCIA DE PESTAÑAS
+     ========================================================================== */
+  --fn-tab-direction: var(--fn-tab-direction, row);
+  --fn-tab-height: var(--fn-tab-height, 36px);
+  --fn-tab-min-width: var(--fn-tab-min-width, 120px);
+  --fn-tab-max-width: var(--fn-tab-max-width, 220px);
+  --fn-tab-indicator-weight: var(--fn-tab-indicator-weight, 0px);
+  --color-fn-tab-indicator: var(--color-fn-tab-indicator, #0a6ed1);
+  --color-fn-tab-bg-active: var(--color-fn-tab-bg-active, #0a6ed1);
+  --color-fn-tab-text-active: var(--color-fn-tab-text-active, #ffffff);
+  --color-fn-tab-bg-inactive: var(--color-fn-tab-bg-inactive, #e5e7eb);
+  --color-fn-tab-text-inactive: var(--color-fn-tab-text-inactive, #4b5563);
+  --color-fn-tab-border: var(--color-fn-tab-border, #d1d5db);
+
+  /* ==========================================================================
+     5. DOCKING ZONES
+     ========================================================================== */
+  --fn-dock-top-height: var(--fn-dock-top-height, 32px);
+  --fn-dock-bottom-height: var(--fn-dock-bottom-height, 200px);
+  --fn-dock-left-width: var(--fn-dock-left-width, 250px);
+  --fn-dock-right-width: var(--fn-dock-right-width, 250px);
+
+  /* ==========================================================================
+     6. 🆕 BOTONES DE CONTROL DE VENTANA (COMPLETO)
+     ========================================================================== */
+  --fn-btn-control-size: var(--fn-btn-control-size, 16px);
+  --radius-fn-btn-radius: var(--radius-fn-btn-radius, 4px);
+  
+  --color-fn-btn-action-text: var(--color-fn-btn-action-text, inherit);
+  
+  /* Contenido de los botones */
+  --fn-btn-close-content: var(--fn-btn-close-content, "✕");
+  --fn-btn-minimize-content: var(--fn-btn-minimize-content, "─");
+  --fn-btn-maximize-content: var(--fn-btn-maximize-content, "□");
+  --fn-btn-restore-content: var(--fn-btn-restore-content, "❐");
+  
+  /* Botón Cerrar */
+  --color-fn-btn-close-bg: var(--color-fn-btn-close-bg, transparent);
+  --color-fn-btn-close-border: var(--color-fn-btn-close-border, transparent);
+  --color-fn-btn-close-hover: var(--color-fn-btn-close-hover, #ef4444);
+  --color-fn-btn-close-hover-text: var(--color-fn-btn-close-hover-text, #ffffff);
+  
+  /* Botón Minimizar */
+  --color-fn-btn-minimize-bg: var(--color-fn-btn-minimize-bg, transparent);
+  --color-fn-btn-minimize-border: var(--color-fn-btn-minimize-border, transparent);
+  --color-fn-btn-minimize-hover: var(--color-fn-btn-minimize-hover, #f59e0b);
+  --color-fn-btn-minimize-hover-text: var(--color-fn-btn-minimize-hover-text, #ffffff);
+  
+  /* Botón Maximizar */
+  --color-fn-btn-maximize-bg: var(--color-fn-btn-maximize-bg, transparent);
+  --color-fn-btn-maximize-border: var(--color-fn-btn-maximize-border, transparent);
+  --color-fn-btn-maximize-hover: var(--color-fn-btn-maximize-hover, #22c55e);
+  --color-fn-btn-maximize-hover-text: var(--color-fn-btn-maximize-hover-text, #ffffff);
+
+  /* ==========================================================================
+     7. COLORES SEMÁNTICOS
+     ========================================================================== */
+  --color-fn-success: var(--color-fn-success, #22c55e);
+  --color-fn-success-hover: var(--color-fn-success-hover, #16a34a);
+  --color-fn-success-bg: var(--color-fn-success-bg, #dcfce7);
+  --color-fn-success-text: var(--color-fn-success-text, #166534);
+  --color-fn-success-border: var(--color-fn-success-border, #86efac);
+
+  --color-fn-warning: var(--color-fn-warning, #f59e0b);
+  --color-fn-warning-hover: var(--color-fn-warning-hover, #d97706);
+  --color-fn-warning-bg: var(--color-fn-warning-bg, #fef3c7);
+  --color-fn-warning-text: var(--color-fn-warning-text, #92400e);
+  --color-fn-warning-border: var(--color-fn-warning-border, #fcd34d);
+
+  --color-fn-error: var(--color-fn-error, #ef4444);
+  --color-fn-error-hover: var(--color-fn-error-hover, #dc2626);
+  --color-fn-error-bg: var(--color-fn-error-bg, #fee2e2);
+  --color-fn-error-text: var(--color-fn-error-text, #991b1b);
+  --color-fn-error-border: var(--color-fn-error-border, #fca5a5);
+
+  --color-fn-info: var(--color-fn-info, #3b82f6);
+  --color-fn-info-hover: var(--color-fn-info-hover, #2563eb);
+  --color-fn-info-bg: var(--color-fn-info-bg, #dbeafe);
+  --color-fn-info-text: var(--color-fn-info-text, #1e40af);
+  --color-fn-info-border: var(--color-fn-info-border, #93c5fd);
+
+  /* ==========================================================================
+     8. TEXTOS
+     ========================================================================== */
+  --color-fn-text-primary: var(--color-fn-text-primary, #1a1a1a);
+  --color-fn-text-secondary: var(--color-fn-text-secondary, #4b5563);
+  --color-fn-text-tertiary: var(--color-fn-text-tertiary, #6b7280);
+  --color-fn-text-muted: var(--color-fn-text-muted, #9ca3af);
+  --color-fn-text-inverse: var(--color-fn-text-inverse, #ffffff);
+  --color-fn-text-link: var(--color-fn-text-link, #0a6ed1);
+  --color-fn-text-link-hover: var(--color-fn-text-link-hover, #0056b3);
+  --color-fn-text-placeholder: var(--color-fn-text-placeholder, #9ca3af);
+
+  /* ==========================================================================
+     9. FONDOS
+     ========================================================================== */
+  --color-fn-bg-primary: var(--color-fn-bg-primary, #ffffff);
+  --color-fn-bg-secondary: var(--color-fn-bg-secondary, #f3f4f6);
+  --color-fn-bg-tertiary: var(--color-fn-bg-tertiary, #e5e7eb);
+  --color-fn-bg-inverse: var(--color-fn-bg-inverse, #1f2937);
+  --color-fn-bg-elevated: var(--color-fn-bg-elevated, #ffffff);
+  --color-fn-bg-muted: var(--color-fn-bg-muted, #f9fafb);
+  --color-fn-bg-hover: var(--color-fn-bg-hover, rgba(0,0,0,0.05));
+  --color-fn-bg-active: var(--color-fn-bg-active, rgba(0,0,0,0.1));
+
+  /* ==========================================================================
+     10. BORDES
+     ========================================================================== */
+  --color-fn-border-light: var(--color-fn-border-light, #e5e7eb);
+  --color-fn-border-medium: var(--color-fn-border-medium, #d1d5db);
+  --color-fn-border-heavy: var(--color-fn-border-heavy, #9ca3af);
+  --color-fn-border-focus: var(--color-fn-border-focus, #3b82f6);
+  --color-fn-divider: var(--color-fn-divider, #e5e7eb);
+
+  /* ==========================================================================
+     11. SOMBRAS
+     ========================================================================== */
+  --shadow-fn-sm: var(--shadow-fn-sm, 0 1px 2px rgba(0,0,0,0.05));
+  --shadow-fn-md: var(--shadow-fn-md, 0 4px 6px rgba(0,0,0,0.07));
+  --shadow-fn-lg: var(--shadow-fn-lg, 0 10px 15px rgba(0,0,0,0.1));
+  --shadow-fn-xl: var(--shadow-fn-xl, 0 20px 25px rgba(0,0,0,0.15));
+  --shadow-fn-inner: var(--shadow-fn-inner, inset 0 2px 4px rgba(0,0,0,0.06));
+  --shadow-fn-focus: var(--shadow-fn-focus, 0 0 0 3px rgba(59,130,246,0.3));
+
+  /* ==========================================================================
+     12. DISABLED
+     ========================================================================== */
+  --color-fn-disabled-bg: var(--color-fn-disabled-bg, #e5e7eb);
+  --color-fn-disabled-text: var(--color-fn-disabled-text, #9ca3af);
+  --color-fn-disabled-border: var(--color-fn-disabled-border, #d1d5db);
+  --color-fn-disabled-opacity: var(--color-fn-disabled-opacity, 0.5);
+
+  /* ==========================================================================
+     13. SCROLLBAR
+     ========================================================================== */
+  --color-fn-scrollbar-track: var(--color-fn-scrollbar-track, #f1f1f1);
+  --color-fn-scrollbar-thumb: var(--color-fn-scrollbar-thumb, #c1c1c1);
+  --color-fn-scrollbar-thumb-hover: var(--color-fn-scrollbar-thumb-hover, #a8a8a8);
+
+  /* ==========================================================================
+     14. RADIUS ADICIONALES
+     ========================================================================== */
+  --radius-fn-sm: var(--radius-fn-sm, 2px);
+  --radius-fn-md: var(--radius-fn-md, 4px);
+  --radius-fn-lg: var(--radius-fn-lg, 8px);
+  --radius-fn-xl: var(--radius-fn-xl, 12px);
+  --radius-fn-full: var(--radius-fn-full, 9999px);
+
+  /* ==========================================================================
+     15. SPACING
+     ========================================================================== */
+  --spacing-fn-xs: var(--spacing-fn-xs, 0.25rem);
+  --spacing-fn-sm: var(--spacing-fn-sm, 0.5rem);
+  --spacing-fn-md: var(--spacing-fn-md, 0.75rem);
+  --spacing-fn-lg: var(--spacing-fn-lg, 1rem);
+  --spacing-fn-xl: var(--spacing-fn-xl, 1.5rem);
+  --spacing-fn-2xl: var(--spacing-fn-2xl, 2rem);
+
+  /* ==========================================================================
+     16. TRANSITIONS
+     ========================================================================== */
+  --transition-fn-fast: var(--transition-fn-fast, 100ms ease);
+  --transition-fn-base: var(--transition-fn-base, 200ms ease);
+  --transition-fn-slow: var(--transition-fn-slow, 300ms ease);
+
+  /* ==========================================================================
+     17. ESTADOS DE SELECCIÓN
+     ========================================================================== */
+  --color-fn-selection-bg: var(--color-fn-selection-bg, #3b82f6);
+  --color-fn-selection-text: var(--color-fn-selection-text, #ffffff);
+  --color-fn-highlight: var(--color-fn-highlight, #fef08a);
+  --color-fn-focus-ring: var(--color-fn-focus-ring, #3b82f6);
+  --color-fn-focus-ring-offset: var(--color-fn-focus-ring-offset, #ffffff);
+
+  /* ==========================================================================
+     18. COMPONENTES: MODAL & FLOATING
+     ========================================================================== */
+  --color-fn-modal-bg: var(--color-fn-modal-bg, var(--color-window-bg, #ffffff));
+  --color-fn-modal-header: var(--color-fn-modal-header, var(--color-window-header, #0a6ed1));
+  --color-fn-modal-header-text: var(--color-fn-modal-header-text, var(--color-window-header-text, #ffffff));
+  --color-fn-modal-border: var(--color-fn-modal-border, var(--color-window-border, #d1d5db));
+  --color-fn-modal-shadow: var(--color-fn-modal-shadow, 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04));
+
+  --color-fn-float-bg: var(--color-fn-float-bg, var(--color-window-bg, #ffffff));
+  --color-fn-float-header: var(--color-fn-float-header, #1e293b);
+  --color-fn-float-header-text: var(--color-fn-float-header-text, var(--color-window-header-text, #ffffff));
+  --color-fn-float-border: var(--color-fn-float-border, var(--color-window-border, #cbd5e1));
+  --color-fn-float-shadow: var(--color-fn-float-shadow, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05));
+
+  /* ==========================================================================
+     19. COMPONENTES: TOP, SIDE & PANEL
+     ========================================================================== */
+  --color-fn-top-bg: var(--color-fn-top-bg, var(--color-window-content, #fafafa));
+  --color-fn-top-border: var(--color-fn-top-border, var(--color-window-border, #e2e8f0));
+  --color-fn-top-text: var(--color-fn-top-text, var(--color-window-text, #1f2937));
+
+  --color-fn-side-bg: var(--color-fn-side-bg, var(--color-window-bg, #ffffff));
+  --color-fn-side-border: var(--color-fn-side-border, var(--color-window-border, #d1d5db));
+  --color-fn-side-header: var(--color-fn-side-header, var(--color-window-content, #f3f4f6));
+  --color-fn-side-header-text: var(--color-fn-side-header-text, var(--color-window-text, #1f2937));
+
+  --color-fn-panel-bg: var(--color-fn-panel-bg, #f8fafc);
+  --color-fn-panel-border: var(--color-fn-panel-border, var(--color-window-border, #cbd5e1));
+  --color-fn-panel-text: var(--color-fn-panel-text, var(--color-window-text, #334155));
+}
+
+/* ============================================
+   🪟 BOTONES DE CONTROL DE FENESTRAE
+   (SOLO USA VARIABLES CSS - SIN SELECTORES POR TEMA)
+   ============================================ */
+
+/* 🔹 Base para botones de Fenestrae */
+.fn-btn {
+  all: unset;
+  
+  width: var(--fn-btn-control-size, 18px);
+  height: var(--fn-btn-control-size, 18px);
+  min-width: var(--fn-btn-control-size, 18px);
+  min-height: var(--fn-btn-control-size, 18px);
+  
+  border-radius: var(--radius-fn-btn-radius, 4px);
+  
+  color: var(--color-fn-btn-action-text, inherit);
+  
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: calc(var(--fn-btn-control-size, 18px) * 0.6);
+  font-weight: 400;
+  line-height: 1;
+  
+  cursor: pointer;
+  transition: all var(--transition-fn-fast, 150ms ease);
+  user-select: none;
+  
+  background-color: transparent;
+  border: 1px solid transparent;
+  opacity: 0.7;
+  padding: 0;
+  
+  transform: none !important;
+  box-shadow: none !important;
+  text-decoration: none;
+  outline: none;
+}
+.fn-btn svg {
+  width: calc(var(--fn-btn-control-size, 18px) * 0.8);
+  height: calc(var(--fn-btn-control-size, 18px) * 0.8);
+}
+
+.fn-btn:hover {
+  opacity: 1;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.fn-btn:disabled {
+  opacity: var(--color-fn-disabled-opacity, 0.3) !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+.fn-btn:focus-visible {
+  outline: 2px solid var(--color-fn-focus-ring, #3b82f6);
+  outline-offset: 2px;
+}
+
+/* 🔴 Botón Cerrar */
+.fn-btn-close {
+  background-color: var(--color-fn-btn-close-bg, transparent);
+  color: var(--color-fn-btn-action-text, inherit);
+  border-color: var(--color-fn-btn-close-border, transparent);
+}
+
+.fn-btn-close::before {
+  content: var(--fn-btn-close-content, "✕");
+}
+
+.fn-btn-close:hover {
+  background-color: var(--color-fn-btn-close-hover, #ef4444);
+  color: var(--color-fn-btn-close-hover-text, #ffffff);
+  border-color: var(--color-fn-btn-close-hover, #ef4444);
+  opacity: 1;
+}
+
+/* 📉 Botón Minimizar */
+.fn-btn-minimize {
+  background-color: var(--color-fn-btn-minimize-bg, transparent);
+  color: var(--color-fn-btn-action-text, inherit);
+  border-color: var(--color-fn-btn-minimize-border, transparent);
+}
+
+.fn-btn-minimize::before {
+  content: var(--fn-btn-minimize-content, "─");
+}
+
+.fn-btn-minimize:hover {
+  background-color: var(--color-fn-btn-minimize-hover, var(--color-fn-warning, #f59e0b));
+  color: var(--color-fn-btn-minimize-hover-text, #ffffff);
+  border-color: var(--color-fn-btn-minimize-hover, var(--color-fn-warning, #f59e0b));
+  opacity: 1;
+}
+
+/* 📈 Botón Maximizar */
+.fn-btn-maximize {
+  background-color: var(--color-fn-btn-maximize-bg, transparent);
+  color: var(--color-fn-btn-action-text, inherit);
+  border-color: var(--color-fn-btn-maximize-border, transparent);
+}
+
+.fn-btn-maximize::before {
+  content: var(--fn-btn-maximize-content, "□");
+}
+
+.fn-btn-maximize:hover {
+  background-color: var(--color-fn-btn-maximize-hover, var(--color-fn-success, #22c55e));
+  color: var(--color-fn-btn-maximize-hover-text, #ffffff);
+  border-color: var(--color-fn-btn-maximize-hover, var(--color-fn-success, #22c55e));
+  opacity: 1;
+}
+
+/* 🔄 Botón Restaurar */
+.fn-btn-restore {
+  background-color: var(--color-fn-btn-maximize-bg, transparent);
+  color: var(--color-fn-btn-action-text, inherit);
+  border-color: var(--color-fn-btn-maximize-border, transparent);
+}
+
+.fn-btn-restore::before {
+  content: var(--fn-btn-restore-content, "❐");
+}
+
+.fn-btn-restore:hover {
+  background-color: var(--color-fn-btn-maximize-hover, var(--color-fn-info, #3b82f6));
+  color: var(--color-fn-btn-maximize-hover-text, #ffffff);
+  border-color: var(--color-fn-btn-maximize-hover, var(--color-fn-info, #3b82f6));
+  opacity: 1;
+}
+
+/* Botón oculto hasta que el usuario pasa el ratón por encima del tab */
+.fn-btn-hidden-hover {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+
+/* Cuando el tab (que tiene .group) recibe hover → mostrar botón */
+.group:hover .fn-btn-hidden-hover {
+  opacity: 1;
+  pointer-events: auto;
 }

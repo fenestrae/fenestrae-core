@@ -47,8 +47,8 @@ const FenestraeDesktopTab = ({ win: w, isActive, setActiveWinId, closeWin }) => 
       {w.closable !== false && !isLaunchpad && (
         <FenestraeButton
           iconIndex={1}
-          title="Cerrar pestaña"
-          className="ml-2 mr-1 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-150"
+          title="close Tab"
+          className="fn-btn fn-btn-close fn-btn-hidden-hover"
           onClick={(e) => {
             e.stopPropagation();
             closeWin(w.id);

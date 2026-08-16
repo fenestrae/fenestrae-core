@@ -3,11 +3,14 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import { winStore } from "../core";
 import FenestraeWinRenderer from "./FenestraeWinRenderer"; // 🔹 Renderer unificado
+import FenestraeButton from "../components/FenestraeButton";
+import { useResizable, ResizeHandles } from "./Useresizeble";
+
 
 const ZONE_BASE_CONFIG = {
-  left:   { axis: "vertical",  cls: "h-full flex-shrink-0 flex-row",         resizeDir: "e" },
-  right:  { axis: "vertical",  cls: "h-full flex-shrink-0 flex-row-reverse", resizeDir: "w" },
-  top:    { axis: "horizontal", cls: "w-full flex-shrink-0 flex-col",         resizeDir: "s" },
+  left: { axis: "vertical", cls: "h-full flex-shrink-0 flex-row", resizeDir: "e" },
+  right: { axis: "vertical", cls: "h-full flex-shrink-0 flex-row-reverse", resizeDir: "w" },
+  top: { axis: "horizontal", cls: "w-full flex-shrink-0 flex-col", resizeDir: "s" },
   bottom: { axis: "horizontal", cls: "w-full flex-shrink-0 flex-col-reverse", resizeDir: "n" },
 };
 
@@ -63,9 +66,9 @@ const FenestraeDockZone = React.memo(({ zone, initialSize }) => {
       const deltaY = moveEvent.clientY - startY;
       let newSize = startSize;
 
-      if (zone === "left")   newSize = startSize + deltaX;
-      if (zone === "right")  newSize = startSize - deltaX;
-      if (zone === "top")    newSize = startSize + deltaY;
+      if (zone === "left") newSize = startSize + deltaX;
+      if (zone === "right") newSize = startSize - deltaX;
+      if (zone === "top") newSize = startSize + deltaY;
       if (zone === "bottom") newSize = startSize - deltaY;
 
       const minSize = 40; // Un poco más de margen para evitar colapsos visuales de headers
@@ -86,7 +89,7 @@ const FenestraeDockZone = React.memo(({ zone, initialSize }) => {
   };
 
   const hasContent = dockedWins.length > 0;
-  
+
   // Estilo adaptativo C++Builder/Delphi
   const sizeStyle = hasContent
     ? { [config.axis === "vertical" ? "width" : "height"]: `${customSize}px` }
@@ -102,10 +105,10 @@ const FenestraeDockZone = React.memo(({ zone, initialSize }) => {
       )}
     >
       <div className={clsx("flex-1 flex min-w-0 min-h-0 relative", config.axis === "vertical" ? "flex-col" : "flex-row")}>
-        
+
         {/* RECTÁNGULO DE PREVISUALIZACIÓN AZUL PROFESIONAL */}
         {hint && !hasContent && (
-          <div 
+          <div
             style={{
               position: 'absolute',
               top: 0,
@@ -160,7 +163,7 @@ const FenestraeDockedWindow = React.memo(({ win, config, closeWin }) => {
       )}
     >
       {/* Encabezado con soporte completo de variables de Contrato Visual */}
-      <div 
+      <div
         className="h-6 flex items-center justify-between px-2 flex-shrink-0 border-b border-[var(--color-window-border,#cbd5e1)] bg-[var(--color-window-header,#1f2937)]"
       >
         <div className="flex items-center gap-1.5 min-w-0">
@@ -172,31 +175,35 @@ const FenestraeDockedWindow = React.memo(({ win, config, closeWin }) => {
 
         <div className="flex items-center gap-0.5">
           {/* Botón Desacoplar (Undock) */}
-          <button
-            onClick={() => undockWin(win.id)}
-            className="flex items-center justify-center w-4 h-4 rounded hover:bg-white/10 text-gray-300 hover:text-white transition-all"
-            title="Desacoplar Ventana"
-          >
-            <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 fill-current">
-              <path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/>
-            </svg>
-          </button>
-          
+
+          <FenestraeButton
+            className="fn-btn fn-btn-minimize"
+            iconIndex={6}
+            title="Detach Window"
+            size="md"
+            onClick={(e) => {
+              e.stopPropagation();
+              undockWin(win.id);
+            }}
+          />
+
           {/* Botón Cerrar (Close) */}
-          <button
-            onClick={() => closeWin(win.id)}
-            className="flex items-center justify-center w-4 h-4 rounded hover:bg-red-600 text-gray-300 hover:text-white transition-all"
-            title="Cerrar"
-          >
-            <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 fill-current">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-            </svg>
-          </button>
+
+          <FenestraeButton
+            className="fn-btn fn-btn-close"
+            iconIndex={1}
+            title="Close"
+            size="md"
+            onClick={(e) => {
+              e.stopPropagation();
+              closeWin(win.id);
+            }}
+          />
         </div>
       </div>
 
       {/* Área de negocio interna */}
-      <div 
+      <div
         className="flex-1 overflow-auto bg-[var(--color-window-content,#ffffff)] text-[var(--color-window-text,#1f2937)] min-h-0"
         style={{ padding: "var(--spacing-window-padding, 0.5rem)" }}
       >

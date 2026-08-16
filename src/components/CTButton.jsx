@@ -1,8 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Icono from "./CTIcons";
-import clsx from "clsx"; // Recomiendo usar clsx para limpiar la lógica de clases
-import "./CTButton.css"; 
+import clsx from "clsx";
+import "./CTButton.css";
+
 const ButtonContent = ({
   icon: Icon,
   iconIndex,
@@ -12,27 +13,29 @@ const ButtonContent = ({
   children,
 }) => {
   const renderIcon = () => {
-    if (iconIndex)
+    if (iconIndex) {
       return (
         <Icono
           name={iconIndex}
           size={iconSize}
           color={iconColor}
-          className="inline-flex"
+          className="inline-flex shrink-0"
         />
       );
-    if (Icon)
-      return <Icon size={iconSize} color={iconColor} className="inline-flex" />;
+    }
+    if (Icon) {
+      return <Icon size={iconSize} color={iconColor} className="inline-flex shrink-0" />;
+    }
     return null;
   };
 
   const isVertical = iconPosition === "top" || iconPosition === "bottom";
-  const flexClass = isVertical ? "btn-flex-col" : "btn-flex-row";
+  const flexClass = isVertical ? "flex-col" : "flex-row";
 
   return (
-    <div className={`${flexClass}`}>
+    <div className={`flex items-center gap-1.5 ${flexClass}`}>
       {(iconPosition === "top" || iconPosition === "left") && renderIcon()}
-      {children && <span>{children}</span>}
+      {children && <span className="truncate">{children}</span>}
       {(iconPosition === "bottom" || iconPosition === "right") && renderIcon()}
     </div>
   );
@@ -60,62 +63,167 @@ const CTButton = ({
   bold = false,
   focusRing = true,
   tabIndex = "",
-  isActive = false, // 🔹 Nuevo prop
+  isActive = false,
 }) => {
-  
-  const variantClass = {
-    primary: "btn-sap-primary",
-    secondary: "btn-sap-secondary",
-    emphasized: "btn-sap-emphasized",
-    transparent: "btn-sap-transparent",
-    ghost: "btn-sap-ghost",
-    tab: "btn-sap-nav-tab",
-    item: "btn-sap-item",
-  }[variant || "primary"];
+  // 📌 Variantes con variables CSS de Fenestrae
+  const variantClasses = {
+    // Botón primario - usa el color de acento del tema
+    primary: `
+      bg-[var(--color-fn-primary,var(--color-window-active-border,#0a6ed1))]
+      text-[var(--color-fn-text-inverse,#ffffff)]
+      hover:bg-[var(--color-fn-primary-hover,var(--color-window-active-border,#0056b3))]
+      active:bg-[var(--color-fn-primary-active,#004a99)]
+      border-transparent
+    `,
+    // Botón secundario
+    secondary: `
+      bg-[var(--color-fn-bg-secondary,#f3f4f6)]
+      text-[var(--color-fn-text-primary,#1a1a1a)]
+      hover:bg-[var(--color-fn-bg-tertiary,#e5e7eb)]
+      active:bg-[var(--color-fn-bg-active,rgba(0,0,0,0.1))]
+      border-[var(--color-fn-border-medium,#d1d5db)]
+    `,
+    // Botón enfatizado (más destacado)
+    emphasized: `
+      bg-[var(--color-fn-success,#22c55e)]
+      text-[var(--color-fn-text-inverse,#ffffff)]
+      hover:bg-[var(--color-fn-success-hover,#16a34a)]
+      active:bg-[var(--color-fn-success-hover,#16a34a)]
+      border-transparent
+    `,
+    // Botón transparente
+    transparent: `
+      bg-transparent
+      text-[var(--color-fn-text-primary,#1a1a1a)]
+      hover:bg-[var(--color-fn-bg-hover,rgba(0,0,0,0.05))]
+      active:bg-[var(--color-fn-bg-active,rgba(0,0,0,0.1))]
+      border-transparent
+    `,
+    // Botón ghost (solo ícono)
+    ghost: `
+      bg-transparent
+      text-[var(--color-fn-btn-action-text,inherit)]
+      hover:bg-[var(--color-fn-bg-hover,rgba(0,0,0,0.05))]
+      hover:text-[var(--color-fn-text-primary,#1a1a1a)]
+      active:bg-[var(--color-fn-bg-active,rgba(0,0,0,0.1))]
+      border-transparent
+      w-8 h-8 p-0
+      rounded-[var(--radius-fn-btn-radius,4px)]
+    `,
+    // Botón de pestaña (tab)
+    tab: `
+      bg-transparent
+      text-[var(--color-fn-tab-text-inactive,#4b5563)]
+      hover:bg-[var(--color-fn-bg-hover,rgba(0,0,0,0.05))]
+      hover:text-[var(--color-fn-text-primary,#1a1a1a)]
+      active:bg-[var(--color-fn-bg-active,rgba(0,0,0,0.1))]
+      border-b-2 border-transparent
+      rounded-none
+      h-[var(--fn-tab-height,36px)]
+      min-w-[var(--fn-tab-min-width,120px)]
+      max-w-[var(--fn-tab-max-width,220px)]
+      px-4
+      transition-colors duration-200
+      group
+    `,
+    // Botón de ítem (menú)
+    item: `
+      bg-transparent
+      text-[var(--color-fn-text-primary,#1a1a1a)]
+      hover:bg-[var(--color-fn-bg-hover,rgba(0,0,0,0.05))]
+      active:bg-[var(--color-fn-bg-active,rgba(0,0,0,0.1))]
+      border-transparent
+      w-full
+      justify-start
+      px-3 py-2
+      rounded-[var(--radius-fn-sm,2px)]
+    `,
+  };
 
-  const disabledClass = disabled ? "btn-disabled" : "";
+  // 📌 Estilos base
+  const baseClasses = `
+    inline-flex
+    items-center
+    justify-center
+    gap-1.5
+    font-medium
+    transition-all
+    duration-[var(--transition-fn-fast,150ms)]
+    cursor-pointer
+    select-none
+    border
+    rounded-[var(--radius-fn-btn-radius,4px)]
+    px-4
+    py-2
+    text-sm
+    whitespace-nowrap
+    disabled:opacity-[var(--color-fn-disabled-opacity,0.5)]
+    disabled:pointer-events-none
+    disabled:cursor-not-allowed
+    disabled:bg-[var(--color-fn-disabled-bg,#e5e7eb)]
+    disabled:text-[var(--color-fn-disabled-text,#9ca3af)]
+    disabled:border-[var(--color-fn-disabled-border,#d1d5db)]
+  `;
 
+  // 📌 Estado activo para tabs
+  const activeClasses = isActive
+    ? `
+      text-[var(--color-fn-tab-text-active,#ffffff)]
+      bg-[var(--color-fn-tab-bg-active,#0a6ed1)]
+      border-b-[var(--fn-tab-indicator-weight,3px)]
+      border-b-[var(--color-fn-tab-indicator,#3b82f6)]
+      hover:bg-[var(--color-fn-tab-bg-active,#0a6ed1)]
+      hover:text-[var(--color-fn-tab-text-active,#ffffff)]
+    `
+    : "";
+
+  // 📌 Alineación
+  const alignClasses = {
+    left: "justify-start",
+    center: "justify-center",
+    right: "justify-end",
+  }[align] || "justify-center";
+
+  // 📌 Tamaño de fuente
+  const fontClasses = fontSize ? fontSize : "text-sm";
+  const boldClass = bold ? "font-bold" : "font-medium";
+
+  // 📌 Focus ring
+  const focusClasses = focusRing
+    ? "focus:outline-none focus:ring-2 focus:ring-[var(--color-fn-focus-ring,#3b82f6)] focus:ring-offset-2 focus:ring-offset-[var(--color-fn-focus-ring-offset,#ffffff)]"
+    : "focus:outline-none";
+
+  // 📌 Estilo de altura
   const style = {};
   if (height) style.height = height;
 
-  let alignClass = "";
-  if (align === "left") alignClass = "justify-start";
-  else if (align === "right") alignClass = "justify-end";
-  else alignClass = "justify-center";
-
-  const fontClass = fontSize ? fontSize : "text-base";
-  const boldClass = bold ? "font-bold" : "font-normal";
-  const focusClass = !focusRing ? "focus:outline-none focus:ring-0" : "";
-
-  // 🔹 Construcción de clases optimizada
-  // Añadimos 'group' manualmente aquí para evitar el error de PostCSS en el archivo CSS
+  // 📌 Construcción de clases
   const buttonClasses = clsx(
-    "btn-base",
-    variantClass,
-    disabledClass,
-    alignClass,
-    fontClass,
+    baseClasses,
+    variantClasses[variant] || variantClasses.primary,
+    activeClasses,
+    alignClasses,
+    fontClasses,
     boldClass,
-    focusClass,
-    isActive && "active", // 🔹 Aplica la clase 'active' si isActive es true
-    (variant === "tab" || variant === "item") && "group", // 🔹 Añade 'group' para variantes de navegación
+    focusClasses,
     className
   );
 
   const computedTitle = title || (typeof children === "string" ? children : "");
-
-  const [menuOpen, setMenuOpen] = React.useState(false);
-  const [menuPos, setMenuPos] = React.useState({ x: 0, y: 0 });
   const buttonRef = React.useRef(null);
 
   const handleClick = (e) => {
-    
-    onClick?.(e);
+    if (!disabled) {
+      onClick?.(e);
+    }
   };
 
   if (!visible) return null;
 
-  const button = (
+  // 📌 Para variantes ghost, renderizamos solo el ícono
+  const isGhost = variant === "ghost";
+
+  return (
     <button
       type={type}
       ref={buttonRef}
@@ -126,25 +234,31 @@ const CTButton = ({
       data-tag={tag}
       title={computedTitle}
       aria-label={computedTitle}
+      aria-disabled={disabled}
+      role={variant === "tab" ? "tab" : "button"}
+      aria-selected={variant === "tab" ? isActive : undefined}
       {...(tabIndex !== "" ? { tabIndex } : {})}
     >
-      <ButtonContent
-        icon={icon}
-        iconIndex={iconIndex}
-        iconPosition={iconPosition}
-        iconSize={iconSize}
-        iconColor={iconColor}
-      >
-        {children}
-      </ButtonContent>
+      {isGhost ? (
+        // Ghost: solo ícono, sin texto
+        <Icono
+          name={iconIndex}
+          size={iconSize || "1.2em"}
+          color={iconColor || "currentColor"}
+          className="inline-flex shrink-0"
+        />
+      ) : (
+        <ButtonContent
+          icon={icon}
+          iconIndex={iconIndex}
+          iconPosition={iconPosition}
+          iconSize={iconSize}
+          iconColor={iconColor}
+        >
+          {children}
+        </ButtonContent>
+      )}
     </button>
-  );
-
-  return (
-    <>
-      {button}
-            
-    </>
   );
 };
 
@@ -156,7 +270,7 @@ CTButton.propTypes = {
   onClick: PropTypes.func.isRequired,
   disabled: PropTypes.bool,
   visible: PropTypes.bool,
-  isActive: PropTypes.bool, // 🔹 Validado
+  isActive: PropTypes.bool,
   className: PropTypes.string,
   title: PropTypes.string,
   name: PropTypes.string,
@@ -179,6 +293,18 @@ CTButton.propTypes = {
   bold: PropTypes.bool,
   focusRing: PropTypes.bool,
   tabIndex: PropTypes.string,
+};
+
+CTButton.defaultProps = {
+  variant: "primary",
+  type: "button",
+  iconPosition: "left",
+  align: "center",
+  bold: false,
+  focusRing: true,
+  disabled: false,
+  visible: true,
+  isActive: false,
 };
 
 export default CTButton;

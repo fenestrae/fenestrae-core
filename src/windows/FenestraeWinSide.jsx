@@ -7,6 +7,7 @@ import React, { useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import FenestraeWinRenderer from "./FenestraeWinRenderer";
+import FenestraeButton from "../components/FenestraeButton";
 import { winStore } from "../core";
 
 const FenestraeWinSide = React.memo(({ win, activeWinId, setActiveWinId }) => {
@@ -120,15 +121,16 @@ const FenestraeWinSide = React.memo(({ win, activeWinId, setActiveWinId }) => {
           </span>
         </div>
 
-        <button 
-          onClick={() => closeWin(self.id)}
-          className="hover:bg-red-500 hover:text-white p-1 rounded transition-colors"
-          title="Cerrar Panel Lateral"
-        >
-          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-          </svg>
-        </button>
+        <FenestraeButton
+                          className="fn-btn fn-btn-close"
+                          iconIndex={1}
+                          title="Cerrar"
+                          size="md"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            closeWin(self.id);
+                          }}
+                        />
       </div>
 
       {/* CUERPO DEL MATCHCODE / RENDERIZADOR */}

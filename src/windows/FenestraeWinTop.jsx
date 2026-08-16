@@ -8,9 +8,11 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import FenestraeWinRenderer from "./FenestraeWinRenderer";
 import { useDraggable, useResizable, ResizeHandles } from "./Useresizeble";
+import FenestraeButton from "../components/FenestraeButton";
 import { winStore } from "../core";
 
 const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId }) => {
+    const self = win; // Mantenemos tu convención 'self' para el contexto de la ventana
   // 🔹 Selectores atómicos e individuales de Zustand para mitigar re-renders globales
   const updateWinLayout = winStore((s) => s.updateWinLayout);
   const closeWin = winStore((s) => s.closeWin);
@@ -101,6 +103,7 @@ const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId })
   const showMinimize = win.params?.showMinimize !== false;
   const showMaximize = win.params?.showMaximize !== false;
   const showClose = win.params?.showClose !== false;
+
 
   const handleHeaderMouseDown = useCallback((e) => {
     handleFocus();
@@ -193,48 +196,43 @@ const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId })
           {(showMinimize || showMaximize || showClose) && <div className="h-5 w-px bg-gray-400/40 mx-1" />}
 
           {showMinimize && (
-            <button
-              onClick={() => minimizeWin(win.id)}
-              className={clsx(
-                "flex items-center justify-center w-5 h-5 rounded transition-all",
-                isActive ? "hover:bg-white/10 text-gray-300" : "hover:bg-gray-300 text-gray-500",
-              )}
-              title="Minimizar"
-            >
-              <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current">
-                <path d="M19 13H5v-2h14v2z" />
-              </svg>
-            </button>
+         <FenestraeButton
+                   className="fn-btn fn-btn-minimize"
+                   iconIndex={2}
+                   title="Minimizar"
+                   size="md"
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     minimizeWin(self.id);
+                   }}
+                 />
           )}
 
           {showMaximize && (
-            <button
-              onClick={() => maximizeWin(win.id)}
-              className={clsx(
-                "flex items-center justify-center w-5 h-5 rounded transition-all",
-                isActive ? "hover:bg-white/10 text-gray-300" : "hover:bg-gray-300 text-gray-500",
-              )}
-              title="Maximizar"
-            >
-              <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current">
-                <path d="M3 3h8v2H5v6H3V3zm10 0h8v8h-2V5h-6V3zM3 13h2v6h6v2H3v-8zm16 6h-6v2h8v-8h-2v6z" />
-              </svg>
-            </button>
+          <FenestraeButton
+                    className="fn-btn fn-btn-maximize"
+                    iconIndex={self.state === "maximized" ? 4 : 3}
+                    title={self.state === "maximized" ? "Restaurar" : "Maximizar"}
+                    size="md"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      maximizeWin(self.id);
+                    }}
+                  />
           )}
 
           {showClose && (
-            <button
-              onClick={() => closeWin(win.id)}
-              className={clsx(
-                "flex items-center justify-center w-5 h-5 rounded transition-all",
-                isActive ? "hover:bg-red-500 hover:text-white text-gray-300" : "hover:bg-gray-300 text-gray-500",
-              )}
-              title="Cerrar"
-            >
-              <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current">
-                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-              </svg>
-            </button>
+              
+                     <FenestraeButton
+                       className="fn-btn fn-btn-close"
+                       iconIndex={1}
+                       title="Cerrar .."
+                       size="md"
+                       onClick={(e) => {
+                         e.stopPropagation();
+                         closeWin(self.id);
+                       }}
+                     />
           )}
         </div>
       </div>

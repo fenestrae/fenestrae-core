@@ -146,32 +146,18 @@ const FenestraeWinModal = React.memo(({ win, index, activeWinId, setActiveWinId 
           </h3>
 
           {/* 3. Botón de cerrar nativo que consume el gradiente efervescente de Windows XP */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              closeWin(self.id);
-            }}
-            className="flex items-center justify-center font-bold text-center transition-all"
-            style={{
-              width: "var(--fn-btn-control-size, 21px)",
-              height: "var(--fn-btn-control-size, 21px)",
-              borderRadius: "var(--radius-fn-btn-radius, 3px)",
-              background: "var(--color-fn-btn-close-bg, #ef4444)",
-              border: "1px solid var(--fn-btn-close-border, #dc2626)",
-              color: "var(--color-fn-btn-action-text, #ffffff)",
-              fontSize: "11px",
-              lineHeight: "1",
-            }}
-            // Pequeño truco nativo para soportar el hover tridimensional de XP usando variables dinámicas
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--color-fn-btn-close-hover-bg, #dc2626)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "var(--color-fn-btn-close-bg, #ef4444)";
-            }}
-          >
-            ✕
-          </button>
+             {/* Cerrar */}
+                    <FenestraeButton
+                      className="fn-btn fn-btn-close"
+                      iconIndex={1}
+                      title="Cerrar"
+                      size="md"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        closeWin(self.id);
+                      }}
+                    />
+          
         </div>
 
         {/* Contenedor del Módulo / Vista de Negocio */}

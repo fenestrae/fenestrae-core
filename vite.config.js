@@ -1,20 +1,37 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import tailwindcss from '@tailwindcss/vite'; 
+import tailwindcss from '@tailwindcss/vite';
 import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [
-    tailwindcss(), 
+    tailwindcss(),
     react()
   ],
   build: {
+    // ❗ Desactiva esbuild minify (añade PURE annotations)
+    minify: false,
+
+    // ❗ Usa Terser como minificador real
+    // Vite lo activa automáticamente cuando minify === "terser"
+    // pero en librerías hay que desactivar esbuild primero
+    terserOptions: {
+      compress: {
+        defaults: true,
+        pure_funcs: [], // evita anotaciones automáticas
+      },
+      format: {
+        comments: false, // elimina TODO
+      }
+    },
+
     lib: {
       entry: resolve(__dirname, 'src/index.js'),
       name: 'Fenestrae',
       formats: ['es', 'cjs'],
       fileName: (format) => `fenestrae.${format}.js`,
     },
+
     rollupOptions: {
       external: [
         'react',

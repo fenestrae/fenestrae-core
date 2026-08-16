@@ -19,6 +19,8 @@ import FenestraeDesktopTab from "./FenestraeDesktopTab";
 // 🔹 NUEVO: zonas fijas
 import FenestraeFixedZone from "./FenestraeFixedZone";
 
+import { useShortcuts } from "../hooks/useShortcuts";
+
 const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
   const hasHydrated = winStore((s) => s.hasHydrated);
   const wins = winStore((s) => s.wins);
@@ -41,7 +43,7 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
       externalWindowInstances.forEach((win) => {
         try {
           win.postMessage({ type: "fenestrae-heartbeat", birth }, "*");
-        } catch {}
+        } catch { }
       });
     }, 1000);
     return () => clearInterval(interval);
@@ -82,48 +84,48 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
   }, [wins]);
 
   // Ventanas flotantes, paneles, side, top, externas
- const { topWins, sideWins, panelWins, floatWins, modalWins, extWins } =
-  useMemo(() => {
-    const groups = {
-      topWins: [],
-      sideWins: [],
-      panelWins: [],
-      floatWins: [],
-      modalWins: [],
-      extWins: [],
-    };
+  const { topWins, sideWins, panelWins, floatWins, modalWins, extWins } =
+    useMemo(() => {
+      const groups = {
+        topWins: [],
+        sideWins: [],
+        panelWins: [],
+        floatWins: [],
+        modalWins: [],
+        extWins: [],
+      };
 
-    // ✔ Filtrar ventanas que NO deben entrar en docking
-    const filtered = winOrder
-      .map(id => wins.get(id))
-      .filter(w => w &&  !w.fixed);
+      // ✔ Filtrar ventanas que NO deben entrar en docking
+      const filtered = winOrder
+        .map(id => wins.get(id))
+        .filter(w => w && !w.fixed);
 
-    // ✔ Clasificar por tipo
-    filtered.forEach(w => {
-      switch (w.type) {
-        case "top":
-          groups.topWins.push(w);
-          break;
-        case "side":
-          groups.sideWins.push(w);
-          break;
-        case "panel":
-          groups.panelWins.push(w);
-          break;
-        case "float":
-          groups.floatWins.push(w);
-          break;
-        case "modal":
-          groups.modalWins.push(w);
-          break;
-        case "ext":
-          groups.extWins.push(w);
-          break;
-      }
-    });
+      // ✔ Clasificar por tipo
+      filtered.forEach(w => {
+        switch (w.type) {
+          case "top":
+            groups.topWins.push(w);
+            break;
+          case "side":
+            groups.sideWins.push(w);
+            break;
+          case "panel":
+            groups.panelWins.push(w);
+            break;
+          case "float":
+            groups.floatWins.push(w);
+            break;
+          case "modal":
+            groups.modalWins.push(w);
+            break;
+          case "ext":
+            groups.extWins.push(w);
+            break;
+        }
+      });
 
-    return groups;
-  }, [winOrder, wins]);
+      return groups;
+    }, [winOrder, wins]);
 
 
   const hasWindowsInZone = (zone) =>
@@ -135,9 +137,76 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
   }, [wins]);
 
   const fixedTop = fixedWins.filter((w) => w.fixedZone === "top");
-  const fixedLeft = fixedWins.filter((w) =>w.fixedZone === "left");
+  const fixedLeft = fixedWins.filter((w) => w.fixedZone === "left");
   const fixedRight = fixedWins.filter((w) => w.fixedZone === "right");
   const fixedBottom = fixedWins.filter((w) => w.fixedZone === "bottom");
+
+
+
+  // Función de rotación (la definimos dentro para usar los datos del store actualizados)
+  const rotateTab = (direction) => {
+    if (tabWinsFijas.length <= 1) return;
+    const currentIndex = tabWinsFijas.findIndex((w) => w.id === activeTabId);
+    let nextIndex = currentIndex + direction;
+
+    if (nextIndex >= tabWinsFijas.length) nextIndex = 0;
+    if (nextIndex < 0) nextIndex = tabWinsFijas.length - 1;
+
+    setActiveWinId(tabWinsFijas[nextIndex].id);
+  };
+
+  // Registro de Atajos
+  useShortcuts(
+    {
+      // 1. Navegación (Intentamos Tab y damos alternativa con Flechas)
+      "Ctrl+Tab": () => rotateTab(1),
+      "Ctrl+Shift+Tab": () => rotateTab(-1),
+      "Alt+ArrowRight": () => rotateTab(1),
+      "Alt+ArrowLeft": () => rotateTab(-1),
+
+
+      "F7": (e) => {
+        e.preventDefault();
+
+        // Opción A: Alert nativo (bloqueante, pero efectivo)
+        // alert("El refresco de pantalla está deshabilitado para proteger tus cambios.");
+
+        // Opción B: Si tienes un sistema de notificaciones (Recomendado)
+        // notify.warn("Acción no permitida", "Usa el botón de actualizar del formulario.");
+
+        console.log("%c [Sistema] F7 Bloqueado ", "background: #f00; color: #fff; font-weight: bold;");
+
+        // Ejemplo: Podrías usar un estado local para mostrar un mensaje temporal en el UI
+        // showFlashMessage("Usa los controles internos del ERP para navegar.");
+      },
+
+
+      // 2. Cerrar ventana (Alt+F4 suele fallar en Chrome, añadimos Alt+w como en CBuilder)
+      "Alt+F4": () => {
+        if (activeWinId && activeWinId !== "LAUNCHPAD") closeWin(activeWinId);
+      },
+      "Alt+w": () => {
+        // Minúscula porque Alt+w no lleva Shift
+        if (activeWinId && activeWinId !== "LAUNCHPAD") closeWin(activeWinId);
+      },
+
+      // 3. Escape para capas secundarias
+      Escape: () => {
+        const currentWin = wins.get(activeWinId);
+        if (!currentWin) return;
+
+        // Si es un panel, modal o float, lo cerramos
+        const isSecondary = ["panel", "modal", "float", "side"].includes(
+          currentWin.type,
+        );
+        if (isSecondary) {
+          closeWin(activeWinId);
+        }
+      },
+    },
+    true,
+  ); // Siempre activo en el contenedor principal
+
 
   return (
     <div className="flex flex-col h-screen w-screen bg-[var(--fn-canvas,#f3f4f6)] overflow-hidden text-[var(--color-window-text,#1f2937)] font-sans antialiased select-none relative">
@@ -221,12 +290,12 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
               />
             ))}
           </main>
-            {/* ZONA DOCK BOTTOM */}
-      {hasWindowsInZone("bottom") && (
-        <div className="flex-shrink-0 border-t bg-[var(--color-window-header,#0a6ed1)]">
-          <FenestraeDockZone zone="bottom" />
-        </div>
-      )}
+          {/* ZONA DOCK BOTTOM */}
+          {hasWindowsInZone("bottom") && (
+            <div className="flex-shrink-0 border-t bg-[var(--color-window-header,#0a6ed1)]">
+              <FenestraeDockZone zone="bottom" />
+            </div>
+          )}
         </div>
 
         {/* ZONA DOCK RIGHT */}
@@ -242,7 +311,7 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
         ))}
       </div>
 
-    
+
 
       {/* 🔹 ZONA FIJA BOTTOM */}
       {fixedBottom.map((w) => (
@@ -284,7 +353,7 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
 
       {/* TOP flotante */}
       {topWins
-        .filter((w) => !w.docked &&!w.fixed)
+        .filter((w) => !w.docked && !w.fixed)
         .map((w, index) => (
           <FenestraeWinTop
             key={w.id}

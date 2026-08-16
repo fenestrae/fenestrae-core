@@ -22,12 +22,16 @@ import {
 } from "react-icons/md";
 
 const icons = {
-  1: { component: MdClose, description: "Cerrar ventana", caption: "Cerrar" },
-  2: { component: MdMinimize, description: "Minimizar ventana", caption: "Minimizar" },
-  3: { component: MdCropSquare, description: "Maximizar ventana", caption: "Maximizar" },
-  4: { component: MdFilterNone, description: "Restaurar ventana", caption: "Restaurar" },
-  5: { component: MdDragIndicator, description: "Mover / Arrastrar ventana", caption: "Mover" }
+  1: { component: MdClose, description: "Close window", caption: "Close" },
+  2: { component: MdMinimize, description: "Minimize window", caption: "Minimize" },
+  3: { component: MdCropSquare, description: "Maximize window", caption: "Maximize" },
+  4: { component: MdFilterNone, description: "Restore window", caption: "Restore" },
+  5: { component: MdDragIndicator, description: "Drag window", caption: "Drag" },
+
+  // Modern + Windows-like terminology
+  6: { component: MdLaunch, description: "Detach window from dock", caption: "Detach" }
 };
+
 
 // Componente Icono adaptado a Tailwind
 export function Icono({ name, size = 20, className = "", ...props }) {
