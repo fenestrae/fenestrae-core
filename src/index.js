@@ -32,6 +32,12 @@ import {
     restoreWindows
 } from './database/persistence'
 
+
+import { registerCommand, executeCommand } from "./menus/commandRegistry";
+
+import { setPermissions, getPermissions, hasPermission } from "./permissions/permissions";
+
+
 // 🧠 2. Exportamos el store y la API global imperativa
 
 export { winStore, win, context } from './core';
@@ -48,8 +54,15 @@ export {
     closeSession,
     delSession,
     clearSessions,
-    restoreWindows
+    restoreWindows,
 } from './database/persistence'
+
+export { registerCommand, executeCommand } from "./menus/commandRegistry";
+
+export { setPermissions, getPermissions, hasPermission } from "./permissions/permissions";
+
+
+ 
 
 // --------------------------------------------------------------------------
 // EXPORTACIONES PARA CONSUMIDORES AVANZADOS
@@ -72,7 +85,12 @@ export const ae = {
     closeSession,
     delSession,
     clearSessions,
-    restoreWindows
+    restoreWindows,
+    registerCommand,
+    executeCommand,
+     setPermissions,
+    getPermissions,
+    hasPermission
 };
 
 // API pública enriquecida
@@ -89,7 +107,12 @@ export const fenestrae = {
     closeSession,
     delSession,
     clearSessions,
-    restoreWindows
+    restoreWindows,
+    registerCommand,
+    executeCommand,
+    setPermissions,
+    getPermissions,
+    hasPermission
 };
 
 // Default export
