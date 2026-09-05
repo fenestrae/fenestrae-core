@@ -1,6 +1,6 @@
 {
   "name": "fenestrae",
-  "version": "0.2.6",
+  "version": "0.3.5",
   "type": "module",
   "license": "Apache-2.0",
   "description": "The desktop window management experience the web always needed.",
@@ -16,7 +16,7 @@
       "import": "./dist/fenestrae.es.js",
       "require": "./dist/fenestrae.cjs.js"
     },
-    "./dist/fenestrae.css": "./dist/fenestrae.css"
+    "./dist/*": "./dist/*"
   },
   "files": [
     "dist"

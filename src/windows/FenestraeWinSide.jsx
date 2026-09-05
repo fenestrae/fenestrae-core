@@ -7,7 +7,7 @@ import React, { useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import FenestraeWinRenderer from "./FenestraeWinRenderer";
-import FenestraeButton from "../components/FenestraeButton";
+import FNButton from "../components/FNButton";
 import { winStore } from "../core";
 
 const FenestraeWinSide = React.memo(({ win, activeWinId, setActiveWinId }) => {
@@ -121,7 +121,7 @@ const FenestraeWinSide = React.memo(({ win, activeWinId, setActiveWinId }) => {
           </span>
         </div>
 
-        <FenestraeButton
+        <FNButton
                           className="fn-btn fn-btn-close"
                           iconIndex={1}
                           title="Cerrar"

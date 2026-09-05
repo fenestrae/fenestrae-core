@@ -270,7 +270,7 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
                     w.id === activeTabId ? "block z-1" : "hidden"
                   )}
                 >
-                  <div className="w-full h-full overflow-auto bg-[var(--color-window-content,#fafafa)]">
+                  <div className="w-full h-full overflow-hidden">
                     <React.Suspense fallback={<div>Cargando ventana...</div>}>
                       <FenestraeWinRederer win={w} closeWin={closeWin} />
                     </React.Suspense>
@@ -318,6 +318,20 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
         <FenestraeFixedZone key={w.id} win={w} />
       ))}
 
+{wins.size > 0 && Array.from(wins.values()).some(w => w.isDragging || w.isResizing) && (
+   createPortal(
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "yellow",
+        zIndex: 999998,
+        pointerEvents: "auto",
+      }}
+    />,
+    document.body
+  )
+)}
       {/* FLOTANTES */}
       {floatWins.map((w, index) => (
         <FenestraeWinFloating

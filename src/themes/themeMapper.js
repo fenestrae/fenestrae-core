@@ -25,6 +25,13 @@ export const THEME_PRESETS = {
     "--color-window-active-border": "#0a6ed1",
     "--spacing-window-padding": "0rem",
 
+    // 🆕 Menú
+    "--color-menu-bg": "#ffffff",
+    "--color-menu-border": "#e5e7eb",
+    "--color-menu-hover": "#f3f4f6",
+    "--color-accent": "#0a6ed1",
+    "--color-accent-hover": "#0056b3",
+
     // Docking Zones & Side Panels
     "--fn-dock-top-height": "32px",
     "--fn-dock-bottom-height": "200px",
@@ -191,6 +198,13 @@ export const THEME_PRESETS = {
     "--color-window-active-border": "#007aff",
     "--spacing-window-padding": "0rem",
 
+    // 🆕 Menú
+    "--color-menu-bg": "#f8fafc",
+    "--color-menu-border": "#cbd5e1",
+    "--color-menu-hover": "#e8eaed",
+    "--color-accent": "#007aff",
+    "--color-accent-hover": "#0055cc",
+
     "--fn-dock-top-height": "40px",
     "--fn-dock-bottom-height": "240px",
     "--fn-dock-left-width": "280px",
@@ -212,28 +226,24 @@ export const THEME_PRESETS = {
 
     // 🔹 BOTONES DE CONTROL - macOS (redondos con colores)
     "--fn-btn-control-size": "14px",
-    "--radius-fn-btn-radius": "9999px",  // ← Círculo perfecto
-    "--color-fn-btn-action-text": "transparent",  // ← Texto transparente (se ve en hover)
+    "--radius-fn-btn-radius": "9999px",
+    "--color-fn-btn-action-text": "transparent",
     
-    // Contenido de los botones (se muestra en hover)
     "--fn-btn-close-content": "✕",
     "--fn-btn-minimize-content": "─",
     "--fn-btn-maximize-content": "□",
     "--fn-btn-restore-content": "❐",
     
-    // Botón Cerrar (rojo)
     "--color-fn-btn-close-bg": "#fe5f55",
     "--color-fn-btn-close-border": "transparent",
     "--color-fn-btn-close-hover": "#ff5f57",
     "--color-fn-btn-close-hover-text": "#ffffff",
     
-    // Botón Minimizar (amarillo)
     "--color-fn-btn-minimize-bg": "#ffbd2e",
     "--color-fn-btn-minimize-border": "transparent",
     "--color-fn-btn-minimize-hover": "#ffbd2e",
     "--color-fn-btn-minimize-hover-text": "#ffffff",
     
-    // Botón Maximizar (verde)
     "--color-fn-btn-maximize-bg": "#28c840",
     "--color-fn-btn-maximize-border": "transparent",
     "--color-fn-btn-maximize-hover": "#28c840",
@@ -354,6 +364,13 @@ export const THEME_PRESETS = {
     "--color-window-header-inactive-text": "#9ca3af",
     "--color-window-active-border": "#f59e0b",
     "--spacing-window-padding": "0rem",
+
+    // 🆕 Menú
+    "--color-menu-bg": "#1f2937",
+    "--color-menu-border": "#374151",
+    "--color-menu-hover": "#374151",
+    "--color-accent": "#f59e0b",
+    "--color-accent-hover": "#d97706",
 
     "--fn-dock-top-height": "32px",
     "--fn-dock-bottom-height": "200px",
@@ -515,6 +532,13 @@ export const THEME_PRESETS = {
     "--color-window-active-border": "#bf7aff",
     "--spacing-window-padding": "0rem",
 
+    // 🆕 Menú
+    "--color-menu-bg": "#14141e",
+    "--color-menu-border": "#2a1f3d",
+    "--color-menu-hover": "#1a1a2e",
+    "--color-accent": "#bf7aff",
+    "--color-accent-hover": "#d4aaff",
+
     "--fn-dock-top-height": "35px",
     "--fn-dock-bottom-height": "200px",
     "--fn-dock-left-width": "260px",
@@ -674,6 +698,13 @@ export const THEME_PRESETS = {
     "--color-window-header-inactive-text": "#78350f",
     "--color-window-active-border": "#f59e0b",
     "--spacing-window-padding": "0rem",
+
+    // 🆕 Menú
+    "--color-menu-bg": "#ffffff",
+    "--color-menu-border": "#fcd34d",
+    "--color-menu-hover": "#fef3c7",
+    "--color-accent": "#f59e0b",
+    "--color-accent-hover": "#d97706",
 
     "--fn-dock-top-height": "38px",
     "--fn-dock-bottom-height": "220px",
@@ -835,6 +866,13 @@ export const THEME_PRESETS = {
     "--color-window-active-border": "#0072b0",
     "--spacing-window-padding": "0rem",
 
+    // 🆕 Menú
+    "--color-menu-bg": "#f5f2ed",
+    "--color-menu-border": "#c8c4bc",
+    "--color-menu-hover": "#efebe7",
+    "--color-accent": "#0072b0",
+    "--color-accent-hover": "#005a8a",
+
     "--fn-dock-top-height": "30px",
     "--fn-dock-bottom-height": "200px",
     "--fn-dock-left-width": "240px",
@@ -994,6 +1032,13 @@ export const THEME_PRESETS = {
     "--color-window-header-inactive-text": "#4c1d95",
     "--color-window-active-border": "#8b5cf6",
     "--spacing-window-padding": "0rem",
+
+    // 🆕 Menú
+    "--color-menu-bg": "#ffffff",
+    "--color-menu-border": "#ddd6fe",
+    "--color-menu-hover": "#f5f0ff",
+    "--color-accent": "#8b5cf6",
+    "--color-accent-hover": "#7c3aed",
 
     "--fn-dock-top-height": "36px",
     "--fn-dock-bottom-height": "210px",
@@ -1155,6 +1200,13 @@ export const THEME_PRESETS = {
     "--color-window-active-border": "#0078d4",
     "--spacing-window-padding": "0rem",
 
+    // 🆕 Menú
+    "--color-menu-bg": "#ffffff",
+    "--color-menu-border": "#d1d5db",
+    "--color-menu-hover": "#f0f2f5",
+    "--color-accent": "#0078d4",
+    "--color-accent-hover": "#0062b3",
+
     "--fn-dock-top-height": "36px",
     "--fn-dock-bottom-height": "220px",
     "--fn-dock-left-width": "260px",
@@ -1315,6 +1367,13 @@ export const THEME_PRESETS = {
     "--color-window-active-border": "#004c97",
     "--spacing-window-padding": "0rem",
 
+    // 🆕 Menú
+    "--color-menu-bg": "#ffffff",
+    "--color-menu-border": "#cccccc",
+    "--color-menu-hover": "#f0f0f0",
+    "--color-accent": "#004c97",
+    "--color-accent-hover": "#003a73",
+
     "--fn-dock-top-height": "34px",
     "--fn-dock-bottom-height": "210px",
     "--fn-dock-left-width": "270px",
@@ -1474,6 +1533,13 @@ export const THEME_PRESETS = {
     "--color-window-header-inactive-text": "#d6e3ff",
     "--color-window-active-border": "#0054e3",
     "--spacing-window-padding": "0px",
+
+    // 🆕 Menú
+    "--color-menu-bg": "#ece9d8",
+    "--color-menu-border": "#919b9c",
+    "--color-menu-hover": "#d4d0c8",
+    "--color-accent": "#0054e3",
+    "--color-accent-hover": "#0043b3",
 
     "--fn-dock-top-height": "30px",
     "--fn-dock-bottom-height": "40px",
@@ -1647,7 +1713,7 @@ export const THEME_PRESETS = {
  * 🌟 MAPPER CRÍTICO EXIGIDO POR EL PROVIDER
  * Transforma el preset de tema seleccionado en un diccionario compatible de variables CSS.
  * Satisface la importación nombrada en `FenestraeProvider.jsx` línea 3.
- * * @param {object|string} themeInput - Nombre del preset ('modern', 'dark', 'macOS') u objeto personalizado.
+ * @param {object|string} themeInput - Nombre del preset ('modern', 'dark', 'macOS') u objeto personalizado.
  * @returns {React.CSSProperties} Diccionario de variables CSS aplicable a estilos en línea o layouts globales.
  */
 export const mapThemeToCSSVariables = (themeInput = "modern") => {

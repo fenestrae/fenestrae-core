@@ -37,6 +37,8 @@ import { registerCommand, executeCommand } from "./menus/commandRegistry";
 
 import { setPermissions, getPermissions, hasPermission } from "./permissions/permissions";
 
+import FNMainMenu from "./menus/fnMainMenu";
+
 
 // 🧠 2. Exportamos el store y la API global imperativa
 
@@ -90,7 +92,8 @@ export const ae = {
     executeCommand,
      setPermissions,
     getPermissions,
-    hasPermission
+    hasPermission,
+    FNMainMenu
 };
 
 // API pública enriquecida
@@ -112,7 +115,8 @@ export const fenestrae = {
     executeCommand,
     setPermissions,
     getPermissions,
-    hasPermission
+    hasPermission,
+    FNMainMenu
 };
 
 // Default export

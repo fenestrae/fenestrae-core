@@ -8,9 +8,15 @@ export default defineConfig({
     tailwindcss(),
     react()
   ],
+
+  esbuild: {
+    pure: [] // ← elimina PURE de JSX transform
+  },
+
   build: {
+    outDir: 'dist',
     // ❗ Desactiva esbuild minify (añade PURE annotations)
-    minify: false,
+    minify: "false",
 
     // ❗ Usa Terser como minificador real
     // Vite lo activa automáticamente cuando minify === "terser"

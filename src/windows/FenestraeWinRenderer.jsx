@@ -1,11 +1,36 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { formsRegistry } from "../core/winStore"; // Ajustado a la nomenclatura interna de Fenestrae
+import { FenestraeiFrame } from "./FenestraeiFrame";
 
 const FenestraeWinRenderer = React.memo(({ win, closeWin }) => {
   const componentName = win?.name?.toLowerCase();
   const entry = formsRegistry.get(componentName);
+ // ⭐ Ventanas externas (HTML / iframe)
+  if (win?.params?.url) {
+      const desactive=(win.isDragging || win.isResizing) 
 
+     return (
+      
+      <iframe
+        ref={(iframe) => FenestraeiFrame(iframe, win, closeWin)}
+        src={win.params.url}
+        style={{
+          width: "100%",
+          height: "100%",
+          border: "none",
+          display: "block",
+          pointerEvents: desactive ? "none":"auto"
+        }}
+        loading="lazy"
+        sandbox="allow-scripts allow-forms allow-same-origin"
+        
+        referrerPolicy="no-referrer"
+        title={win.title || "Fenestrae External Window"}
+      />
+      
+    );
+  }
   // Si no hay módulo o clase registrada, un mensaje sutil sin recuadros de error catastróficos
   if (!entry || !entry.component) {
     return (

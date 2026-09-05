@@ -1,0 +1,416 @@
+/* FNButton.css */
+/* ============================================
+   ESTILOS DE BOTÓN QUE USAN VARIABLES CSS
+   ============================================ */
+
+/* ============================================
+   BASE - BOTONES DE ACCIÓN
+   ============================================ */
+
+.fn-btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  transition: all var(--transition-fn-base, 200ms ease);
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid;
+  white-space: nowrap;
+  font-family: inherit;
+  position: relative;
+  
+  /* Estados deshabilitados */
+  &:disabled {
+    opacity: var(--color-fn-disabled-opacity, 0.5);
+    cursor: not-allowed;
+    pointer-events: none;
+    background-color: var(--color-fn-disabled-bg, #e5e7eb);
+    color: var(--color-fn-disabled-text, #9ca3af);
+    border-color: var(--color-fn-disabled-border, #d1d5db);
+  }
+  
+  /* Focus */
+  &:focus-visible {
+    outline: 2px solid var(--color-fn-focus-ring, #3b82f6);
+    outline-offset: 2px;
+  }
+}
+
+/* ============================================
+   VARIANTE: PRIMARY
+   ============================================ */
+
+.fn-btn-primary {
+  background-color: var(--color-fn-primary, #0a6ed1);
+  color: var(--color-fn-text-inverse, #ffffff);
+  border-color: transparent;
+  
+  &:hover {
+    background-color: var(--color-fn-primary-hover, #0056b3);
+    box-shadow: var(--shadow-fn-md, 0 4px 6px rgba(0,0,0,0.07));
+  }
+  
+  &:active {
+    background-color: var(--color-fn-primary-active, #004a99);
+    box-shadow: var(--shadow-fn-sm, 0 1px 2px rgba(0,0,0,0.05));
+  }
+}
+
+/* ============================================
+   VARIANTE: SECONDARY
+   ============================================ */
+
+.fn-btn-secondary {
+  background-color: var(--color-fn-bg-secondary, #f3f4f6);
+  color: var(--color-fn-text-primary, #1a1a1a);
+  border-color: var(--color-fn-border-medium, #d1d5db);
+  
+  &:hover {
+    background-color: var(--color-fn-bg-tertiary, #e5e7eb);
+  }
+  
+  &:active {
+    background-color: var(--color-fn-bg-active, rgba(0,0,0,0.1));
+  }
+}
+
+/* ============================================
+   VARIANTE: EMPHASIZED
+   ============================================ */
+
+.fn-btn-emphasized {
+  background-color: var(--color-fn-success, #22c55e);
+  color: var(--color-fn-text-inverse, #ffffff);
+  border-color: transparent;
+  
+  &:hover {
+    background-color: var(--color-fn-success-hover, #16a34a);
+    box-shadow: var(--shadow-fn-md, 0 4px 6px rgba(0,0,0,0.07));
+  }
+  
+  &:active {
+    background-color: var(--color-fn-success-hover, #16a34a);
+    box-shadow: var(--shadow-fn-sm, 0 1px 2px rgba(0,0,0,0.05));
+  }
+}
+
+/* ============================================
+   VARIANTE: TRANSPARENT
+   ============================================ */
+
+.fn-btn-transparent {
+  background-color: transparent;
+  color: var(--color-fn-text-primary, #1a1a1a);
+  border-color: transparent;
+  
+  &:hover {
+    background-color: var(--color-fn-bg-hover, rgba(0,0,0,0.05));
+  }
+  
+  &:active {
+    background-color: var(--color-fn-bg-active, rgba(0,0,0,0.1));
+  }
+}
+
+/* ============================================
+   VARIANTE: TAB
+   ============================================ */
+
+.fn-btn-tab {
+  background-color: var(--color-fn-tab-bg-inactive, #e5e7eb);
+  color: var(--color-fn-tab-text-inactive, #4b5563);
+  border: 1px solid var(--color-fn-tab-border, #d1d5db);
+  border-radius: var(--radius-fn-tab-radius, 6px);
+  border-bottom: 2px solid transparent;
+  height: var(--fn-tab-height, 36px);
+  min-width: var(--fn-tab-min-width, 120px);
+  max-width: var(--fn-tab-max-width, 220px);
+  padding: 0 1rem;
+  transition: all var(--transition-fn-base, 200ms ease);
+  position: relative;
+  
+  &:hover {
+    background-color: var(--color-fn-bg-hover, rgba(0,0,0,0.05));
+    color: var(--color-fn-text-primary, #1a1a1a);
+  }
+  
+  &:active {
+    background-color: var(--color-fn-bg-active, rgba(0,0,0,0.1));
+  }
+  
+  /* Estado activo de tab */
+  &.fn-btn-active {
+    color: var(--color-fn-tab-text-active, #ffffff);
+    background-color: var(--color-fn-tab-bg-active, #0a6ed1);
+    border-bottom-width: var(--fn-tab-indicator-weight, 3px);
+    border-bottom-style: solid;
+    border-bottom-color: var(--color-fn-tab-indicator, #3b82f6);
+    
+    &:hover {
+      background-color: var(--color-fn-tab-bg-active, #0a6ed1);
+      color: var(--color-fn-tab-text-active, #ffffff);
+    }
+  }
+}
+
+/* ============================================
+   VARIANTE: ITEM (menús/listas)
+   ============================================ */
+
+.fn-btn-item {
+  background-color: transparent;
+  color: var(--color-fn-text-primary, #1a1a1a);
+  border-color: transparent;
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-fn-sm, 2px);
+  
+  &:hover {
+    background-color: var(--color-fn-bg-hover, rgba(0,0,0,0.05));
+  }
+  
+  &:active {
+    background-color: var(--color-fn-bg-active, rgba(0,0,0,0.1));
+  }
+  
+  /* Estado activo para item */
+  &.fn-btn-active {
+    background-color: var(--color-fn-bg-active, rgba(0,0,0,0.1));
+    font-weight: 600;
+  }
+}
+
+/* ============================================
+   TAMAÑOS
+   ============================================ */
+
+.fn-btn-xs {
+  padding: var(--spacing-fn-xs, 0.25rem) var(--spacing-fn-sm, 0.5rem);
+  font-size: 0.75rem;
+}
+
+.fn-btn-sm {
+  padding: var(--spacing-fn-sm, 0.5rem) var(--spacing-fn-md, 0.75rem);
+  font-size: 0.875rem;
+}
+
+.fn-btn-md {
+  padding: var(--spacing-fn-md, 0.75rem) var(--spacing-fn-lg, 1rem);
+  font-size: 0.875rem;
+}
+
+.fn-btn-lg {
+  padding: var(--spacing-fn-lg, 1rem) var(--spacing-fn-xl, 1.5rem);
+  font-size: 1rem;
+}
+
+.fn-btn-xl {
+  padding: var(--spacing-fn-xl, 1.5rem) var(--spacing-fn-2xl, 2rem);
+  font-size: 1.125rem;
+}
+
+/* ============================================
+   RADIOS
+   ============================================ */
+
+.fn-btn-radius-xs {
+  border-radius: var(--radius-fn-sm, 2px);
+}
+
+.fn-btn-radius-sm {
+  border-radius: var(--radius-fn-sm, 2px);
+}
+
+.fn-btn-radius-md {
+  border-radius: var(--radius-fn-btn-radius, 4px);
+}
+
+.fn-btn-radius-lg {
+  border-radius: var(--radius-fn-md, 4px);
+}
+
+.fn-btn-radius-xl {
+  border-radius: var(--radius-fn-lg, 8px);
+}
+
+/* ============================================
+   FULL WIDTH
+   ============================================ */
+
+.fn-btn-full-width {
+  width: 100%;
+}
+
+/* ============================================
+   🪟 BOTONES DE CONTROL DE VENTANA
+   (USANDO VARIABLES CSS DEL TEMA)
+   ============================================ */
+
+.fn-btn {
+  all: unset;
+  width: var(--fn-btn-control-size, 18px);
+  height: var(--fn-btn-control-size, 18px);
+  min-width: var(--fn-btn-control-size, 18px);
+  min-height: var(--fn-btn-control-size, 18px);
+  border-radius: var(--radius-fn-btn-radius, 4px);
+  color: var(--color-fn-btn-action-text, inherit);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: calc(var(--fn-btn-control-size, 18px) * 0.6);
+  font-weight: 400;
+  line-height: 1;
+  cursor: pointer;
+  transition: all var(--transition-fn-fast, 150ms ease);
+  user-select: none;
+  background-color: var(--color-fn-btn-close-bg, transparent);
+  border: 1px solid var(--color-fn-btn-close-border, transparent);
+  opacity: 0.7;
+  padding: 0;
+  transform: none !important;
+  box-shadow: none !important;
+  text-decoration: none;
+  outline: none;
+}
+
+.fn-btn:hover {
+  opacity: 1;
+}
+
+.fn-btn:disabled {
+  opacity: var(--color-fn-disabled-opacity, 0.3) !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+.fn-btn:focus-visible {
+  outline: 2px solid var(--color-fn-focus-ring, #3b82f6);
+  outline-offset: 2px;
+}
+
+/* 🔴 Botón Cerrar */
+.fn-btn-close {
+  background-color: var(--color-fn-btn-close-bg, transparent);
+  color: var(--color-fn-btn-action-text, inherit);
+  border-color: var(--color-fn-btn-close-border, transparent);
+}
+
+.fn-btn-close::before {
+  content: var(--fn-btn-close-content, "✕");
+}
+
+.fn-btn-close:hover {
+  background-color: var(--color-fn-btn-close-hover, #ef4444);
+  color: var(--color-fn-btn-close-hover-text, #ffffff);
+  border-color: var(--color-fn-btn-close-hover, #ef4444);
+  opacity: 1;
+}
+
+/* 📉 Botón Minimizar */
+.fn-btn-minimize {
+  background-color: var(--color-fn-btn-minimize-bg, transparent);
+  color: var(--color-fn-btn-action-text, inherit);
+  border-color: var(--color-fn-btn-minimize-border, transparent);
+}
+
+.fn-btn-minimize::before {
+  content: var(--fn-btn-minimize-content, "─");
+}
+
+.fn-btn-minimize:hover {
+  background-color: var(--color-fn-btn-minimize-hover, var(--color-fn-warning, #f59e0b));
+  color: var(--color-fn-btn-minimize-hover-text, #ffffff);
+  border-color: var(--color-fn-btn-minimize-hover, var(--color-fn-warning, #f59e0b));
+  opacity: 1;
+}
+
+/* 📈 Botón Maximizar */
+.fn-btn-maximize {
+  background-color: var(--color-fn-btn-maximize-bg, transparent);
+  color: var(--color-fn-btn-action-text, inherit);
+  border-color: var(--color-fn-btn-maximize-border, transparent);
+}
+
+.fn-btn-maximize::before {
+  content: var(--fn-btn-maximize-content, "□");
+}
+
+.fn-btn-maximize:hover {
+  background-color: var(--color-fn-btn-maximize-hover, var(--color-fn-success, #22c55e));
+  color: var(--color-fn-btn-maximize-hover-text, #ffffff);
+  border-color: var(--color-fn-btn-maximize-hover, var(--color-fn-success, #22c55e));
+  opacity: 1;
+}
+
+/* 🔄 Botón Restaurar */
+.fn-btn-restore {
+  background-color: var(--color-fn-btn-maximize-bg, transparent);
+  color: var(--color-fn-btn-action-text, inherit);
+  border-color: var(--color-fn-btn-maximize-border, transparent);
+}
+
+.fn-btn-restore::before {
+  content: var(--fn-btn-restore-content, "❐");
+}
+
+.fn-btn-restore:hover {
+  background-color: var(--color-fn-btn-maximize-hover, var(--color-fn-info, #3b82f6));
+  color: var(--color-fn-btn-maximize-hover-text, #ffffff);
+  border-color: var(--color-fn-btn-maximize-hover, var(--color-fn-info, #3b82f6));
+  opacity: 1;
+}
+
+/* ============================================
+   ESTILOS ESPECÍFICOS POR TEMA (OPCIONAL)
+   ============================================ */
+
+/* macOS - Botones redondos */
+.fn-btn-theme-macos.fn-btn-action {
+  border-radius: var(--radius-fn-full, 9999px);
+}
+
+/* Cyberpunk - Efecto neón */
+.fn-btn-theme-cyberpunk.fn-btn-primary {
+  text-shadow: 0 0 10px rgba(191,122,255,0.3);
+  box-shadow: 0 0 20px rgba(191,122,255,0.1);
+}
+
+.fn-btn-theme-cyberpunk.fn-btn-primary:hover {
+  box-shadow: 0 0 30px rgba(191,122,255,0.3);
+}
+
+/* Dark - Botones con borde sutil */
+.fn-btn-theme-dark.fn-btn-secondary {
+  border-color: var(--color-fn-border-medium, #4b5563);
+}
+
+.fn-btn-theme-dark.fn-btn-primary {
+  background-color: var(--color-fn-tab-bg-active, #f59e0b);
+  color: var(--color-fn-text-inverse, #111827);
+}
+
+/* Windows XP - Estilo vintage */
+.fn-btn-theme-windowsXP.fn-btn-action {
+  border: 2px solid var(--color-fn-border-medium, #919b9c);
+  border-radius: 4px;
+  font-family: 'Tahoma', sans-serif;
+}
+
+.fn-btn-theme-windowsXP.fn-btn-primary {
+  background: linear-gradient(180deg, #3d95ff 0%, #1a6be0 50%, #0054e3 100%);
+  color: #ffffff;
+}
+
+/* Pastel - Botones redondos y suaves */
+.fn-btn-theme-pastel.fn-btn-action {
+  border-radius: var(--radius-fn-full, 9999px);
+}
+
+.fn-btn-theme-pastel.fn-btn-primary {
+  background-color: var(--color-fn-tab-bg-active, #8b5cf6);
+  color: var(--color-fn-text-inverse, #ffffff);
+}

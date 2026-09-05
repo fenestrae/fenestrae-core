@@ -8,11 +8,11 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import FenestraeWinRenderer from "./FenestraeWinRenderer";
 import { useDraggable, useResizable, ResizeHandles } from "./Useresizeble";
-import FenestraeButton from "../components/FenestraeButton";
+import FNButton from "../components/FNButton";
 import { winStore } from "../core";
 
 const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId }) => {
-    const self = win; // Mantenemos tu convención 'self' para el contexto de la ventana
+  const self = win; // Mantenemos tu convención 'self' para el contexto de la ventana
   // 🔹 Selectores atómicos e individuales de Zustand para mitigar re-renders globales
   const updateWinLayout = winStore((s) => s.updateWinLayout);
   const closeWin = winStore((s) => s.closeWin);
@@ -41,6 +41,9 @@ const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId })
 
   const finalX = isResizing ? x + posAdj.x : position.x;
   const finalY = isResizing ? y + posAdj.y : position.y;
+  const finalW = isResizing ? size.width : w;
+  const finalH = isResizing ? size.height : h;
+
 
   // --- AutoSize via ResizeObserver ------------------------------------------
   const contentRef = useRef(null);
@@ -132,130 +135,153 @@ const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId })
   };
 
   return (
-    <div
-      style={combinedStyle}
-      className={clsx(
-        "shadow-xl border rounded-md overflow-hidden flex flex-col transition-shadow duration-150",
-        isActive
-          ? "border-[var(--color-window-active-border,#4b5563)] ring-1 ring-[var(--color-window-active-border,#4b5563)] shadow-2xl"
-          : "border-[var(--color-window-border,#cbd5e1)] opacity-95",
-        dockHint && "ring-2 ring-blue-500 ring-offset-1",
+    <>
+      { (isDragging || isResizing) && (
+
+        <div
+          style={{
+            position: "fixed",
+            top: finalY - 400,
+            left: finalX - 400,
+            width: finalW + 800,
+            height: finalH + 800,
+            background: "transparent",
+            zIndex: combinedStyle.zIndex - 1, // debajo de la ventana FLOAT
+            pointerEvents: "auto",
+          }}
+        />
       )}
-      onMouseDown={handleFocus}
-    >
-      {/* HEADER */}
+
       <div
+        style={combinedStyle}
         className={clsx(
-          "handle-movible h-7 flex justify-between items-center select-none",
-          "cursor-move shrink-0 px-2 transition-colors duration-200"
-          // He eliminado las clases de background/text de Tailwind de aquí para que no colisionen
+          "shadow-xl border rounded-md overflow-hidden flex flex-col transition-shadow duration-150",
+          isActive
+            ? "border-[var(--color-window-active-border,#4b5563)] ring-1 ring-[var(--color-window-active-border,#4b5563)] shadow-2xl"
+            : "border-[var(--color-window-border,#cbd5e1)] opacity-95",
+          dockHint && "ring-2 ring-blue-500 ring-offset-1",
         )}
-        style={{
-          // 1. Usamos 'background' (permite colores planos AND linear-gradients de tus temas)
-          background: isActive
-            ? "var(--color-window-header, linear-gradient(to right, #1f2937, #374151))" // Tu degradado gris por defecto va aquí como fallback
-            : "var(--color-window-header-inactive, #e2e8f0)",
-
-          // 2. Control del color de texto nativo por tema con fallback
-          color: isActive
-            ? "var(--color-window-header-text, #ffffff)"
-            : "var(--color-window-header-inactive-text, #4b5563)",
-
-          // 3. Opcional: Inyectar la dirección anatómica si deseas soportar presets tipo macOS
-          //flexDirection: "var(--fn-header-direction, row)",
-        }}
-        onMouseDown={handleHeaderMouseDown}
-        onDoubleClick={() => showMaximize && maximizeWin(win.id)}
+        onMouseDown={handleFocus}
       >
-        {/* Left: indicator + title */}
-        <div className="flex items-center gap-2 overflow-hidden mr-4">
-          <div className={clsx(
-            "w-2 h-2 rounded-full shadow-inner flex-shrink-0",
-            dockHint ? "bg-blue-500 animate-ping" :
-              isActive ? "bg-yellow-400 animate-pulse" : "bg-gray-400",
-          )} />
-          <span className="text-[10px] font-bold uppercase tracking-tight truncate">
-            {dockHint ? `Acoplar en ${dockHint.toUpperCase()}` : (win.title || "Ventana")}
-          </span>
+        {/* HEADER */}
+        <div
+          className={clsx(
+            "handle-movible h-7 flex justify-between items-center select-none",
+            "cursor-move shrink-0 px-2 transition-colors duration-200"
+            // He eliminado las clases de background/text de Tailwind de aquí para que no colisionen
+          )}
+          style={{
+            // 1. Usamos 'background' (permite colores planos AND linear-gradients de tus temas)
+            background: isActive
+              ? "var(--color-window-header, linear-gradient(to right, #1f2937, #374151))" // Tu degradado gris por defecto va aquí como fallback
+              : "var(--color-window-header-inactive, #e2e8f0)",
+
+            // 2. Control del color de texto nativo por tema con fallback
+            color: isActive
+              ? "var(--color-window-header-text, #ffffff)"
+              : "var(--color-window-header-inactive-text, #4b5563)",
+
+            // 3. Opcional: Inyectar la dirección anatómica si deseas soportar presets tipo macOS
+            //flexDirection: "var(--fn-header-direction, row)",
+          }}
+          onMouseDown={handleHeaderMouseDown}
+          onDoubleClick={() => showMaximize && maximizeWin(win.id)}
+        >
+          {/* Left: indicator + title */}
+          <div className="flex items-center gap-2 overflow-hidden mr-4">
+            <div className={clsx(
+              "w-2 h-2 rounded-full shadow-inner flex-shrink-0",
+              dockHint ? "bg-blue-500 animate-ping" :
+                isActive ? "bg-yellow-400 animate-pulse" : "bg-gray-400",
+            )} />
+            <span className="text-[10px] font-bold uppercase tracking-tight truncate">
+              {dockHint ? `Acoplar en ${dockHint.toUpperCase()}` : (win.title || "Ventana")}
+            </span>
+          </div>
+
+          {/* Action Buttons Container */}
+          <div className="flex items-center gap-0.5" onMouseDown={(e) => e.stopPropagation()}>
+            {win.docked && (
+              <button
+                onClick={() => undockWin(win.id)}
+                className="flex items-center justify-center w-5 h-5 rounded hover:bg-blue-500 hover:text-white text-gray-400 transition-all mr-1"
+                title="Desacoplar Ventana"
+              >
+                <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current">
+                  <path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z" />
+                </svg>
+              </button>
+            )}
+
+            {(showMinimize || showMaximize || showClose) && <div className="h-5 w-px bg-gray-400/40 mx-1" />}
+
+            {showMinimize && (
+              <FNButton
+                className="fn-btn fn-btn-minimize"
+                iconIndex={2}
+                title="Minimizar"
+                size="md"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  minimizeWin(self.id);
+                }}
+              />
+            )}
+
+            {showMaximize && (
+              <FNButton
+                className="fn-btn fn-btn-maximize"
+                iconIndex={self.state === "maximized" ? 4 : 3}
+                title={self.state === "maximized" ? "Restaurar" : "Maximizar"}
+                size="md"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  maximizeWin(self.id);
+                }}
+              />
+            )}
+
+            {showClose && (
+
+              <FNButton
+                className="fn-btn fn-btn-close"
+                iconIndex={1}
+                title="Cerrar .."
+                size="md"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closeWin(self.id);
+                }}
+              />
+            )}
+          </div>
         </div>
 
-        {/* Action Buttons Container */}
-        <div className="flex items-center gap-0.5" onMouseDown={(e) => e.stopPropagation()}>
-          {win.docked && (
-            <button
-              onClick={() => undockWin(win.id)}
-              className="flex items-center justify-center w-5 h-5 rounded hover:bg-blue-500 hover:text-white text-gray-400 transition-all mr-1"
-              title="Desacoplar Ventana"
-            >
-              <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current">
-                <path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z" />
-              </svg>
-            </button>
+        {/* BODY */}
+        <div
+          ref={contentRef}
+          className={clsx(
+            "flex-1 overflow-auto min-h-0 bg-[var(--color-window-content,#ffffff)] text-[var(--color-window-text,#1f2937)]",
+            (isDragging || isResizing) && "pointer-events-none select-none"
           )}
-
-          {(showMinimize || showMaximize || showClose) && <div className="h-5 w-px bg-gray-400/40 mx-1" />}
-
-          {showMinimize && (
-         <FenestraeButton
-                   className="fn-btn fn-btn-minimize"
-                   iconIndex={2}
-                   title="Minimizar"
-                   size="md"
-                   onClick={(e) => {
-                     e.stopPropagation();
-                     minimizeWin(self.id);
-                   }}
-                 />
-          )}
-
-          {showMaximize && (
-          <FenestraeButton
-                    className="fn-btn fn-btn-maximize"
-                    iconIndex={self.state === "maximized" ? 4 : 3}
-                    title={self.state === "maximized" ? "Restaurar" : "Maximizar"}
-                    size="md"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      maximizeWin(self.id);
-                    }}
-                  />
-          )}
-
-          {showClose && (
-              
-                     <FenestraeButton
-                       className="fn-btn fn-btn-close"
-                       iconIndex={1}
-                       title="Cerrar .."
-                       size="md"
-                       onClick={(e) => {
-                         e.stopPropagation();
-                         closeWin(self.id);
-                       }}
-                     />
-          )}
+          onMouseDown={(e) => { handleFocus(); e.stopPropagation(); }}
+        >
+          <FenestraeWinRenderer
+            win={{ ...self, isDragging, isResizing }}
+            closeWin={closeWin}
+          />
         </div>
-      </div>
 
-      {/* BODY */}
-      <div
-        ref={contentRef}
-        className={clsx(
-          "flex-1 overflow-auto min-h-0 bg-[var(--color-window-content,#ffffff)] text-[var(--color-window-text,#1f2937)]",
-          (isDragging || isResizing) && "pointer-events-none select-none"
+        {/* RESIZE HANDLES */}
+        {(isActive || isResizing) && (
+          <ResizeHandles active={isActive} onStart={handleResizeStart} />
         )}
-        onMouseDown={(e) => { handleFocus(); e.stopPropagation(); }}
-      >
-        <FenestraeWinRenderer win={win} closeWin={closeWin} />
       </div>
-
-      {/* RESIZE HANDLES */}
-      {(isActive || isResizing) && (
-        <ResizeHandles active={isActive} onStart={handleResizeStart} />
-      )}
-    </div>
+    </>
   );
-});
+
+}
+);
 
 FenestraeWinTop.propTypes = {
   win: PropTypes.object.isRequired,

@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import FenestraeWinRenderer from "./FenestraeWinRenderer"; // 🔹 Vinculación al renderer purificado
-import FenestraeButton from "../components/FenestraeButton"; // 🔹 Vinculación al botón purificado
+import FNButton from "../components/FNButton"; // 🔹 Vinculación al botón purificado
 import { useDraggable, useResizable } from "./Useresizeble";
 import { winStore } from "../core";
 
@@ -147,7 +147,7 @@ const FenestraeWinModal = React.memo(({ win, index, activeWinId, setActiveWinId 
 
           {/* 3. Botón de cerrar nativo que consume el gradiente efervescente de Windows XP */}
              {/* Cerrar */}
-                    <FenestraeButton
+                    <FNButton
                       className="fn-btn fn-btn-close"
                       iconIndex={1}
                       title="Cerrar"

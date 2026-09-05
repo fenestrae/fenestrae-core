@@ -1,54 +1,44 @@
-import React, { useEffect, createContext, useContext, useState, useMemo } from 'react'
+import React, { 
+  useEffect, 
+  createContext, 
+  useContext, 
+  useState, 
+  useMemo,
+  useRef 
+} from 'react'
+
 import { win } from '../core'
-import { mapThemeToCSSVariables } from '../themes/themeMapper' // El mapper que creamos antes
+import { mapThemeToCSSVariables } from '../themes/themeMapper'
+import FenestraeWinRenderer from "./FenestraeWinRenderer"
 
-import FenestraeWinRenderer from "./FenestraeWinRenderer";
+// Exponerlo al entorno global para el ecosistema multi-ventana
+window.__FenestraeRendererComponent__ = FenestraeWinRenderer
 
-// Exponerlo al entorno global para el ecosistema multi-ventana de Fenestrae
-window.__FenestraeRendererComponent__ = FenestraeWinRenderer;
-
-
-// 🌟 Creamos el contexto para los temas
+// 🌟 Contexto de temas
 const FenestraeThemeContext = createContext(null)
 
-/**
- * FenestraeProvider
- * Componente raíz de Fenestrae.
- * Registra los componentes, prepara el runtime y gestiona los temas visuales.
- * * Uso:
- * <FenestraeProvider components={myComponents} themes={myThemes} defaultTheme="sapBase">
- * <FenestraeContainer />
- * <MyApp />
- * </FenestraeProvider>
- * * @param {Object} components - Mapa de nombre → componente React
- * @param {Object} themes - Catálogo de temas JSON personalizados por el cliente
- * @param {string} defaultTheme - Nombre del tema inicial
- * @param {React.ReactNode} children - Contenido de la aplicación
- */
 const FenestraeProvider = ({ 
   components = {}, 
-  themes = {}, // El programador puede pasar temas custom aquí
-  defaultTheme = "modern", // Tema inicial seguro por defecto
+  themes = {},
+  defaultTheme = "modern",
   children 
 }) => {
 
+  // Registrar componentes
   useEffect(() => {
-    console.log("Fenestrae Registre Components",components);
     win.register(components)
   }, [components])
 
-  // 1. Gestión del estado usando la prop defaultTheme directamente
+  // Estado del tema
   const [currentThemeName, setCurrentThemeName] = useState(defaultTheme)
 
-  // 2. Resolvemos las variables CSS enviando al mapper el string actual del tema Y el catálogo extendido
+  // Variables CSS del tema activo
   const activeCSSVariables = useMemo(() => {
-    // Si el tema actual existe en los personalizados del usuario, le pasamos ese objeto custom.
-    // Si no existe, pasamos el string ("macOS", "modern") para que themeMapper use sus presets nativos.
-    const activeThemeInput = themes[currentThemeName] || currentThemeName;
+    const activeThemeInput = themes[currentThemeName] || currentThemeName
     return mapThemeToCSSVariables(activeThemeInput)
   }, [themes, currentThemeName])
 
-  // 3. Exponemos los nombres disponibles combinando presets fijos conocidos y los del usuario
+  // Contexto del tema
   const themeContextValue = useMemo(() => ({
     currentTheme: currentThemeName,
     setTheme: setCurrentThemeName,
@@ -58,17 +48,32 @@ const FenestraeProvider = ({
   return (
     <FenestraeThemeContext.Provider value={themeContextValue}>
       <div 
-        id="fenestrae-runtime-root" 
-        style={activeCSSVariables} 
-        className="w-full h-full min-h-screen"
+        id="fenestrae-runtime-root"
+        style={activeCSSVariables}
+        className="w-full h-full min-h-screen relative"
       >
+        {/* ⭐ Portal root integrado directamente en el JSX */}
+        <div
+          id="fenestrae-portal-root"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            zIndex: 999999,
+            pointerEvents: "none"
+          }}
+        />
+
+        {/* Contenido de la aplicación */}
         {children}
       </div>
     </FenestraeThemeContext.Provider>
   )
 }
 
-//  Exportamos el hook para que el LaunchPad o el Navbar cambien de tema
+// Hook de tema
 export const useFenestraeTheme = () => {
   const context = useContext(FenestraeThemeContext)
   if (!context) {

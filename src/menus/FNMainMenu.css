@@ -1,0 +1,182 @@
+/* menus/FNMainMenu.css */
+
+/* ============================================
+   MENÚ PRINCIPAL - BASE
+   ============================================ */
+
+.fn-menu-container {
+  background-color: var(--color-menu-bg);
+  color: var(--color-menu-text);
+  border-color: var(--color-menu-border);
+}
+
+/* ============================================
+   POPUP / CONTEXT MENU
+   ============================================ */
+
+.fn-popup-menu,
+.fn-context-menu {
+  background-color: var(--color-menu-popup-bg, var(--color-menu-bg));
+  border: 1px solid var(--color-menu-popup-border, var(--color-menu-border));
+  border-radius: var(--radius-fn-md, 4px);
+  box-shadow: var(--color-menu-popup-shadow, var(--shadow-fn-lg, 0 10px 15px rgba(0,0,0,0.1)));
+  padding: 4px 0;
+  min-width: 220px;
+  max-width: 320px;
+}
+
+/* ============================================
+   ITEMS DEL MENÚ
+   ============================================ */
+
+.fn-menu-item {
+  cursor: pointer;
+  transition: all var(--transition-fn-fast, 100ms ease);
+  color: var(--color-menu-text);
+  font-size: 0.875rem;
+}
+
+.fn-menu-item:hover {
+  background-color: var(--color-menu-item-hover, var(--color-menu-hover));
+}
+
+.fn-menu-item:active {
+  background-color: var(--color-menu-item-active, var(--color-fn-bg-active));
+}
+
+.fn-menu-item:focus-visible {
+  outline: 2px solid var(--color-fn-focus-ring, #3b82f6);
+  outline-offset: -2px;
+}
+
+/* ============================================
+   ITEMS HORIZONTALES (MENÚ PRINCIPAL)
+   ============================================ */
+
+.fn-menu-item-horizontal {
+  padding: 4px 10px;
+  border-radius: var(--radius-fn-sm, 2px);
+}
+
+/* ============================================
+   ITEMS VERTICALES (POPUP/CONTEXT)
+   ============================================ */
+
+.fn-menu-item-vertical {
+  padding: 6px 12px;
+  margin: 0 4px;
+  border-radius: var(--radius-fn-sm, 2px);
+  width: calc(100% - 8px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ============================================
+   SEPARADORES
+   ============================================ */
+
+.fn-menu-divider {
+  border-color: var(--color-menu-divider, var(--color-fn-divider, #e5e7eb));
+  margin: 4px 8px;
+}
+
+/* ============================================
+   SHORTCUTS
+   ============================================ */
+
+.fn-menu-item-shortcut {
+  color: var(--color-menu-text-muted, var(--color-fn-text-muted, #6b7280));
+  font-size: 0.7rem;
+  margin-left: auto;
+  padding-left: 16px;
+}
+
+/* ============================================
+   SUBMENU ARROW
+   ============================================ */
+
+.fn-menu-item-arrow {
+  color: var(--color-menu-text-muted, var(--color-fn-text-muted, #6b7280));
+  font-size: 0.6rem;
+  margin-left: 8px;
+}
+
+/* ============================================
+   ANIMACIONES
+   ============================================ */
+
+@keyframes fn-menu-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fn-menu-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fn-menu-container {
+  animation: fn-menu-fade-in 0.15s ease;
+}
+
+.fn-submenu {
+  animation: fn-menu-slide-in 0.15s ease;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+
+.fn-popup-menu::-webkit-scrollbar,
+.fn-context-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.fn-popup-menu::-webkit-scrollbar-track,
+.fn-context-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fn-popup-menu::-webkit-scrollbar-thumb,
+.fn-context-menu::-webkit-scrollbar-thumb {
+  background: var(--color-fn-scrollbar-thumb, #c1c1c1);
+  border-radius: 3px;
+}
+
+.fn-popup-menu::-webkit-scrollbar-thumb:hover,
+.fn-context-menu::-webkit-scrollbar-thumb:hover {
+  background: var(--color-fn-scrollbar-thumb-hover, #a8a8a8);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .fn-menu-container-horizontal {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 4px 8px;
+  }
+  
+  .fn-popup-menu,
+  .fn-context-menu {
+    max-width: 280px;
+    min-width: 180px;
+  }
+  
+  .fn-menu-item {
+    font-size: 0.8rem;
+  }
+}

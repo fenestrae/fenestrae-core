@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import FenestraeWinRenderer from "./FenestraeWinRenderer";
-import FenestraeButton from "../components/FenestraeButton";
+import FNButton from "../components/FNButton";
 import { useDraggable, ResizeHandles, useResizable } from "./Useresizeble";
 import { winStore } from "../core";
 
@@ -47,6 +47,16 @@ const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWin
 
   const contentRef = useRef(null);
 
+
+  const [isMobileView, setIsMobileView] = React.useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handler = () => setIsMobileView(window.innerWidth <= 768);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+
+
   // 5. Auto-ajuste de dimensiones reactivo al contenido interno
   useEffect(() => {
     if (!self.autoSize || self.state === "maximized") return;
@@ -74,7 +84,7 @@ const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWin
     });
 
     if (contentRef.current) observer.observe(contentRef.current);
-    
+
     return () => {
       observer.disconnect();
       if (rafId) cancelAnimationFrame(rafId);
@@ -83,23 +93,36 @@ const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWin
 
   const isTopWindow = self.type === "top";
 
-  // Composición de estilos para la capa flotante
-  const combinedStyles = {
-    width: `${finalW}px`,
-    height: `${finalH}px`,
-    transform: `translate3d(${finalX}px, ${finalY}px, 0)`,
-    zIndex: isTopWindow
-      ? 2000 + index
-      : (isActive ? 1000 : 50 + index),
-    position: self.isPortal ? "fixed" : "absolute",
-    top: 0,
-    left: 0,
-    display: "flex",
-    flexDirection: "column",
-    willChange: isDragging || isResizing ? "transform, width, height" : "auto",
-    pointerEvents: "auto",
-    ...(self.visible === false ? { display: "none" } : {})
-  };
+  const combinedStyles = isMobileView
+    ? {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100vw",
+      height: "100vh",
+      zIndex: 5000 + index,
+      display: "flex",
+      flexDirection: "column",
+      backgroundColor: "#fff",
+      borderRadius: 0,
+      boxShadow: "none",
+      pointerEvents: "auto",
+    }
+    : {
+      width: `${finalW}px`,
+      height: `${finalH}px`,
+      transform: `translate3d(${finalX}px, ${finalY}px, 0)`,
+      zIndex: isTopWindow ? 2000 + index : isActive ? 1000 : 50 + index,
+      position: self.isPortal ? "fixed" : "absolute",
+      top: 0,
+      left: 0,
+      display: "flex",
+      flexDirection: "column",
+      willChange: isDragging || isResizing ? "transform, width, height" : "auto",
+      pointerEvents: "auto",
+      ...(self.visible === false ? { display: "none" } : {})
+    };
+
 
   const handleFocus = useCallback(() => {
     if (!isActive && typeof setActiveWinId === "function") {
@@ -108,129 +131,181 @@ const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWin
   }, [isActive, self.id, setActiveWinId]);
 
   return (
-    <div
-      style={combinedStyles}
-      className={clsx(
-        // Estilos base con variables CSS
-        "shadow-2xl rounded-lg overflow-hidden transition-shadow duration-150",
-        "bg-[var(--color-window-bg,#ffffff)]",
-        "border border-[var(--color-window-border,#d1d5db)]",
-        // Estado activo vs inactivo
-        isActive 
-          ? "ring-2 ring-[var(--color-window-active-border,#0a6ed1)]/50 shadow-[var(--color-window-active-border,#0a6ed1)]/5" 
-          : "opacity-90"
-      )}
-      onMouseDown={handleFocus}
-    >
-      {/* 🖥️ CABECERA DE VENTANA */}
-      <div
-        className="handle-movible px-3 py-1.5 flex justify-between items-center select-none cursor-move shrink-0 border-b"
-        style={{
-          // Fondo según estado activo/inactivo
-          backgroundColor: isActive
-            ? "var(--color-window-header, #1e293b)"
-            : "var(--color-window-header-inactive, #94a3b8)",
-          // Color de texto según estado
-          color: isActive
-            ? "var(--color-window-header-text, #ffffff)"
-            : "var(--color-window-header-inactive-text, #f1f5f9)",
-          // Borde inferior
-          borderBottomColor: "var(--color-window-border, #d1d5db)",
-          // Dirección (para soporte RTL)
-          flexDirection: "var(--fn-header-direction, row)",
-          // Transición suave
-          transition: "background-color 150ms ease, color 150ms ease",
-        }}
-        onMouseDown={(e) => {
-          handleFocus();
-          if (self.align && self.align !== "none") {
-            updateWinLayout(self.id, { align: "none", autoSize: false });
-          }
-          handleMouseDown(e);
-        }}
-        onDoubleClick={() => maximizeWin(self.id)}
-      >
-        {/* Identificador / Título */}
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          {/* Indicador de estado (activo/inactivo) */}
-          <span
-            className={clsx(
-              "w-2 h-2 rounded-full transition-colors duration-150 shrink-0",
-              isActive 
-                ? "bg-[var(--color-fn-success,#22c55e)]" 
-                : "bg-[var(--color-fn-text-muted,#9ca3af)]"
-            )}
-          />
-          <span className="text-[11px] font-bold uppercase tracking-wider select-none truncate">
-            {self.title || "Ventana Flotante"}
-          </span>
-        </div>
+    <>
+      {(isDragging || isResizing) && (
 
-        {/* 🔹 Barra de Controles - USANDO LAS NUEVAS VARIANTES */}
-        <div className="flex items-center gap-1 shrink-0 ml-2">
-          {/* Minimizar */}
-          <FenestraeButton
-            className="fn-btn fn-btn-minimize"
-            iconIndex={2}
-            title="Minimizar"
-            size="md"
-            onClick={(e) => {
-              e.stopPropagation();
-              minimizeWin(self.id);
-            }}
-          />
-
-          {/* Maximizar / Restaurar */}
-          <FenestraeButton
-            className="fn-btn fn-btn-maximize"
-            iconIndex={self.state === "maximized" ? 4 : 3}
-            title={self.state === "maximized" ? "Restaurar" : "Maximizar"}
-            size="md"
-            onClick={(e) => {
-              e.stopPropagation();
-              maximizeWin(self.id);
-            }}
-          />
-
-          {/* Cerrar */}
-          <FenestraeButton
-            className="fn-btn fn-btn-close"
-            iconIndex={1}
-            title="Cerrar"
-            size="md"
-            onClick={(e) => {
-              e.stopPropagation();
-              closeWin(self.id);
-            }}
-          />
-        </div>
-      </div>
-
-      {/* 📄 CONTENEDOR DE CONTENIDO */}
-      <div
-        ref={contentRef}
-        className="flex-1 overflow-auto min-h-0"
-        style={{
-          backgroundColor: "var(--color-window-content, #fafafa)",
-          color: "var(--color-window-text, #1f2937)",
-          padding: "var(--spacing-window-padding, 1rem)",
-        }}
-        onMouseDown={(e) => {
-          handleFocus();
-          e.stopPropagation();
-        }}
-      >
-        <FenestraeWinRenderer win={self} closeWin={closeWin} />
-      </div>
-
-      {/* 📐 MARCOS ACTIVOS DE REDIMENSIONAMIENTO */}
-      {(isActive || isResizing) && (
-        <ResizeHandles
-          active={isActive}
-          onStart={handleResizeStart}
+        <div
+          style={{
+            position: "fixed",
+            top: finalY - 400,
+            left: finalX - 400,
+            width: finalW + 800,
+            height: finalH + 800,
+            background: "transparent",
+            zIndex: combinedStyles.zIndex - 1, // debajo de la ventana FLOAT
+            pointerEvents: "auto",
+          }}
         />
       )}
-    </div>
+
+      <div
+        style={combinedStyles}
+        className={clsx(
+          // Estilos base con variables CSS
+          "shadow-2xl rounded-lg overflow-hidden transition-shadow duration-150",
+          "bg-[var(--color-window-bg,#ffffff)]",
+          "border border-[var(--color-window-border,#d1d5db)]",
+          // Estado activo vs inactivo
+          isActive
+            ? "ring-2 ring-[var(--color-window-active-border,#0a6ed1)]/50 shadow-[var(--color-window-active-border,#0a6ed1)]/5"
+            : "opacity"
+        )}
+        onMouseDown={handleFocus}
+      >
+        {isMobileView ? (
+          <div
+            className="px-4 py-3 flex items-center justify-between border-b bg-gray-100"
+            style={{ flexShrink: 0 }}
+          >
+            {/* ⭐ Botón atrás siempre a la izquierda */}
+            <FNButton
+              variant="close"
+              iconIndex={6}      // flecha atrás
+              size="md"
+              title="Atrás"
+              onClick={(e) => {
+                e.stopPropagation();
+                closeWin(self.id);
+              }}
+              className="text-gray-700"
+            />
+
+            {/* ⭐ Título centrado */}
+            <div className="text-sm font-bold flex-1 text-center">
+              {self.title}
+            </div>
+
+            {/* ⭐ Espacio simétrico para centrar el título */}
+            <div style={{ width: 32 }} />
+          </div>
+        ) : (
+
+          <div
+            className="handle-movible px-3 py-1.5 flex justify-between items-center select-none cursor-move shrink-0 border-b"
+            style={{
+              // Fondo según estado activo/inactivo
+              backgroundColor: isActive
+                ? "var(--color-window-header, #1e293b)"
+                : "var(--color-window-header-inactive, #94a3b8)",
+              // Color de texto según estado
+              color: isActive
+                ? "var(--color-window-header-text, #ffffff)"
+                : "var(--color-window-header-inactive-text, #f1f5f9)",
+              // Borde inferior
+              borderBottomColor: "var(--color-window-border, #d1d5db)",
+              // Dirección (para soporte RTL)
+              flexDirection: "var(--fn-header-direction, row)",
+              // Transición suave
+              transition: "background-color 150ms ease, color 150ms ease",
+            }}
+            onMouseDown={(e) => {
+              handleFocus();
+              if (self.align && self.align !== "none") {
+                updateWinLayout(self.id, { align: "none", autoSize: false });
+              }
+              handleMouseDown(e);
+            }}
+            onDoubleClick={() => maximizeWin(self.id)}
+          >
+            {/* Identificador / Título */}
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              {/* Indicador de estado (activo/inactivo) */}
+              <span
+                className={clsx(
+                  "w-2 h-2 rounded-full transition-colors duration-150 shrink-0",
+                  isActive
+                    ? "bg-[var(--color-fn-success,#22c55e)]"
+                    : "bg-[var(--color-fn-text-muted,#9ca3af)]"
+                )}
+              />
+              <span className="text-[11px] font-bold uppercase tracking-wider select-none truncate">
+                {self.title || "Ventana Flotante"}
+              </span>
+            </div>
+
+            {/* 🔹 Barra de Controles - USANDO LAS NUEVAS VARIANTES */}
+            <div className="flex items-center gap-1 shrink-0 ml-2">
+              {/* Minimizar */}
+              <FNButton
+                variant={"minimize"}
+                iconIndex={2}
+                title="Minimizar"
+                size="md"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  minimizeWin(self.id);
+                }}
+              />
+
+              {/* Maximizar / Restaurar */}
+              <FNButton
+                variant={"maximize"}
+                iconIndex={self.state === "maximized" ? 4 : 3}
+                title={self.state === "maximized" ? "Restaurar" : "Maximizar"}
+                size="md"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  maximizeWin(self.id);
+                }}
+              />
+
+              {/* Cerrar */}
+              <FNButton
+                variant="close"
+                iconIndex={1}
+                title="Cerrar"
+                size="md"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closeWin(self.id);
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* 📄 CONTENEDOR DE CONTENIDO */}
+        <div
+          ref={contentRef}
+          className="flex-1 min-h-0"
+          style={{
+            backgroundColor: "var(--color-window-content, #fafafa)",
+            color: "var(--color-window-text, #1f2937)",
+            padding: "var(--spacing-window-padding, 1rem)",
+          }}
+          onMouseDown={(e) => {
+            handleFocus();
+            e.stopPropagation();
+          }}
+        >
+          {/* ⭐ CAPA ANTI-IFRAME DURANTE DRAG/RESIZE */}
+
+
+          <FenestraeWinRenderer
+            win={{ ...self, isDragging, isResizing }}
+            closeWin={closeWin}
+          />
+        </div>
+
+        {/* 📐 MARCOS ACTIVOS DE REDIMENSIONAMIENTO */}
+        {(isActive || isResizing) && (
+          <ResizeHandles
+            active={isActive}
+            onStart={handleResizeStart}
+          />
+        )}
+      </div>
+    </>
   );
 });
 

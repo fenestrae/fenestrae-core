@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 
 import { winStore, getLaunchpadId } from "../core";
-import FenestraeButton from "../components/FenestraeButton";
+import FNButton from "../components/FNButton";
 // ─────────────────────────────────────────────────────────────────────────────
 // COMPONENTE INTERNO: DESKTOP TAB (Estabilizado, sólido y quieto)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ const FenestraeDesktopTab = ({ win: w, isActive, setActiveWinId, closeWin }) => 
       </span>
 
       {w.closable !== false && !isLaunchpad && (
-        <FenestraeButton
+        <FNButton
           iconIndex={1}
           title="close Tab"
           className="fn-btn fn-btn-close fn-btn-hidden-hover"

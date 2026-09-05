@@ -17,6 +17,28 @@ export const createApiSlice = (set, get) => ({
     if (!name || typeof name !== "string") return null;
     const componentName = name.toLowerCase();
 
+
+  // Si viene una URL → TAB
+  if (params?.url) {
+    const newId = get().createWin(validParentId, {
+      type: "tab",
+      name: componentName,
+      title: params.titulo || params.title || name.toUpperCase(),
+      path: params.url, // ← ruta externa directa
+      params: {
+        ...params,
+        name: componentName,
+        isTab: true,
+        route,
+        this: params.initialData || {},
+      },
+      safeCallbacks: {},
+    });
+
+    get().setActiveWinId(newId);
+    return newId;
+  }
+
     const entry = formsRegistry.get(componentName);
     if (!entry) return null;
 
@@ -62,7 +84,9 @@ export const createApiSlice = (set, get) => ({
 
       const componentName = name?.toLowerCase();
       const entry = formsRegistry.get(componentName);
-      if (!entry) return reject({ status: "error", message: `[Fenestrae] Component not registered: "${name}"` });
+      const url=params?.url;
+
+      if (!entry&&!url) return reject({ status: "error", message: `[Fenestrae] Component not registered: "${name}"` });
 
       const safeCallbacks = {
         ...callbacks,

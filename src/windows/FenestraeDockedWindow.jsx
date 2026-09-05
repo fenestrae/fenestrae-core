@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import { winStore } from "../core";
 import FenestraeWinRenderer from "./FenestraeWinRenderer"; // 🔹 Renderer unificado
-import FenestraeButton from "../components/FenestraeButton";
+import FNButton from "../components/FNButton";
 import { useResizable, ResizeHandles } from "./Useresizeble";
 
 
@@ -176,7 +176,7 @@ const FenestraeDockedWindow = React.memo(({ win, config, closeWin }) => {
         <div className="flex items-center gap-0.5">
           {/* Botón Desacoplar (Undock) */}
 
-          <FenestraeButton
+          <FNButton
             className="fn-btn fn-btn-minimize"
             iconIndex={6}
             title="Detach Window"
@@ -189,7 +189,7 @@ const FenestraeDockedWindow = React.memo(({ win, config, closeWin }) => {
 
           {/* Botón Cerrar (Close) */}
 
-          <FenestraeButton
+          <FNButton
             className="fn-btn fn-btn-close"
             iconIndex={1}
             title="Close"
