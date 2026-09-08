@@ -1,8 +1,38 @@
 # Fenestrae
 
-## Workspace Manager for Enterprise Applications
-
+## Workspace Manager for Enterprise Applications  
 ### *Modern, inspired by the classic, designed for real productivity*
+
+---
+
+![Fenestrae Logo](https://raw.githubusercontent.com/fenestrae/fenestrae/main/logo.png)
+
+---
+
+## Badges
+
+![npm version](https://img.shields.io/npm/v/fenestrae)
+![license](https://img.shields.io/badge/license-Apache%202.0-blue)
+![typescript](https://img.shields.io/badge/TypeScript-Ready-blue)
+![react](https://img.shields.io/badge/React-Compatible-61dafb)
+
+---
+
+# Table of Contents
+
+1. [Introduction](#introduction)  
+2. [Identity](#identity)  
+3. [What is Fenestrae](#what-is-fenestrae-version-102)  
+4. [Important Notice](#-important)  
+5. [Roadmap](#roadmap-toward-the-context-manager)  
+6. [Quick Start](#quick-start)  
+7. [Usage](#usage)  
+8. [Examples](#examples)  
+9. [Architecture Overview](#architecture-overview)  
+10. [Contributing](#contributing)  
+11. [Contact](#contact--support)  
+12. [License](#license)  
+13. [Installation](#installation)
 
 ---
 
@@ -10,11 +40,11 @@
 
 For years we accepted an idea without questioning it:
 
-**migrating an enterprise application to the web meant losing productivity.**
+**Migrating an enterprise application to the web meant losing productivity.**
 
-- Less context.
-- Less multitasking.
-- Less continuity.
+- Less context  
+- Less multitasking  
+- Less continuity  
 
 **Fenestrae** was created to bring back what always worked in enterprise applications, reimagined with modern technologies like **React** and **TypeScript**.
 
@@ -22,8 +52,7 @@ For years we accepted an idea without questioning it:
 
 ## Identity
 
-The name **Fenestrae** comes from Latin and means **windows**.  
-It's a direct reference to the roots of enterprise productivity: the classic windows that allowed users to work with multiple processes simultaneously.
+The name **Fenestrae** comes from Latin and means **windows** — a direct reference to the roots of enterprise productivity: multiple processes, multiple contexts, and uninterrupted workflows.
 
 The logo —a classic window with organic lines inspired by **Gaudí**— represents its essence:
 
@@ -37,42 +66,131 @@ The logo —a classic window with organic lines inspired by **Gaudí**— repres
 
 ---
 
-## What is Fenestrae (version 0.1.1)
+## What is Fenestrae (version 1.0.2)
 
-Version **0.2.1** is a **workspace manager** that brings back capabilities the modern web lost:
+Version **1.0.2** is a **workspace manager** that brings back capabilities the modern web lost:
 
-- ✅ **Window management**
-- ✅ **Real multitasking**
-- ✅ **Basic form persistence**
-- ✅ **Docking**
-- ✅ **Floating tools**
-- ✅ **External windows**
-- ✅ **Multi‑monitor support**
+- Window management  
+- Real multitasking  
+- Basic form persistence  
+- Docking  
+- Floating tools  
+- External windows  
+- Multi‑monitor support  
 
 ---
 
 ## ❗ Important
 
-> Version **0.2.5** does not yet include context management.  
-> This functionality will arrive in future versions **(0.3.x)**.
+> Version **1.0.2** does not yet include context management.  
+> This functionality will arrive in future versions **(1.1.x)**.
 
 ---
 
 ## Roadmap Toward the Context Manager
 
-**Fenestrae** will evolve into a **full context manager**, capable of handling:
+Fenestrae will evolve into a **full context manager**, capable of handling:
 
-- 🔹 User contexts
-- 🔹 Application contexts
-- 🔹 Deep process persistence
-- 🔹 Intelligent workspaces
-- 🔹 Total continuity
+- User contexts  
+- Application contexts  
+- Deep process persistence  
+- Intelligent workspaces  
+- Total continuity  
 
+---
+
+# Quick Start
+
+```tsx
+import { Fenestrae } from 'fenestrae';
+
+const app = new Fenestrae();
+
+app.open('customer-form', { customerId: 42 });
+```
+
+---
+
+# Usage
+
+### Opening a window
+
+```ts
+app.open('orders', { filter: 'pending' });
+```
+
+### Sending data to a window
+
+```ts
+app.send('orders', { refresh: true });
+```
+
+### Listening to window events
+
+```ts
+app.on('orders:save', (payload) => {
+  console.log('Order saved:', payload);
+});
+```
+
+### Closing a window
+
+```ts
+app.close('orders');
+```
+
+### Persisting window state
+
+Fenestrae automatically persists:
+
+- position  
+- size  
+- basic form data  
+
+
+# Architecture Overview
+
+Fenestrae is built around three core pillars:
+
+### 1. Workspace Engine  
+Responsible for window lifecycle, multitasking, docking, and multi‑monitor support.
+
+### 2. Communication Layer  
+Event‑based messaging between windows and the main application.
+
+### 3. Persistence Layer  
+Stores window state, basic form data, and layout continuity.
+
+Future versions will introduce:
+
+- Context Manager  
+- Deep process persistence  
+- Intelligent workspace restoration  
+
+---
+
+# Contributing
+
+Contributions are welcome.
+
+To contribute:
+
+1. Fork the repository  
+2. Create a feature branch  
+3. Submit a pull request  
+4. Follow the coding style guidelines  
+5. Include tests when possible  
+
+---
 
 ## Contact & Support
-   fenestrae.ws@gmail.com
+
+fenestrae.ws@gmail.com
+
+---
 
 ## License
+
 Apache 2.0 — designed for adoption, extensibility, and enterprise integration.
 
 ---
@@ -81,3 +199,5 @@ Apache 2.0 — designed for adoption, extensibility, and enterprise integration.
 
 ```bash
 npm install fenestrae
+```
+
