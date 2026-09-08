@@ -100,23 +100,36 @@ Fenestrae will evolve into a **full context manager**, capable of handling:
 ---
 
 # Quick Start
+Fenestrae se inicializa mediante dos componentes:
 
-```tsx
-import { Fenestrae } from 'fenestrae';
-
-const app = new Fenestrae();
-
-app.open('customer-form', { customerId: 42 });
-```
-
+Fenestrae is initialized through the FenestraeProvider and rendered through the FenestraeContainer.
+Once initialized, you can open windows anywhere in your application using the win API.
 ---
 
 # Usage
 
 ### Opening a window
 
+
 ```ts
-app.open('orders', { filter: 'pending' });
+  const handleTileClick = (item) => {
+    if (fenestrae && typeof fenestrae.showTab === "function") {
+      
+      fenestrae.showTab(null, item.name, {
+        title: item.title,
+        url: item?.url,
+      });
+    } else {
+      console.warn("Fenestrae is not available.");
+      alert(`Opening: ${item.title} (${item.name})`);
+    }
+  };
+
+
+  fenestrae.showFloat(winId, "frmcustomers", { id: "001231", });
+
+  fenestrae.showFloat(winId, "", {  url:"/customers?id=001231" });
+
 ```
 
 ### Sending data to a window
