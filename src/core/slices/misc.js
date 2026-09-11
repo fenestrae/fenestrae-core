@@ -9,10 +9,6 @@ import { getLaunchpadId } from "../index";
 // Global component registry (equivalent to Win32 class registration)
 export const formsRegistry = new Map();
 
-if (typeof window !== 'undefined') {
-  window.__fenestrae_registry = formsRegistry;
-}
-
 export const createMiscSlice = (set, get) => ({
   /**
    * Registers components in Fenestrae's central registry.

@@ -29,10 +29,11 @@
 7. [Usage](#usage)  
 8. [Examples](#examples)  
 9. [Architecture Overview](#architecture-overview)  
-10. [Contributing](#contributing)  
-11. [Contact](#contact--support)  
-12. [License](#license)  
-13. [Installation](#installation)
+10. [Security notes](#security-notes)  
+11. [Contributing](#contributing)  
+12. [Contact](#contact--support)  
+13. [License](#license)  
+14. [Installation](#installation)
 
 ---
 
@@ -167,6 +168,24 @@ Future versions will introduce:
 - Context Manager  
 - Deep process persistence  
 - Intelligent workspace restoration  
+
+---
+
+# Security notes
+
+Fenestrae is a client-side window manager. It does **not** authenticate users or authorize server actions. `hasPermission` only hides UI; the host application must enforce access on the backend.
+
+Do not persist passwords, tokens or identity documents in `fenestrae.context` or window `params`. IndexedDB is origin-scoped and readable by any script on the same origin.
+
+Call `fenestrae.closeSession()` on logout. It clears `fenestrae_*` keys from sessionStorage, drops the active IndexedDB session and resets in-memory window state.
+
+Iframes only load `http(s)` URLs from the app origin (or `params.allowedOrigins`). Prefer CSP on the host app, for example:
+
+```http
+Content-Security-Policy: default-src 'self'; script-src 'self'; frame-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'
+```
+
+Adjust `frame-src` if you intentionally embed extra origins. `postMessage` is restricted to `window.location.origin`.
 
 ---
 

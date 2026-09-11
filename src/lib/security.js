@@ -106,3 +106,16 @@ export function writeBlankPopupDocument(nativeWindow, title) {
 
   doc.title = String(title ?? "");
 }
+
+export const FENESTRAE_SESSION_KEYS = [
+  "fenestrae_session",
+  "fenestrae_user",
+  "fenestrae_workspace",
+  "fenestrae_permissions",
+  "fenestrae_hydrated",
+  "fenestrae_launchpadId",
+];
+
+export function clearFenestraeSessionStorage() {
+  FENESTRAE_SESSION_KEYS.forEach((key) => sessionStorage.removeItem(key));
+}

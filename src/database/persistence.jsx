@@ -74,7 +74,8 @@ import {
     STORE_CONTEXTS
 } from "./dbTable";
 import { winStore, getLaunchpadId } from "../core"
-import { sanitizePersistable } from "../lib/security";
+import { sanitizePersistable, clearFenestraeSessionStorage } from "../lib/security";
+import { setPermissions } from "../permissions/permissions";
 import { v4 as uuidv4 } from "uuid";
 import { initialState } from '../core/constants';
 
@@ -371,15 +372,25 @@ export const setSession = async ({ winOrder = [], activeWinId = null } = {}) => 
 
 export const closeSession = async () => {
     const sessionId = sessionStorage.getItem("fenestrae_session");
-    if (!sessionId) return;
 
-    // 1. Cerrar todas las ventanas de forma empresarial
-    winStore.getState().closeAllWin(true); // true = cerrar también LaunchPad si quieres
-    // 2. Limpiar la sesión activa del navegador
-    sessionStorage.removeItem("fenestrae_session");
-    // 3. Borrar la sesión en IndexedDB
-    await delSession(sessionId);
+    try {
+        winStore.getState().closeAllWin(true);
+    } catch { }
 
+    if (sessionId) {
+        try {
+            await delSession(sessionId);
+        } catch (err) {
+            console.warn("[Fenestrae] closeSession: no se pudo borrar la sesión en IndexedDB", err);
+        }
+    }
+
+    clearFenestraeSessionStorage();
+    setPermissions([]);
+
+    try {
+        winStore.getState().resetStore();
+    } catch { }
 };
 
 
