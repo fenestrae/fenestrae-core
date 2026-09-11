@@ -7,7 +7,7 @@ import React, { useEffect, useRef, useCallback, useState } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import FenestraeWinRenderer from "./FenestraeWinRenderer";
-import { useDraggable, useResizable, ResizeHandles } from "./UseResizable";
+import { useDraggable, useResizable, ResizeHandles, useAutoSizeLayout } from "./UseResizable";
 import FNButton from "../components/FNButton";
 import { winStore } from "../core";
 import { WIN_TYPES, WIN_ALIGN } from "../store/types";
@@ -48,26 +48,13 @@ const FenestraeWinTop = React.memo(({ win, index, isActive, setActiveWinId }) =>
 
   // --- AutoSize via ResizeObserver ------------------------------------------
   const contentRef = useRef(null);
-  const updateLayoutRef = useRef(updateWinLayout);
-  updateLayoutRef.current = updateWinLayout;
-
-  useEffect(() => {
-    if (!win.autoSize || win.state === "maximized") return;
-
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.target.getBoundingClientRect();
-        updateLayoutRef.current(win.id, {
-          width: Math.min(width + 10, window.innerWidth * 0.95),
-          height: Math.min(height + 45, window.innerHeight * 0.95),
-          align: win.align,
-        });
-      }
-    });
-
-    if (contentRef.current) observer.observe(contentRef.current);
-    return () => observer.disconnect();
-  }, [win.id, win.autoSize, win.state, win.align]);
+  useAutoSizeLayout(
+    Boolean(win.autoSize),
+    win.state === "maximized",
+    contentRef,
+    (layout) => updateWinLayout(win.id, layout),
+    win.align,
+  );
 
   // --- Dock events -----------------------------------------------------------
   const [dockHint, setDockHint] = useState(null);

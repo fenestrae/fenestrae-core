@@ -1,9 +1,9 @@
-import React, { useEffect, useCallback, useRef } from "react";
+import React, { useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import FenestraeWinRenderer from "./FenestraeWinRenderer"; // 🔹 Vinculación al renderer purificado
 import FNButton from "../components/FNButton"; // 🔹 Vinculación al botón purificado
-import { useDraggable, useResizable } from "./UseResizable";
+import { useDraggable, useResizable, useAutoSizeLayout } from "./UseResizable";
 import { winStore } from "../core";
 
 const FenestraeWinModal = React.memo(({ win, index, isActive, setActiveWinId }) => {
@@ -41,31 +41,13 @@ const FenestraeWinModal = React.memo(({ win, index, isActive, setActiveWinId }) 
 
   const contentRef = useRef(null);
 
-  // 5. Auto-ajuste de dimensiones según el contenido inyectado
-  useEffect(() => {
-    if (!self.autoSize || self.state === "maximized") return;
-
-    const observer = new ResizeObserver((entries) => {
-      for (let entry of entries) {
-        const { width, height } = entry.target.getBoundingClientRect();
-
-        const targetWidth = width + 10;
-        const targetHeight = height + 45; // 45px aproximados de cabecera
-
-        const maxWidth = window.innerWidth * 0.95;
-        const maxHeight = window.innerHeight * 0.95;
-
-        updateWinLayout(self.id, {
-          width: Math.min(targetWidth, maxWidth),
-          height: Math.min(targetHeight, maxHeight),
-          align: self.align,
-        });
-      }
-    });
-
-    if (contentRef.current) observer.observe(contentRef.current);
-    return () => observer.disconnect();
-  }, [self.autoSize, self.align, self.id, updateWinLayout, self.state]);
+  useAutoSizeLayout(
+    Boolean(self.autoSize),
+    self.state === "maximized",
+    contentRef,
+    (layout) => updateWinLayout(self.id, layout),
+    self.align,
+  );
 
   // Estilos de composición interna para la caja del modal flotante
   const modalBoxStyles = {

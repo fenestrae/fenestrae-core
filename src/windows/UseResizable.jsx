@@ -352,3 +352,48 @@ export const useResizable = (
 
   return { size, posAdj, isResizing, handleResizeStart };
 };
+
+/**
+ * Debounced content-driven layout updates. Skips writes when the measured
+ * size did not change, so autoSize does not persist on every pixel.
+ */
+export const useAutoSizeLayout = (enabled, maximized, contentRef, onLayout, align) => {
+  const onLayoutRef = useRef(onLayout);
+  onLayoutRef.current = onLayout;
+  const lastSizeRef = useRef({ width: 0, height: 0 });
+
+  useEffect(() => {
+    if (!enabled || maximized) return;
+    const node = contentRef.current;
+    if (!node || typeof ResizeObserver === "undefined") return;
+
+    let timer = null;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const { width, height } = entry.target.getBoundingClientRect();
+      const next = {
+        width: Math.min(Math.ceil(width + 10), window.innerWidth * 0.95),
+        height: Math.min(Math.ceil(height + 45), window.innerHeight * 0.95),
+      };
+      if (
+        next.width === lastSizeRef.current.width &&
+        next.height === lastSizeRef.current.height
+      ) {
+        return;
+      }
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        lastSizeRef.current = next;
+        onLayoutRef.current({ ...next, align });
+      }, 80);
+    });
+
+    observer.observe(node);
+    return () => {
+      observer.disconnect();
+      if (timer) clearTimeout(timer);
+    };
+  }, [enabled, maximized, contentRef, align]);
+};
+

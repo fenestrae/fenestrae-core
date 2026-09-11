@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import FenestraeWinRenderer from "./FenestraeWinRenderer";
 import FNButton from "../components/FNButton";
-import { useDraggable, ResizeHandles, useResizable } from "./UseResizable";
+import { useDraggable, ResizeHandles, useResizable, useAutoSizeLayout } from "./UseResizable";
 import { winStore } from "../core";
 import { WIN_TYPES, WIN_ALIGN } from "../store/types";
 
@@ -57,38 +57,13 @@ const FenestraeWinFloating = React.memo(({ win, index, isActive, setActiveWinId 
 
 
   // 5. Auto-ajuste de dimensiones reactivo al contenido interno
-  useEffect(() => {
-    if (!self.autoSize || self.state === "maximized") return;
-
-    let rafId = null;
-
-    const observer = new ResizeObserver((entries) => {
-      for (let entry of entries) {
-        const { width, height } = entry.target.getBoundingClientRect();
-
-        const targetWidth = Math.ceil(width + 10);
-        const targetHeight = Math.ceil(height + 45);
-
-        const maxWidth = window.innerWidth * 0.95;
-        const maxHeight = window.innerHeight * 0.95;
-
-        rafId = requestAnimationFrame(() => {
-          updateWinLayout(self.id, {
-            width: Math.min(targetWidth, maxWidth),
-            height: Math.min(targetHeight, maxHeight),
-            align: self.align || WIN_ALIGN.NONE,
-          });
-        });
-      }
-    });
-
-    if (contentRef.current) observer.observe(contentRef.current);
-
-    return () => {
-      observer.disconnect();
-      if (rafId) cancelAnimationFrame(rafId);
-    };
-  }, [self.autoSize, self.align, self.id, updateWinLayout, self.state]);
+  useAutoSizeLayout(
+    Boolean(self.autoSize),
+    self.state === "maximized",
+    contentRef,
+    (layout) => updateWinLayout(self.id, layout),
+    self.align || WIN_ALIGN.NONE,
+  );
 
   const isTopWindow = self.type === WIN_TYPES.TOP;
 
