@@ -10,16 +10,19 @@
   },
   "main": "./dist/fenestrae.cjs.js",
   "module": "./dist/fenestrae.es.js",
+  "types": "./src/index.d.ts",
   "style": "./dist/fenestrae.css",
   "exports": {
     ".": {
+      "types": "./src/index.d.ts",
       "import": "./dist/fenestrae.es.js",
       "require": "./dist/fenestrae.cjs.js"
     },
     "./dist/*": "./dist/*"
   },
   "files": [
-    "dist"
+    "dist",
+    "src/index.d.ts"
   ],
   "scripts": {
     "dev": "vite build --watch",
