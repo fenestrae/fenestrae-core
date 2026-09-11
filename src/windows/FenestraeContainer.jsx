@@ -319,20 +319,20 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
         <FenestraeFixedZone key={w.id} win={w} />
       ))}
 
-{wins.size > 0 && Array.from(wins.values()).some(w => w.isDragging || w.isResizing) && (
-   createPortal(
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "yellow",
-        zIndex: 999998,
-        pointerEvents: "auto",
-      }}
-    />,
-    document.body
-  )
-)}
+      {wins.size > 0 && Array.from(wins.values()).some(w => w.isDragging || w.isResizing) && (
+        createPortal(
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "transparent",
+              zIndex: 999998,
+              pointerEvents: "auto",
+            }}
+          />,
+          document.body
+        )
+      )}
       {/* FLOTANTES */}
       {floatWins.map((w, index) => (
         <FenestraeWinFloating
