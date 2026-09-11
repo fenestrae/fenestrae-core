@@ -38,7 +38,7 @@ export const createMiscSlice = (set, get) => ({
     });
   },
 
-  setHasHydrated: (state) => set({ _hasHydrated: state }),
+  setHasHydrated: (state) => set({ hasHydrated: state }),
 
   setCaption: (id, newCaption) => set(produce((self) => {
     const win = self.wins.get(id);

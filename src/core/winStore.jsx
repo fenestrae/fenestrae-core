@@ -33,7 +33,7 @@ export const winStore = create(
       // Estado base (con sesión de respaldo si existe)
       ...initialState,
       ...loadSavedState(),
-      _hasHydrated: false,
+      hasHydrated: false,
 
       // Slices compuestos
       ...createMiscSlice(set, get),
