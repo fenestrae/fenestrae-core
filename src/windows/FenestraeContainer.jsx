@@ -8,7 +8,7 @@ import { restoreWindows } from "../database/persistence";
 
 // Componentes existentes
 import FenestraeDockZone from "./FenestraeDockedWindow";
-import FenestraeWinRederer from "./FenestraeWinRenderer";
+import FenestraeWinRenderer from "./FenestraeWinRenderer";
 import FenestraeWinModal from "./FenestraeWinModal";
 import FenestraeWinFloating from "./FenestraeWinFloating";
 import FenestraeWinPanel from "./FenestraeWinPanel";
@@ -273,7 +273,7 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
                 >
                   <div className="w-full h-full overflow-hidden">
                     <React.Suspense fallback={<div>Cargando ventana...</div>}>
-                      <FenestraeWinRederer win={w} closeWin={closeWin} />
+                      <FenestraeWinRenderer win={w} closeWin={closeWin} />
                     </React.Suspense>
                   </div>
                 </div>
@@ -383,7 +383,7 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
       {extWins.map((w) => (
         <FenestraeWinExtern key={w.id} win={w}>
           <React.Suspense fallback={<div>Cargando ventana externa...</div>}>
-            <FenestraeWinRederer win={w} closeWin={closeWin} />
+            <FenestraeWinRenderer win={w} closeWin={closeWin} />
           </React.Suspense>
         </FenestraeWinExtern>
       ))}

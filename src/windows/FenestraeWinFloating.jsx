@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import FenestraeWinRenderer from "./FenestraeWinRenderer";
 import FNButton from "../components/FNButton";
-import { useDraggable, ResizeHandles, useResizable } from "./Useresizeble";
+import { useDraggable, ResizeHandles, useResizable } from "./UseResizable";
 import { winStore } from "../core";
 
 const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWinId }) => {

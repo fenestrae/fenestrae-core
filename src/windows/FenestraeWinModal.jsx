@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import FenestraeWinRenderer from "./FenestraeWinRenderer"; // 🔹 Vinculación al renderer purificado
 import FNButton from "../components/FNButton"; // 🔹 Vinculación al botón purificado
-import { useDraggable, useResizable } from "./Useresizeble";
+import { useDraggable, useResizable } from "./UseResizable";
 import { winStore } from "../core";
 
 const FenestraeWinModal = React.memo(({ win, index, activeWinId, setActiveWinId }) => {

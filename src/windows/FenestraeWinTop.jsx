@@ -7,7 +7,7 @@ import React, { useEffect, useRef, useCallback, useState } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import FenestraeWinRenderer from "./FenestraeWinRenderer";
-import { useDraggable, useResizable, ResizeHandles } from "./Useresizeble";
+import { useDraggable, useResizable, ResizeHandles } from "./UseResizable";
 import FNButton from "../components/FNButton";
 import { winStore } from "../core";
 

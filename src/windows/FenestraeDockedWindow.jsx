@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { winStore } from "../core";
 import FenestraeWinRenderer from "./FenestraeWinRenderer"; // 🔹 Renderer unificado
 import FNButton from "../components/FNButton";
-import { useResizable, ResizeHandles } from "./Useresizeble";
+import { useResizable, ResizeHandles } from "./UseResizable";
 
 
 const ZONE_BASE_CONFIG = {

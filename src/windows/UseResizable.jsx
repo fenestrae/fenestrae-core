@@ -15,7 +15,7 @@ const getPoint = (e) => {
 };
 
 // ============================================================================
-// FENESTRAE - HOOKS (Useresizeble.jsx)
+// FENESTRAE - HOOKS (UseResizable.jsx)
 // Drag and resize hooks with docking support and configurable minimum sizes.
 // ============================================================================
 export const ResizeHandles = ({ active, onStart }) => {
