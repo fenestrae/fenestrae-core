@@ -29,7 +29,9 @@
     "build": "vite build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "playground": "vite --config playground/vite.config.js",
+    "playground:dist": "vite build && vite --config playground/vite.config.js --mode dist"
   },
   "peerDependencies": {
     "clsx": "^2.1.1",
