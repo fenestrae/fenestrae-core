@@ -7,12 +7,22 @@
  * Returns all descendant IDs of `parentId` (recursive, depth-first).
  */
 export const getAllDescendants = (parentId, wins) => {
-  let descendants = [];
-  Array.from(wins.values()).forEach((w) => {
-    if (w.parentId === parentId) {
-      descendants.push(w.id);
-      descendants = [...descendants, ...getAllDescendants(w.id, wins)];
+  const childrenByParent = new Map();
+  for (const w of wins.values()) {
+    const siblings = childrenByParent.get(w.parentId);
+    if (siblings) siblings.push(w.id);
+    else childrenByParent.set(w.parentId, [w.id]);
+  }
+
+  const descendants = [];
+  const walk = (id) => {
+    const children = childrenByParent.get(id);
+    if (!children) return;
+    for (const childId of children) {
+      descendants.push(childId);
+      walk(childId);
     }
-  });
+  };
+  walk(parentId);
   return descendants;
 };

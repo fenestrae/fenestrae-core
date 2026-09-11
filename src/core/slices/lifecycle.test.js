@@ -83,6 +83,19 @@ describe("show / hide / close", () => {
     expect(winStore.getState().wins.has(child)).toBe(false);
   });
 
+  it("closes every closable window in one pass", () => {
+    const kept = createWin(ROOT_PARENT_ID, {
+      type: WIN_TYPES.FLOAT,
+      name: "locked",
+      closable: false,
+      params: {},
+    });
+    createWin(ROOT_PARENT_ID, { type: WIN_TYPES.FLOAT, name: "gone", params: {} });
+    winStore.getState().closeAllWin(true);
+    expect(winStore.getState().wins.has(kept)).toBe(true);
+    expect(winStore.getState().wins.size).toBe(1);
+  });
+
   it("does not close a window marked as not closable", () => {
     const id = createWin(ROOT_PARENT_ID, {
       type: WIN_TYPES.FLOAT,

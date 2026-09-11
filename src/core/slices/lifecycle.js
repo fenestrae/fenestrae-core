@@ -15,6 +15,50 @@ import { ROOT_PARENT_ID } from "../constants";
 // Native window instances (window.open). Not persisted.
 export const externalWindowInstances = new Map();
 
+function findWindow(wins, predicate) {
+  for (const w of wins.values()) {
+    if (predicate(w)) return w;
+  }
+  return undefined;
+}
+
+function nextWindowIndex(wins) {
+  let max = -1;
+  for (const w of wins.values()) {
+    const idx = w.index ?? 0;
+    if (idx > max) max = idx;
+  }
+  return max + 1;
+}
+
+function dropWindows(self, ids) {
+  const removeSet = new Set(ids);
+  for (const targetId of ids) {
+    if (externalWindowInstances.has(targetId)) {
+      const pipWin = externalWindowInstances.get(targetId);
+      if (pipWin && !pipWin.closed) {
+        if (pipWin._erpTitleInterval) {
+          clearInterval(pipWin._erpTitleInterval);
+          pipWin._erpTitleInterval = null;
+        }
+        pipWin.close();
+      }
+      externalWindowInstances.delete(targetId);
+    }
+
+    self.wins.delete(targetId);
+    if (self.cache) self.cache.delete(targetId);
+    if (self.contexts) {
+      const prefix = `${targetId}:`;
+      for (const k of self.contexts.keys()) {
+        if (k.startsWith(prefix)) self.contexts.delete(k);
+      }
+    }
+    contextRepository.clearWindow(targetId);
+  }
+  self.winOrder = self.winOrder.filter((oid) => !removeSet.has(oid));
+}
+
 export const createLifecycleSlice = (set, get) => ({
   createWin: (winIdParent, winData) => {
     let newId = null;
@@ -27,8 +71,9 @@ export const createLifecycleSlice = (set, get) => ({
 
     // Tabs with the same uniqueKey are reused instead of duplicated
     if (type === WIN_TYPES.TAB) {
-      const existing = Array.from(get().wins.values()).find(
-        (w) => w.uniqueKey === uniqueKey && w.type === WIN_TYPES.TAB
+      const existing = findWindow(
+        get().wins,
+        (w) => w.uniqueKey === uniqueKey && w.type === WIN_TYPES.TAB,
       );
       if (existing) {
         set(produce((state) => {
@@ -64,16 +109,11 @@ export const createLifecycleSlice = (set, get) => ({
 
       // Side: replace any existing side window
       if (type === WIN_TYPES.SIDE) {
-        const existingMatchSide = Array.from(self.wins.values()).find(
-          (w) => w.type === WIN_TYPES.SIDE
-        );
+        const existingMatchSide = findWindow(self.wins, (w) => w.type === WIN_TYPES.SIDE);
 
         if (existingMatchSide) {
           const toRemove = [existingMatchSide.id, ...getAllDescendants(existingMatchSide.id, self.wins)];
-          toRemove.forEach((targetId) => {
-            self.wins.delete(targetId);
-            self.winOrder = self.winOrder.filter((oid) => oid !== targetId);
-          });
+          dropWindows(self, toRemove);
         }
       }
 
@@ -158,18 +198,10 @@ export const createLifecycleSlice = (set, get) => ({
         if (coords) { newWin.x = coords.x; newWin.y = coords.y; }
       }
 
-      const nextIndex = self.wins.size > 0
-        ? Math.max(...Array.from(self.wins.values()).map(w => w.index ?? 0)) + 1
-        : 0;
+      newWin.index = nextWindowIndex(self.wins);
 
-      newWin.index = nextIndex;
-
-      // Insertar ventana
       self.wins.set(newId, newWin);
-
-      // Ordenar por índice
-      self.winOrder = Array.from(self.wins.keys())
-        .sort((a, b) => self.wins.get(a).index - self.wins.get(b).index);
+      self.winOrder.push(newId);
 
 
       if (type === WIN_TYPES.TAB) self.activeTabId = newId;
@@ -288,81 +320,47 @@ export const createLifecycleSlice = (set, get) => ({
     if (!win || win.closable === false) return;
 
     const toRemove = [id, ...getAllDescendants(id, self.wins)];
+    const removeSet = new Set(toRemove);
 
-    // Close associated native windows and clean up their intervals
-    toRemove.forEach((targetId) => {
-      if (externalWindowInstances.has(targetId)) {
-        const pipWin = externalWindowInstances.get(targetId);
-        if (pipWin && !pipWin.closed) {
-          if (pipWin._erpTitleInterval) {
-            clearInterval(pipWin._erpTitleInterval);
-            pipWin._erpTitleInterval = null;
-          }
-          pipWin.close();
-        }
-        externalWindowInstances.delete(targetId);
-      }
-    });
-
-    // Recalculate active window
-    if (toRemove.includes(self.activeWinId)) {
+    if (removeSet.has(self.activeWinId)) {
       const parentId = win.parentId;
-      if (parentId && parentId !== ROOT_PARENT_ID && self.wins.has(parentId) && !toRemove.includes(parentId)) {
+      if (parentId && parentId !== ROOT_PARENT_ID && self.wins.has(parentId) && !removeSet.has(parentId)) {
         self.activeWinId = parentId;
       } else {
-        const remainingWins = self.winOrder.filter((oid) => !toRemove.includes(oid));
+        const remainingWins = self.winOrder.filter((oid) => !removeSet.has(oid));
         self.activeWinId = remainingWins.length > 0 ? remainingWins[remainingWins.length - 1] : getLaunchpadId();
       }
     }
 
-    // Recalculate active tab if it was the one being closed
     if (win.type === WIN_TYPES.TAB && self.activeTabId === id) {
-      const remainingTabs = Array.from(self.wins.values()).filter(
-        (w) => w.type === WIN_TYPES.TAB && !toRemove.includes(w.id)
-      );
-      const lastTab = remainingTabs[remainingTabs.length - 1];
+      let lastTab = null;
+      for (const w of self.wins.values()) {
+        if (w.type === WIN_TYPES.TAB && !removeSet.has(w.id)) lastTab = w;
+      }
       self.activeTabId = lastTab ? lastTab.id : getLaunchpadId();
-      if (toRemove.includes(self.activeWinId)) self.activeWinId = self.activeTabId;
+      if (removeSet.has(self.activeWinId)) self.activeWinId = self.activeTabId;
     }
 
-    toRemove.forEach((targetId) => {
-
-      self.wins.delete(targetId);
-      self.winOrder = self.winOrder.filter(
-        (oid) => oid !== targetId
-      );
-      if (self.cache) {
-        self.cache.delete(targetId);
-      }
-      // eliminar contextos directamente
-      if (self.contexts) {
-        const prefix = `${targetId}:`;
-        Array.from(self.contexts.keys()).forEach((k) => {
-          if (k.startsWith(prefix)) {
-            self.contexts.delete(k);
-          }
-        });
-      }
-      // Eliminar contextos persistidos en IndexedDB
-      contextRepository.clearWindow(targetId);
-    });
+    dropWindows(self, toRemove);
   })),
 
   closeAllWin: (includeLaunchPad = false) => {
-    const { wins } = get();
-
-    // recopilar todos los ids
-    let allIds = Array.from(wins.keys());
-
-    // si NO queremos cerrar el LaunchPad, lo excluimos
-    if (!includeLaunchPad) {
-      allIds = allIds.filter((id) => id !== getLaunchpadId());
-    }
-
-    // cerrar cada ventana usando la función oficial
-    allIds.forEach((id) => {
-      get().closeWin(id);
-    });
+    const launchpadId = getLaunchpadId();
+    set(produce((self) => {
+      const ids = [];
+      for (const [id, current] of self.wins) {
+        if (!includeLaunchPad && id === launchpadId) continue;
+        if (current.closable === false) continue;
+        ids.push(id);
+      }
+      dropWindows(self, ids);
+      if (!self.wins.has(self.activeWinId)) {
+        self.activeWinId = self.wins.has(launchpadId) ? launchpadId : null;
+      }
+      if (!self.wins.has(self.activeTabId)) {
+        self.activeTabId = self.wins.has(launchpadId) ? launchpadId : null;
+      }
+    }));
   },
 
   // --------------------------------------------------------------------------

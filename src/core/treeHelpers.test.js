@@ -16,4 +16,13 @@ describe("getAllDescendants", () => {
     expect(getAllDescendants("root", wins)).toEqual(["child", "grand"]);
     expect(getAllDescendants("other", wins)).toEqual([]);
   });
+
+  it("walks siblings in Map insertion order without rescanning the tree", () => {
+    const wins = new Map([
+      ["a", { id: "a", parentId: "root" }],
+      ["b", { id: "b", parentId: "root" }],
+      ["a1", { id: "a1", parentId: "a" }],
+    ]);
+    expect(getAllDescendants("root", wins)).toEqual(["a", "a1", "b"]);
+  });
 });
