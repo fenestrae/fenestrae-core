@@ -1,7 +1,7 @@
 // ============================================================================
 // FENESTRAE — ContextRepository Empresarial (v2)
 // Windows → Context Keys
-// contextId = winId::key
+// contextId = sessionId::winId::key
 //
 // PURPOSE:
 //   This repository provides granular, per‑window persistence for UI state.
@@ -11,7 +11,7 @@
 //   Contexts are stored in IndexedDB inside the STORE_CONTEXTS table.
 //   Each context entry is uniquely identified by:
 //
-//       contextId = `${winId}::${key}`
+//       contextId = `${sessionId}::${winId}::${key}`
 //
 //   This design ensures:
 //     • Fast lookup of individual context keys
@@ -21,6 +21,17 @@
 // ============================================================================
 
 import { dbTable, STORE_CONTEXTS } from "./dbTable";
+
+function currentSessionId() {
+  return sessionStorage.getItem("fenestrae_session");
+}
+
+function requestToPromise(req) {
+  return new Promise((resolve, reject) => {
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
 
 class ContextRepository {
   constructor() {
@@ -38,14 +49,25 @@ class ContextRepository {
   // buildContextId
   // -------------------------------------------------------------------------
   // PURPOSE:
-  //   Generates the unique identifier for a context entry.
-  //   The identifier combines the window ID and the context key.
+  //   Isolates a context key inside the active session.
+  //   Without sessionId, two operators on the same origin could collide
+  //   and one could read the other's form drafts.
   //
   // RETURNS:
-  //   A string in the format: "winId::key"
+  //   A string in the format: "sessionId::winId::key"
   // -------------------------------------------------------------------------
-  buildContextId(winId, key) {
+  buildContextId(winId, key, sessionId = currentSessionId()) {
+    return `${sessionId}::${winId}::${key}`;
+  }
+
+  legacyContextId(winId, key) {
     return `${winId}::${key}`;
+  }
+
+  belongsToSession(record, sessionId) {
+    if (!record) return false;
+    if (!record.sessionId) return true;
+    return record.sessionId === sessionId;
   }
 
   // -------------------------------------------------------------------------
@@ -65,16 +87,22 @@ class ContextRepository {
   //   - Overwrites existing values for the same contextId
   // -------------------------------------------------------------------------
   async save(winId, key, value) {
-    const contextId = this.buildContextId(winId, key);
+    const sessionId = currentSessionId();
+    if (!sessionId) return;
 
     const store = await dbTable(STORE_CONTEXTS);
+    const contextId = this.buildContextId(winId, key, sessionId);
 
-    await store.put({
+    store.put({
       contextId,
+      sessionId,
       winId,
       key,
       value
     });
+
+    // Migrate away from the unscoped winId::key records.
+    store.delete(this.legacyContextId(winId, key));
   }
 
   // -------------------------------------------------------------------------
@@ -143,20 +171,21 @@ class ContextRepository {
   //   - Stores the result in cache for future fast access
   // -------------------------------------------------------------------------
   async load(winId, key, defaultValue = null) {
-    const contextId = this.buildContextId(winId, key);
-
+    const sessionId = currentSessionId();
+    if (!sessionId) return defaultValue;
 
     const store = await dbTable(STORE_CONTEXTS);
-    const req = store.get(contextId);
+    const scoped = await requestToPromise(store.get(this.buildContextId(winId, key, sessionId)));
+    if (scoped && this.belongsToSession(scoped, sessionId)) {
+      return scoped.value ?? defaultValue;
+    }
 
-    return await new Promise((resolve, reject) => {
-      req.onsuccess = () => {
-        const value = req.result?.value ?? defaultValue;
-      //  console.log("Load datos Form",value);
-        resolve(value);
-      };
-      req.onerror = () => reject(req.error);
-    });
+    const legacy = await requestToPromise(store.get(this.legacyContextId(winId, key)));
+    if (legacy && this.belongsToSession(legacy, sessionId)) {
+      return legacy.value ?? defaultValue;
+    }
+
+    return defaultValue;
   }
 
   // -------------------------------------------------------------------------
@@ -174,10 +203,12 @@ class ContextRepository {
   //   - Removes the entry from IndexedDB
   // -------------------------------------------------------------------------
   async remove(winId, key) {
-    const contextId = this.buildContextId(winId, key);
-
+    const sessionId = currentSessionId();
     const store = await dbTable(STORE_CONTEXTS);
-    await store.delete(contextId);
+    if (sessionId) {
+      store.delete(this.buildContextId(winId, key, sessionId));
+    }
+    store.delete(this.legacyContextId(winId, key));
   }
 
   // -------------------------------------------------------------------------
@@ -200,17 +231,14 @@ class ContextRepository {
   //   - Resetting UI state
   // -------------------------------------------------------------------------
   async clearWindow(winId) {
+    const sessionId = currentSessionId();
     const store = await dbTable(STORE_CONTEXTS);
-    const req = store.index("winId").getAll(winId);
-
-    const ctxs = await new Promise((resolve, reject) => {
-      req.onsuccess = () => resolve(req.result || []);
-      req.onerror = () => reject(req.error);
-    });
+    const ctxs = await requestToPromise(store.index("winId").getAll(winId)) || [];
 
     for (const c of ctxs) {
-      await store.delete(c.contextId);
-   
+      if (!sessionId || this.belongsToSession(c, sessionId)) {
+        store.delete(c.contextId);
+      }
     }
   }
 
@@ -238,17 +266,15 @@ class ContextRepository {
   //   - Debugging window persistence
   // -------------------------------------------------------------------------
   async getWindowContexts(winId) {
+    const sessionId = currentSessionId();
     const store = await dbTable(STORE_CONTEXTS);
-    const req = store.index("winId").getAll(winId);
-
-    const ctxs = await new Promise((resolve, reject) => {
-      req.onsuccess = () => resolve(req.result || []);
-      req.onerror = () => reject(req.error);
-    });
+    const ctxs = await requestToPromise(store.index("winId").getAll(winId)) || [];
 
     const result = {};
     for (const c of ctxs) {
-      result[c.key] = c.value;
+      if (!sessionId || this.belongsToSession(c, sessionId)) {
+        result[c.key] = c.value;
+      }
     }
 
     return result;

@@ -77,6 +77,13 @@ import { winStore, getLaunchpadId } from "../core"
 import { v4 as uuidv4 } from "uuid";
 import { initialState } from '../core/constants';
 
+function getCurrentOperator() {
+    const user = sessionStorage.getItem("fenestrae_user");
+    const workspace = sessionStorage.getItem("fenestrae_workspace");
+    if (!user || !workspace) return null;
+    return { user, workspace, userId: `${workspace}::${user}` };
+}
+
 
 /**
  * ============================================================================
@@ -281,18 +288,17 @@ export const createNewSession = async (userId = null, workspace = null) => {
  * ============================================================================
  */
 export const activateSession = async (sessionId) => {
-    const user = sessionStorage.getItem("fenestrae_user");
-    const workspace = sessionStorage.getItem("fenestrae_workspace");
-    const userId = `${workspace}::${user}`;
-
-
+    const operator = getCurrentOperator();
+    if (!operator) {
+        throw new Error("activateSession: no hay operador activo en sessionStorage");
+    }
 
     const sessionsStore = await dbTable(STORE_SESSIONS);
 
     let finalSessionId = sessionId;
 
     if (!finalSessionId) {
-        finalSessionId = await createNewSession(userId, workspace);
+        finalSessionId = await createNewSession(operator.userId, operator.workspace);
     } else {
         const req = sessionsStore.get(finalSessionId);
         const sessionData = await new Promise((resolve, reject) => {
@@ -301,13 +307,15 @@ export const activateSession = async (sessionId) => {
         });
 
         if (!sessionData) {
-            finalSessionId = await createNewSession(userId, workspace);
+            finalSessionId = await createNewSession(operator.userId, operator.workspace);
         } else {
+            if (sessionData.userId !== operator.userId) {
+                throw new Error("activateSession: la sesión no pertenece al operador actual");
+            }
             sessionStorage.setItem("fenestrae_session", finalSessionId);
         }
     }
 
-    //console.log("activateSession", sessionId);
     return finalSessionId;
 };
 
@@ -407,7 +415,20 @@ export const closeSession = async () => {
  *   - No cross-session interference
  * ============================================================================
  */
-export const delSession = async (sessionId) => {
+export const delSession = async (sessionId, { force = false } = {}) => {
+
+    if (!force) {
+        const operator = getCurrentOperator();
+        const peek = await dbTable(STORE_SESSIONS);
+        const sessionData = await new Promise((resolve, reject) => {
+            const req = peek.get(sessionId);
+            req.onsuccess = () => resolve(req.result || null);
+            req.onerror = () => reject(req.error);
+        });
+        if (sessionData && (!operator || sessionData.userId !== operator.userId)) {
+            throw new Error("delSession: la sesión no pertenece al operador actual");
+        }
+    }
 
     // ⭐ Open a single readwrite transaction for all required stores
     const stores = await dbMultiTable(
@@ -439,18 +460,15 @@ export const delSession = async (sessionId) => {
         // Delete window record
         windowsStore.delete(winId);
 
-        // Delete contexts belonging to this window
-        const prefix = `${winId}:`;
-
-        const ctxKeysReq = contextsStore.getAllKeys();
-        const ctxKeys = await new Promise((resolve, reject) => {
-            ctxKeysReq.onsuccess = () => resolve(ctxKeysReq.result || []);
-            ctxKeysReq.onerror = () => reject(ctxKeysReq.error);
+        const ctxReq = contextsStore.index("winId").getAll(winId);
+        const ctxs = await new Promise((resolve, reject) => {
+            ctxReq.onsuccess = () => resolve(ctxReq.result || []);
+            ctxReq.onerror = () => reject(ctxReq.error);
         });
 
-        ctxKeys
-            .filter((k) => k.startsWith(prefix))
-            .forEach((k) => contextsStore.delete(k));
+        ctxs
+            .filter((c) => !c.sessionId || c.sessionId === sessionId)
+            .forEach((c) => contextsStore.delete(c.contextId));
     }
 
     // ---------------------------------------------------------------------------
@@ -771,11 +789,17 @@ export const getWindowsBySession = async (sessionId) => {
  */
 export const saveContext = async (winId, data) => {
     const sessionId = sessionStorage.getItem("fenestrae_session");
+    if (!sessionId) return;
+
     const contextsStore = await dbTable(STORE_CONTEXTS);
+    const contextId = `${sessionId}::${winId}::legacy`;
 
     await contextsStore.put({
+        contextId,
         winId,
         sessionId,
+        key: "legacy",
+        value: data,
         data
     });
 };
@@ -793,11 +817,20 @@ export const saveContext = async (winId, data) => {
  * ============================================================================
  */
 export const loadContext = async (winId) => {
+    const sessionId = sessionStorage.getItem("fenestrae_session");
     const contextsStore = await dbTable(STORE_CONTEXTS);
-    const req = contextsStore.get(winId);
+    const contextId = sessionId ? `${sessionId}::${winId}::legacy` : winId;
+    const req = contextsStore.get(contextId);
 
     return await new Promise((resolve, reject) => {
-        req.onsuccess = () => resolve(req.result?.data || null);
+        req.onsuccess = () => {
+            const row = req.result;
+            if (row?.sessionId && sessionId && row.sessionId !== sessionId) {
+                resolve(null);
+                return;
+            }
+            resolve(row?.data ?? row?.value ?? null);
+        };
         req.onerror = () => reject(req.error);
     });
 };
@@ -815,8 +848,13 @@ export const loadContext = async (winId) => {
  * ============================================================================
  */
 export const deleteContext = async (winId) => {
+    const sessionId = sessionStorage.getItem("fenestrae_session");
     const contextsStore = await dbTable(STORE_CONTEXTS);
-    await contextsStore.delete(winId);
+    if (sessionId) {
+        contextsStore.delete(`${sessionId}::${winId}::legacy`);
+    }
+    contextsStore.delete(winId);
+    contextsStore.delete(`${winId}::legacy`);
 };
 
 
@@ -878,7 +916,7 @@ export const cleanOldSessions = async (maxAgeDays = 30) => {
 
     // Borrar sesiones realmente obsoletas
     for (const sessionId of toDelete) {
-        await delSession(sessionId);
+        await delSession(sessionId, { force: true });
     }
 
     return toDelete.length;
