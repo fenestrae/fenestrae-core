@@ -80,11 +80,14 @@ export const useDraggable = (initialX, initialY, onDragStop, options = {}) => {
 
   const dockableRef = useRef(dockable);
   const winIdRef = useRef(winId);
+  const onDragStopRef = useRef(onDragStop);
+  const lastDockZoneRef = useRef(undefined);
 
   useEffect(() => {
     dockableRef.current = dockable;
     winIdRef.current = winId;
-  }, [dockable, winId]);
+    onDragStopRef.current = onDragStop;
+  }, [dockable, winId, onDragStop]);
 
   const handleStart = useCallback((e) => {
     const handle = e.target.closest(".handle-movible");
@@ -127,11 +130,14 @@ export const useDraggable = (initialX, initialY, onDragStop, options = {}) => {
 
         if (dockableRef.current && winIdRef.current) {
           const zone = detectDockZone(p.x, p.y);
-          window.dispatchEvent(
-            new CustomEvent("fenestrae:dockHint", {
-              detail: { zone, winId: winIdRef.current },
-            })
-          );
+          if (zone !== lastDockZoneRef.current) {
+            lastDockZoneRef.current = zone;
+            window.dispatchEvent(
+              new CustomEvent("fenestrae:dockHint", {
+                detail: { zone, winId: winIdRef.current },
+              })
+            );
+          }
         }
       });
 
@@ -142,6 +148,7 @@ export const useDraggable = (initialX, initialY, onDragStop, options = {}) => {
       const p = getPoint(e);
 
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      lastDockZoneRef.current = undefined;
       setIsDragging(false);
 
       if (dockableRef.current && winIdRef.current) {
@@ -161,7 +168,7 @@ export const useDraggable = (initialX, initialY, onDragStop, options = {}) => {
         }
       }
 
-      onDragStop?.(positionRef.current);
+      onDragStopRef.current?.(positionRef.current);
     };
 
     document.addEventListener("mousemove", handleMove, { passive: false });
@@ -179,7 +186,7 @@ export const useDraggable = (initialX, initialY, onDragStop, options = {}) => {
       document.removeEventListener("touchmove", handleMove);
       document.removeEventListener("touchend", handleEnd);
     };
-  }, [isDragging, onDragStop]);
+  }, [isDragging]);
 
   useEffect(() => {
     positionRef.current = { x: initialX, y: initialY };
@@ -227,8 +234,12 @@ export const useResizable = (
   const [isResizing, setIsResizing] = useState(false);
 
   const sizeRef = useRef({ width: initialWidth, height: initialHeight, x: initialX, y: initialY });
+  const posAdjRef = useRef({ x: 0, y: 0 });
   const resizeStartRef = useRef(null);
   const directionRef = useRef("");
+  const animationFrameRef = useRef(null);
+  const onResizeStopRef = useRef(onResizeStop);
+  onResizeStopRef.current = onResizeStop;
 
   const handleResizeStart = useCallback((e, direction) => {
     const p = getPoint(e);
@@ -285,7 +296,10 @@ export const useResizable = (
         }
       }
 
-      requestAnimationFrame(() => {
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = requestAnimationFrame(() => {
+        sizeRef.current = { ...sizeRef.current, width: nW, height: nH };
+        posAdjRef.current = { x: nX, y: nY };
         setSize({ width: nW, height: nH });
         setPosAdj({ x: nX, y: nY });
       });
@@ -294,15 +308,18 @@ export const useResizable = (
     };
 
     const handleEnd = () => {
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       setIsResizing(false);
 
-      onResizeStop?.({
-        width: size.width,
-        height: size.height,
-        x: sizeRef.current.x + posAdj.x,
-        y: sizeRef.current.y + posAdj.y,
+      const adj = posAdjRef.current;
+      onResizeStopRef.current?.({
+        width: sizeRef.current.width,
+        height: sizeRef.current.height,
+        x: sizeRef.current.x + adj.x,
+        y: sizeRef.current.y + adj.y,
       });
 
+      posAdjRef.current = { x: 0, y: 0 };
       setPosAdj({ x: 0, y: 0 });
     };
 
@@ -313,13 +330,14 @@ export const useResizable = (
     document.addEventListener("touchend", handleEnd, { passive: false });
 
     return () => {
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       document.removeEventListener("mousemove", handleMove);
       document.removeEventListener("mouseup", handleEnd);
 
       document.removeEventListener("touchmove", handleMove);
       document.removeEventListener("touchend", handleEnd);
     };
-  }, [isResizing, size, posAdj, onResizeStop, minW, minH]);
+  }, [isResizing, minW, minH]);
 
   useEffect(() => {
     sizeRef.current = {
