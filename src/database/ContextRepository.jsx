@@ -150,18 +150,6 @@ class ContextRepository {
   }
 
   // -------------------------------------------------------------------------
-  // flush
-  // -------------------------------------------------------------------------
-  // PURPOSE:
-  //   Cancels all pending debounced writes.
-  //   Useful when closing a window or shutting down the application.
-  // -------------------------------------------------------------------------
-  async flush() {
-    Array.from(this.pending.values()).forEach(clearTimeout);
-    this.pending.clear();
-  }
-
-  // -------------------------------------------------------------------------
   // load
   // -------------------------------------------------------------------------
   // PURPOSE:
@@ -247,44 +235,6 @@ class ContextRepository {
         store.delete(c.contextId);
       }
     }
-  }
-
-  // -------------------------------------------------------------------------
-  // getWindowContexts
-  // -------------------------------------------------------------------------
-  // PURPOSE:
-  //   Retrieves ALL context keys and values for a window.
-  //
-  // PARAMETERS:
-  //   winId → Window identifier
-  //
-  // RETURNS:
-  //   An object shaped like:
-  //     {
-  //       scroll: 120,
-  //       filters: { city: "Madrid" },
-  //       draft: { name: "John" },
-  //       tab: "details"
-  //     }
-  //
-  // USE CASES:
-  //   - Restoring a window after reload
-  //   - Rebuilding UI state
-  //   - Debugging window persistence
-  // -------------------------------------------------------------------------
-  async getWindowContexts(winId) {
-    const sessionId = currentSessionId();
-    const store = await dbTable(STORE_CONTEXTS);
-    const ctxs = await requestToPromise(store.index("winId").getAll(winId)) || [];
-
-    const result = {};
-    for (const c of ctxs) {
-      if (!sessionId || this.belongsToSession(c, sessionId)) {
-        result[c.key] = c.value;
-      }
-    }
-
-    return result;
   }
 }
 

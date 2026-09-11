@@ -173,5 +173,3 @@ export const POPUP_BRIDGE_SCRIPT = `
   console.log('✅ Popup Bridge listo');
 })();
 `;
-
-export default POPUP_BRIDGE_SCRIPT;

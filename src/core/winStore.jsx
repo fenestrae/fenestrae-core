@@ -22,7 +22,6 @@ enableMapSet();
 
 export { externalWindowInstances } from './slices/lifecycle';
 export { formsRegistry } from './slices/misc';
-export { getStandardLayout } from './geometry';
 
 // ============================================================================
 // STORE CENTRAL

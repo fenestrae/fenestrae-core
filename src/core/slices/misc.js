@@ -65,11 +65,6 @@ export const createMiscSlice = (set, get) => ({
     if (win) win.isMatchCode = true;
   })),
 
-  setFocus: (winId, fieldName) => set(produce((state) => {
-    const win = state.wins.get(winId);
-    if (win) win.activeControl = fieldName;
-  })),
-
   isModal: (id) => get().wins.get(id)?.type === WIN_TYPES.MODAL,
   isFloat: (id) => get().wins.get(id)?.type === WIN_TYPES.FLOAT,
   isRestored: (id) => get().wins.get(id)?.isRestored || false,

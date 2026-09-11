@@ -1727,12 +1727,3 @@ export const mapThemeToCSSVariables = (themeInput = "modern") => {
 
   return { ...themeObject };
 };
-
-/**
- * Helper legacy alternativo para transformar tokens planos en estilos válidos de React
- * @param {string} presetName - 'modern' | 'macOS' | 'dark'
- * @returns {React.CSSProperties}
- */
-export const getThemeStyles = (presetName = "modern") => {
-  return THEME_PRESETS[presetName] || THEME_PRESETS.modern;
-};

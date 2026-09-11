@@ -66,25 +66,3 @@ export function hasPermission(required) {
 
   return perms.includes(required);
 }
-
-/**
- * ============================================================================
- * hydratePermissions — Restores permissions from sessionStorage
- * ============================================================================
- * - Called automatically by FenestraeContainer or init()
- * - Ensures permissions survive page reloads
- * ============================================================================
- */
-export function hydratePermissions() {
-  const saved = sessionStorage.getItem(STORAGE_KEYS.PERMISSIONS);
-  if (!saved) return;
-
-  try {
-    const parsed = JSON.parse(saved);
-    activePermissions = Array.isArray(parsed)
-      ? parsed.filter((p) => typeof p === "string")
-      : [];
-  } catch {
-    activePermissions = [];
-  }
-}

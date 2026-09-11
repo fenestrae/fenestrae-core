@@ -5,17 +5,6 @@ import { STORAGE_KEYS } from "../core/constants";
 
 const DANGEROUS_URL_SCHEME = /^(javascript|data|blob|file|vbscript):/i;
 
-export function getAppOrigin() {
-  return window.location.origin;
-}
-
-export function isTrustedMessageEvent(event, expectedSource) {
-  if (!event) return false;
-  if (event.origin !== window.location.origin) return false;
-  if (expectedSource && event.source !== expectedSource) return false;
-  return true;
-}
-
 export function postToWindow(target, data) {
   if (!target || target.closed) return;
   target.postMessage(data, window.location.origin);

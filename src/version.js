@@ -3,10 +3,3 @@
 export const version = '1.0.3';
 export const author = 'Toni Raventós';
 export const license = 'Apache-2.0';
-
-// Exportación agrupada opcional
-export default {
-  version,
-  author,
-  license
-};

@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import FNButton from "../components/FNButton";
-//import fenestrae from "fenestrae";
 export default function FNMainMenu({
   items = [],
   orientation = "horizontal",

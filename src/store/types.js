@@ -26,7 +26,3 @@ export const WIN_ALIGN = {
   AL_BOTTOM: "alBottom",
   AL_SIDE: "alSide",
 };
-
-/**
- * ID reservado para el Launchpad — ver LAUNCHPAD_LOGICAL_ID en core/constants.js
- */

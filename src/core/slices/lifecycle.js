@@ -45,13 +45,7 @@ export const createLifecycleSlice = (set, get) => ({
       // top windows are system tools — always rooted, never children
       const validParentId = (type === WIN_TYPES.TAB || type === WIN_TYPES.TOP) ? "0" : winIdParent || "0";
 
-      // Side with isMatchCode: replaces any previous side with that flag
-      /*if (type === WIN_TYPES.SIDE && params.isMatchCode === true) {
-        const existingMatchSide = Array.from(self.wins.values()).find(
-          (w) => w.type === WIN_TYPES.SIDE && w.params?.isMatchCode === true
-        );
-        */
-           // ---------------------------------------------------------------------
+      // ---------------------------------------------------------------------
       // FENESTRAE RULE: Only ONE active side window can exist at any time.
       //
       // A side window is a global workspace tool with its own lifecycle.

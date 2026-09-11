@@ -7,10 +7,9 @@
 import { winStore, externalWindowInstances} from "./winStore";
 import { STORAGE_KEYS } from "./constants";
 
-import { mapThemeToCSSVariables, THEME_PRESETS, getThemeStyles } from "../themes/themeMapper";
 import {  contextRepository} from "../database/ContextRepository";
 import { formsRegistry } from './slices/misc';
-import { WIN_TYPES, WIN_ALIGN } from "../store/types";
+import { WIN_TYPES } from "../store/types";
 
 const s = () => winStore.getState();
 
@@ -203,10 +202,7 @@ export function getLaunchpadId() {
 
 
 export { LAUNCHPAD_LOGICAL_ID, STORAGE_KEYS } from "./constants";
-export { WIN_TYPES, WIN_ALIGN };
 export { winStore, externalWindowInstances };
-export { mapThemeToCSSVariables, THEME_PRESETS, getThemeStyles };
-export { getStandardLayout } from "./geometry";
 
 
 export const context = {

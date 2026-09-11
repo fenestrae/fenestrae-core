@@ -1,7 +1,6 @@
 import React, { 
   useEffect, 
   createContext, 
-  useContext, 
   useState, 
   useMemo,
   useRef 
@@ -71,15 +70,6 @@ const FenestraeProvider = ({
       </div>
     </FenestraeThemeContext.Provider>
   )
-}
-
-// Hook de tema
-export const useFenestraeTheme = () => {
-  const context = useContext(FenestraeThemeContext)
-  if (!context) {
-    throw new Error("useFenestraeTheme debe usarse dentro de un FenestraeProvider")
-  }
-  return context
 }
 
 export { FenestraeProvider }
