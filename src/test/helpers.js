@@ -41,7 +41,11 @@ export async function clearAllStores() {
 
 export function clearSessionStorage() {
   sessionStorage.clear();
-  localStorage.clear();
+  try {
+    localStorage.removeItem("erp_session_backup");
+  } catch {
+    // Node 22 exposes a partial localStorage without Storage.clear.
+  }
 }
 
 export function setOperator({
@@ -65,8 +69,16 @@ export function resetRuntime() {
   clearCommands();
   formsRegistry.clear();
   externalWindowInstances.clear();
-  winStore.getState().resetStore();
-  winStore.setState({ hasHydrated: false });
+  winStore.setState({
+    ...winStore.getState(),
+    wins: new Map(),
+    winOrder: [],
+    activeTabId: null,
+    activeWinId: null,
+    cache: new Map(),
+    user: null,
+    hasHydrated: false,
+  });
 
   if (contextRepository.pending) {
     Array.from(contextRepository.pending.values()).forEach(clearTimeout);
