@@ -70,7 +70,11 @@ export const createMiscSlice = (set, get) => ({
   isRestored: (id) => get().wins.get(id)?.isRestored || false,
 
   resetStore: () => {
-    localStorage.removeItem("erp_session_backup");
+    try {
+      localStorage.removeItem("erp_session_backup");
+    } catch {
+      // Some runtimes expose a partial localStorage without Storage methods.
+    }
     set(initialState);
   },
 });

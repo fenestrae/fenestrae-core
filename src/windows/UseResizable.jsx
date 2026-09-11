@@ -50,7 +50,7 @@ export const ResizeHandles = ({ active, onStart }) => {
 
 const DOCK_THRESHOLD = 40; // px from edge to trigger dock hint
 
-const detectDockZone = (x, y) => {
+export const detectDockZone = (x, y) => {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   if (x <= DOCK_THRESHOLD)      return "left";
