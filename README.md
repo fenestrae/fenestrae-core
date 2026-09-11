@@ -110,55 +110,43 @@ Once initialized, you can open windows anywhere in your application using the wi
 
 ### Opening a window
 
-
-```ts
-  const handleTileClick = (item) => {
-    if (fenestrae && typeof fenestrae.showTab === "function") {
-      
-      fenestrae.showTab(null, item.name, {
-        title: item.title,
-        url: item?.url,
-      });
-    } else {
-      console.warn("Fenestrae is not available.");
-      alert(`Opening: ${item.title} (${item.name})`);
-    }
-  };
-
-
-  fenestrae.showFloat(winId, "frmcustomers", { id: "001231", });
-
-  fenestrae.showFloat(winId, "", {  url:"/customers?id=001231" });
-
-```
-
-### Sending data to a window
-
-```ts
-app.send('orders', { refresh: true });
-```
-
-### Listening to window events
-
-```ts
-app.on('orders:save', (payload) => {
-  console.log('Order saved:', payload);
+```js
+fenestrae.showTab(null, "frmcustomers", {
+  title: "Customers",
+  id: "001",
 });
+
+fenestrae.showFloat(winId, "frmcustomers", { id: "001231" });
+
+fenestrae.showFloat(winId, "", { url: "/customers?id=001231" });
 ```
+
+Other openers: `showModal`, `showSide`, `showTop`, `showPanel`, `showExt`, `showPopup`.
 
 ### Closing a window
 
-```ts
-app.close('orders');
+```js
+fenestrae.destroyWindow(winId);
 ```
 
-### Persisting window state
+### Session and persistence
 
-Fenestrae automatically persists:
+```js
+await fenestrae.init({ user: "pepe", workspace: "erp" });
+await fenestrae.activateSession(sessionId);
+await fenestrae.restoreWindows(initialWinConfig);
+```
 
-- position  
-- size  
-- basic form data  
+Window position, size and basic form data are stored in IndexedDB. Per-window UI state uses the context API:
+
+```js
+await fenestrae.context.save(winId, "filters", { q: "acme" });
+const filters = await fenestrae.context.load(winId, "filters");
+```
+
+### Cross-window messaging
+
+Native popup windows receive an injected `window.externalBus`. Subscribe from the popup; the opener dispatches through the popup bridge (`EVENT`, `STORE_SYNC`, heartbeat). There is no `app.send` / `app.on` API.
 
 
 # Architecture Overview
