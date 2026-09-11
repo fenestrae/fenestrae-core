@@ -15,12 +15,8 @@ export default defineConfig({
 
   build: {
     outDir: 'dist',
-    // ❗ Desactiva esbuild minify (añade PURE annotations)
-    minify: "false",
-
-    // ❗ Usa Terser como minificador real
-    // Vite lo activa automáticamente cuando minify === "terser"
-    // pero en librerías hay que desactivar esbuild primero
+    // Terser evita las anotaciones PURE que esbuild inserta en el JSX
+    minify: "terser",
     terserOptions: {
       compress: {
         defaults: true,
