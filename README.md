@@ -20,6 +20,8 @@ import { FenestraeProvider, FenestraeContainer, fenestrae } from "fenestrae";
 import "fenestrae/dist/fenestrae.css";
 ```
 
+To exercise the library locally: `npm run playground` (source) or `npm run playground:dist` (published bundle).
+
 ## Documentation
 
 | Guide | Contents |

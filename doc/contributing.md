@@ -17,6 +17,15 @@ npm install
 npm run build
 ```
 
+Playground (host SPA against `src/`, or `--mode dist` after a build):
+
+```bash
+npm run playground
+npm run playground:dist
+```
+
+Use the Lab side panel to open every window type, run **Smoke**, and measure commits with the Perf panel (`<Profiler>` around `FenestraeContainer`). Do not add playground files to the published package; `files` already ships only `dist` and types.
+
 ## Contact
 
 fenestrae.ws@gmail.com

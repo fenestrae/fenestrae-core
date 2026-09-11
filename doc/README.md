@@ -10,6 +10,6 @@ Guides for integrators and contributors. The public TypeScript contract lives in
 | [Architecture](architecture.md) | You need a map of runtime boundaries and source modules |
 | [API](api.md) | You need the exact public surface (`fenestrae`, `win`, `ae`) |
 | [Security](security.md) | You persist data, embed iframes, or gate UI with permissions |
-| [Contributing](contributing.md) | You are changing this repository |
+| [Contributing](contributing.md) | You are changing this repository, or running the playground |
 
 Start with [getting started](getting-started.md). Use [architecture](architecture.md) before touching `core/` or `database/`.
