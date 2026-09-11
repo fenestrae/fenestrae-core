@@ -740,9 +740,10 @@ export async function readSessionWindows() {
     });
 
     // 3. Ordenar
+    const byId = new Map(allWins.map((w) => [w.winId, w]));
     const orderedWins = winOrder
-        .map(id => allWins.find(w => w.winId === id))
-        .filter(w => w && w.data);
+        .map((id) => byId.get(id))
+        .filter((w) => w && w.data);
 
     const winsArray = orderedWins.map(w => [w.winId, w.data]);
 

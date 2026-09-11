@@ -42,13 +42,8 @@ function requestToPromise(req) {
 
 class ContextRepository {
   constructor() {
-    // Cache for fast in‑memory reads (avoids IndexedDB round‑trips)
-   
-
-    // Debounce timers for delayed writes
+    this.cache = new Map();
     this.pending = new Map();
-
-    // Values waiting to be written after debounce delay
     this.pendingValues = new Map();
   }
 
@@ -99,13 +94,15 @@ class ContextRepository {
 
     const store = await dbTable(STORE_CONTEXTS);
     const contextId = this.buildContextId(winId, key, sessionId);
+    const clean = sanitizePersistable(value);
 
+    this.cache.set(contextId, clean);
     store.put({
       contextId,
       sessionId,
       winId,
       key,
-      value: sanitizePersistable(value)
+      value: clean
     });
 
     // Migrate away from the unscoped winId::key records.
@@ -170,13 +167,20 @@ class ContextRepository {
     if (!sessionId) return defaultValue;
 
     const store = await dbTable(STORE_CONTEXTS);
-    const scoped = await requestToPromise(store.get(this.buildContextId(winId, key, sessionId)));
+    const contextId = this.buildContextId(winId, key, sessionId);
+    if (this.cache.has(contextId)) {
+      return this.cache.get(contextId) ?? defaultValue;
+    }
+
+    const scoped = await requestToPromise(store.get(contextId));
     if (scoped && this.belongsToSession(scoped, sessionId)) {
+      this.cache.set(contextId, scoped.value);
       return scoped.value ?? defaultValue;
     }
 
     const legacy = await requestToPromise(store.get(this.legacyContextId(winId, key)));
     if (legacy && this.belongsToSession(legacy, sessionId)) {
+      this.cache.set(contextId, legacy.value);
       return legacy.value ?? defaultValue;
     }
 
@@ -201,8 +205,11 @@ class ContextRepository {
     const sessionId = currentSessionId();
     const store = await dbTable(STORE_CONTEXTS);
     if (sessionId) {
-      store.delete(this.buildContextId(winId, key, sessionId));
+      const contextId = this.buildContextId(winId, key, sessionId);
+      this.cache.delete(contextId);
+      store.delete(contextId);
     }
+    this.cache.delete(this.legacyContextId(winId, key));
     store.delete(this.legacyContextId(winId, key));
   }
 
@@ -232,7 +239,14 @@ class ContextRepository {
 
     for (const c of ctxs) {
       if (!sessionId || this.belongsToSession(c, sessionId)) {
+        this.cache.delete(c.contextId);
         store.delete(c.contextId);
+      }
+    }
+
+    for (const cacheKey of [...this.cache.keys()]) {
+      if (cacheKey.includes(`::${winId}::`) || cacheKey.startsWith(`${winId}::`)) {
+        this.cache.delete(cacheKey);
       }
     }
   }

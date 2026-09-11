@@ -89,6 +89,9 @@ export function resetRuntime() {
   if (contextRepository.pendingValues) {
     contextRepository.pendingValues.clear();
   }
+  if (contextRepository.cache) {
+    contextRepository.cache.clear();
+  }
 }
 
 export async function resetPersistence() {

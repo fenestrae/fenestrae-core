@@ -21,6 +21,13 @@ describe("ContextRepository", () => {
     expect(all).toEqual([]);
   });
 
+  it("serves a just-saved value from memory", async () => {
+    await init({ user: "pepe", workspace: "erp" });
+    await createNewSession();
+    await contextRepository.save("win-1", "filters", { q: "acme" });
+    expect(await contextRepository.load("win-1", "filters")).toEqual({ q: "acme" });
+  });
+
   it("scopes keys by session and strips secrets", async () => {
     await init({ user: "pepe", workspace: "erp" });
     await createNewSession();
