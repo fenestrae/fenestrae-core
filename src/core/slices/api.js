@@ -45,7 +45,9 @@ export const createApiSlice = (set, get) => ({
     const entry = formsRegistry.get(componentName);
     if (!entry) return null;
 
-    const queryString = new URLSearchParams(params).toString();
+    const queryString = params.id != null
+      ? new URLSearchParams({ id: String(params.id) }).toString()
+      : "";
     const fullPathBase = entry.route
       ? `${entry.route}${route}${entry.path || ""}`
       : `${entry.path || ""}${route}`;

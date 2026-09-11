@@ -121,7 +121,11 @@ export interface FenestraeApi extends WinApi {
   delSession: (sessionId: string) => Promise<void>;
   clearSessions: () => Promise<void>;
   restoreWindows: (initialWinConfig?: WindowParams) => Promise<boolean | void>;
-  registerCommand: (name: string, fn: (winId: string, payload?: unknown) => void) => void;
+  registerCommand: (
+    name: string,
+    fn: (winId: string, payload?: unknown) => void,
+    options?: { permission?: string }
+  ) => void;
   executeCommand: (winId: string, name: string, payload?: unknown) => void;
   setPermissions: (permissions: string[]) => void;
   getPermissions: () => string[];

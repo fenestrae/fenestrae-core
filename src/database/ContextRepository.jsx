@@ -21,6 +21,7 @@
 // ============================================================================
 
 import { dbTable, STORE_CONTEXTS } from "./dbTable";
+import { sanitizePersistable } from "../lib/security";
 
 function currentSessionId() {
   return sessionStorage.getItem("fenestrae_session");
@@ -98,7 +99,7 @@ class ContextRepository {
       sessionId,
       winId,
       key,
-      value
+      value: sanitizePersistable(value)
     });
 
     // Migrate away from the unscoped winId::key records.

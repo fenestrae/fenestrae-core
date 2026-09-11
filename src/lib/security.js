@@ -55,6 +55,36 @@ export function getFrameSandbox(sameOrigin) {
     : "allow-scripts allow-forms";
 }
 
+const SENSITIVE_KEY = /^(password|passwd|pwd|secret|token|accesstoken|refreshtoken|apikey|api_key|authorization|credential|ssn|dni|nie|nif)$/i;
+const FORBIDDEN_KEYS = new Set(["__proto__", "prototype", "constructor"]);
+
+export function isSensitiveKey(key) {
+  return SENSITIVE_KEY.test(String(key));
+}
+
+export function sanitizePersistable(data, depth = 0) {
+  if (data == null) return data;
+  if (depth > 6) return undefined;
+  if (typeof data === "function") return undefined;
+  if (typeof data !== "object") return data;
+  if (typeof Window !== "undefined" && data instanceof Window) return undefined;
+  if (typeof Document !== "undefined" && data instanceof Document) return undefined;
+  if (typeof HTMLElement !== "undefined" && data instanceof HTMLElement) return undefined;
+  if (Array.isArray(data)) {
+    return data
+      .map((item) => sanitizePersistable(item, depth + 1))
+      .filter((item) => item !== undefined);
+  }
+
+  const clean = {};
+  for (const key of Object.keys(data)) {
+    if (FORBIDDEN_KEYS.has(key) || isSensitiveKey(key)) continue;
+    const value = sanitizePersistable(data[key], depth + 1);
+    if (value !== undefined) clean[key] = value;
+  }
+  return clean;
+}
+
 export function writeBlankPopupDocument(nativeWindow, title) {
   const doc = nativeWindow.document;
   doc.open();

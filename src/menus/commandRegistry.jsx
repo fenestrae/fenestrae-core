@@ -1,4 +1,5 @@
 // core/commandRegistry.js
+import { hasPermission } from "../permissions/permissions";
 
 const commandRegistry = new Map();
 
@@ -12,10 +13,14 @@ const commandRegistry = new Map();
  *
  * @param {string} name - Command name (ej: "clients.edit")
  * @param {(winId: string, payload: any) => void} fn - Implementation
+ * @param {{ permission?: string }} [options] - Optional UI permission gate
  * ============================================================================
  */
-export function registerCommand(name, fn) {
-  commandRegistry.set(name, fn);
+export function registerCommand(name, fn, options = {}) {
+  commandRegistry.set(name, {
+    fn,
+    permission: options.permission || null,
+  });
 }
 
 /**
@@ -24,6 +29,7 @@ export function registerCommand(name, fn) {
  * ============================================================================
  * - Called by menus, popup menus, buttons, shortcuts, etc.
  * - Equivalent to VS Code's commands.executeCommand
+ * - If the command declared a permission, it is checked here (UI only)
  *
  * @param {string} winId - Window invoking the command
  * @param {string} name - Command name
@@ -31,10 +37,19 @@ export function registerCommand(name, fn) {
  * ============================================================================
  */
 export function executeCommand(winId, name, payload) {
-  const fn = commandRegistry.get(name);
-  if (!fn) {
+  const entry = commandRegistry.get(name);
+  if (!entry) {
     console.warn(`Comando no registrado: ${name}`);
     return;
   }
-  fn(winId, payload);
+
+  const impl = typeof entry === "function" ? entry : entry.fn;
+  const permission = typeof entry === "object" ? entry.permission : null;
+
+  if (permission && !hasPermission(permission)) {
+    console.warn(`Permiso denegado para el comando: ${name}`);
+    return;
+  }
+
+  impl(winId, payload);
 }

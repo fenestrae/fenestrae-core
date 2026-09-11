@@ -15,6 +15,7 @@ import { createJSONStorage } from "zustand/middleware";
 import dbManagerInstance from "../database/dbManager";
 import { indexedDBStorage } from "../database/indexedDBAdapter";
 import {winStore} from "../core"
+import { sanitizePersistable } from "../lib/security";
 
 // ============================================================================
 // loadSavedState — Default empty state for winStore
@@ -153,7 +154,7 @@ export const persistOptions = {
       };
 
       // 4. Serializar de forma segura
-      const serialized = JSON.parse(JSON.stringify(winClean));
+      const serialized = sanitizePersistable(JSON.parse(JSON.stringify(winClean)));
 
       return [id, serialized];
     });

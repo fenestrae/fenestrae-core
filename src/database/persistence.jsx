@@ -74,6 +74,7 @@ import {
     STORE_CONTEXTS
 } from "./dbTable";
 import { winStore, getLaunchpadId } from "../core"
+import { sanitizePersistable } from "../lib/security";
 import { v4 as uuidv4 } from "uuid";
 import { initialState } from '../core/constants';
 
@@ -539,24 +540,7 @@ export const clearSessions = async () => {
 
 
 function sanitize(data) {
-    const clean = {};
-
-    for (const key in data) {
-        const value = data[key];
-
-        // Ignorar objetos del DOM
-        if (
-            value instanceof Window ||
-            value instanceof Document ||
-            value instanceof HTMLElement
-        ) {
-            continue;
-        }
-
-        clean[key] = value;
-    }
-
-    return clean;
+    return sanitizePersistable(data) || {};
 }
 
 
@@ -799,8 +783,8 @@ export const saveContext = async (winId, data) => {
         winId,
         sessionId,
         key: "legacy",
-        value: data,
-        data
+        value: sanitizePersistable(data),
+        data: sanitizePersistable(data)
     });
 };
 

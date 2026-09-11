@@ -3,15 +3,9 @@ export function getVirtualRouteForWindow(win) {
 
   if (win.name === "launchpad") return "/app";
 
-  const clean = { ...win.params };
-  delete clean.winId;
-  delete clean.isTab;
-  delete clean.isFloat;
-  delete clean.parentId;
-
-  const payload = btoa(JSON.stringify(clean));
-
-  return `/app/erp#${payload}`;
+  const name = encodeURIComponent((win.name || "window").toLowerCase());
+  const id = win.params?.id;
+  return id != null ? `/app/${name}?id=${encodeURIComponent(String(id))}` : `/app/${name}`;
 }
 
 
@@ -20,19 +14,12 @@ export function getVirtualRouteForWindow2(win)
       if (!win) return "/app";
        if (win.name === "launchpad")
          return "/app"; 
-        const base = `/app/${win.name.toLowerCase()}`;
+        const base = `/app/${encodeURIComponent((win.name || "window").toLowerCase())}`;
          const query = serializeParams(win.params);
           return `${base}${query}`
 }   
 
 export function serializeParams(params) {
-  const clean = { ...params };
-
-  delete clean.winId;
-  delete clean.isTab;
-  delete clean.isFloat;
-  delete clean.parentId;
-
-  const query = new URLSearchParams(clean).toString();
-  return query ? `?${query}` : "";
+  if (!params || params.id == null) return "";
+  return `?${new URLSearchParams({ id: String(params.id) }).toString()}`;
 }

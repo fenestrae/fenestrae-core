@@ -4,17 +4,17 @@ let activePermissions = [];
  * ============================================================================
  * setPermissions — Registers the permission list for the active session
  * ============================================================================
- * - Stores the user's permissions in memory
- * - Persists the permission list in sessionStorage
- * - Used by menus, popup menus, commands and workspace logic
- * - Equivalent to VS Code's context keys for permission evaluation
+ * UI helper only. This is NOT authorization. The host ERP must enforce
+ * permissions on the server; anything in sessionStorage can be edited.
  *
  * @param {string[]} permissions - Array of permission identifiers
  * ============================================================================
  */
 export function setPermissions(permissions) {
-  activePermissions = permissions;
-  sessionStorage.setItem("fenestrae_permissions", JSON.stringify(permissions));
+  activePermissions = Array.isArray(permissions)
+    ? permissions.filter((p) => typeof p === "string")
+    : [];
+  sessionStorage.setItem("fenestrae_permissions", JSON.stringify(activePermissions));
 }
 
 /**
@@ -38,29 +38,28 @@ export function getPermissions() {
  * Supports:
  *   - Exact permissions: "clients.read"
  *   - Write permissions: "clients.write"
- *   - Wildcards: "clients.*"
+ *   - Wildcards: "clients.*" (matches "clients" and "clients.read", not "clients_admin")
  *
  * Behavior:
- *   - If no permission is required, returns true
- *   - If required ends with ".*", any matching prefix is accepted
+ *   - If required is null/undefined, no check is needed → true
+ *   - If required is "", it is treated as invalid → false
+ *   - If required ends with ".*", matches the prefix plus a dot boundary
  *   - Otherwise checks for exact match
- *
- * Examples:
- *   hasPermission("clients.read");   // true / false
- *   hasPermission("clients.*");      // true if any clients.* permission exists
  *
  * @param {string} required - Permission required to perform an action
  * @returns {boolean} Whether the user has the required permission
  * ============================================================================
  */
 export function hasPermission(required) {
-  if (!required) return true;
+  if (required == null) return true;
+  if (typeof required !== "string" || required.trim() === "") return false;
 
   const perms = activePermissions;
 
   if (required.endsWith(".*")) {
-    const prefix = required.replace(".*", "");
-    return perms.some(p => p.startsWith(prefix));
+    const prefix = required.slice(0, -2);
+    if (!prefix) return false;
+    return perms.some((p) => p === prefix || p.startsWith(`${prefix}.`));
   }
 
   return perms.includes(required);
@@ -76,7 +75,14 @@ export function hasPermission(required) {
  */
 export function hydratePermissions() {
   const saved = sessionStorage.getItem("fenestrae_permissions");
-  if (saved) {
-    activePermissions = JSON.parse(saved);
+  if (!saved) return;
+
+  try {
+    const parsed = JSON.parse(saved);
+    activePermissions = Array.isArray(parsed)
+      ? parsed.filter((p) => typeof p === "string")
+      : [];
+  } catch {
+    activePermissions = [];
   }
 }
