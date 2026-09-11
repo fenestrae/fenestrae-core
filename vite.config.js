@@ -47,7 +47,6 @@ export default defineConfig({
         'zustand',
         'immer',
         'uuid',
-        'idb-keyval',
         'clsx',
         'prop-types',
         'react-icons'
@@ -62,7 +61,6 @@ export default defineConfig({
           zustand: 'zustand',
           immer: 'immer',
           uuid: 'uuid',
-          'idb-keyval': 'idbKeyval',
           clsx: 'clsx',
           'prop-types': 'PropTypes',
           'react-icons': 'ReactIcons'
