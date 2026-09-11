@@ -1,8 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { formsRegistry } from "../core/winStore"; // Ajustado a la nomenclatura interna de Fenestrae
-import { FenestraeiFrame } from "./FenestraeiFrame";
-import { getFrameSandbox, resolveTrustedFrameUrl } from "../lib/security";
+import { FenestraeFrame } from "./FenestraeiFrame";
+import { resolveTrustedFrameUrl } from "../lib/security";
 
 const NOOP = () => {};
 
@@ -21,24 +21,12 @@ const FenestraeWinRenderer = React.memo(({ win, closeWin, inputLocked = false })
       }
 
      return (
-      
-      <iframe
-        ref={(iframe) => FenestraeiFrame(iframe, win, closeWin, trusted.sameOrigin)}
-        src={trusted.href}
-        style={{
-          width: "100%",
-          height: "100%",
-          border: "none",
-          display: "block",
-          pointerEvents: inputLocked ? "none":"auto"
-        }}
-        loading="lazy"
-        sandbox={getFrameSandbox(trusted.sameOrigin)}
-        
-        referrerPolicy="no-referrer"
-        title={win.title || "Fenestrae External Window"}
+      <FenestraeFrame
+        win={win}
+        closeWin={closeWin}
+        trusted={trusted}
+        inputLocked={inputLocked}
       />
-      
     );
   }
   // Si no hay módulo o clase registrada, un mensaje sutil sin recuadros de error catastróficos
