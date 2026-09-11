@@ -9,19 +9,12 @@ export default function FNMainMenu({
   orientation = "horizontal",
   winId
 }) {
-  console.log("🔵 FNMainMenu → items recibidos:", items);
-
   const isHorizontal = orientation === "horizontal";
 
   const [openMenu, setOpenMenu] = useState(null);
   const [anchorRect, setAnchorRect] = useState(null);
 
   const handleSelectItem = (item, rect) => {
- 
-    if (!item.items || item.items.length === 0) {
-      console.warn("⚠️ FNMainMenu → este item NO tiene subitems:", item.caption);
-    }
-
     setOpenMenu(item);
     setAnchorRect(rect);
   };
@@ -76,7 +69,6 @@ function FNMainMenuItem({ item, onSelectItem }) {
 
   const handleClick = () => {
     const rect = ref.current.getBoundingClientRect();
-    console.log("🟣 FNMainMenuItem → rect calculado:", rect);
     onSelectItem?.(item, rect);
   };
 
@@ -106,7 +98,6 @@ function FNGroupMenu({ anchorRect, items, winId, onClose }) {
   useEffect(() => {
     const handleClick = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
-    //    console.log("🔴 FNGroupMenu → clic fuera, cerrando");
         onClose?.();
       }
     };
@@ -117,11 +108,9 @@ function FNGroupMenu({ anchorRect, items, winId, onClose }) {
   const portalRoot = document.getElementById("fenestrae-portal-root");
 
   if (!portalRoot) {
-    console.error("❌ FNGroupMenu → NO existe #fenestrae-portal-root en el DOM");
+    console.error("FNGroupMenu: no existe #fenestrae-portal-root en el DOM");
     return null;
   }
-
-  console.log("🟡 FNGroupMenu → portalRoot OK");
 
   return createPortal(
     <div
@@ -151,7 +140,6 @@ function FNGroupMenu({ anchorRect, items, winId, onClose }) {
 
 function FNGroupMenuItem({ item, winId, onClose }) {
   const handleClick = () => {
-    console.log("🟢 FNGroupMenuItem → ejecutando comando:", item.command);
     //fenestrae.executeCommand(winId, item.command, item.payload);
     onClose?.();
   };
