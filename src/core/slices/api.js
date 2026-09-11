@@ -395,7 +395,7 @@ export const createApiSlice = (set, get) => ({
           } else {
             clearInterval(titleInterval);
           }
-        }, 100);
+        }, 1000);
 
         nativeWindow._erpTitleInterval = titleInterval;
       } catch (err) {
