@@ -7,6 +7,7 @@ import { produce } from "immer";
 import { externalWindowInstances } from "./lifecycle";
 import { getLaunchpadId } from "../index"
 import { WIN_TYPES } from "../../store/types";
+import { ROOT_PARENT_ID } from "../constants";
 
 export const createFocusSlice = (set, get) => ({
 
@@ -152,7 +153,7 @@ export const createFocusSlice = (set, get) => ({
   getActiveTab: () => {
     const { wins, activeWinId } = get();
     let current = wins.get(activeWinId);
-    while (current && current.type !== WIN_TYPES.TAB && current.parentId !== "0") {
+    while (current && current.type !== WIN_TYPES.TAB && current.parentId !== ROOT_PARENT_ID) {
       current = wins.get(current.parentId);
     }
     return current?.type === WIN_TYPES.TAB ? current.id : getLaunchpadId();

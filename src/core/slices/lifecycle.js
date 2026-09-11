@@ -10,6 +10,7 @@ import { calculateAlignment, getStandardLayout } from "../geometry";
 import { getAllDescendants } from "../treeHelpers";
 import { contextRepository } from "../../database/ContextRepository";
 import { WIN_TYPES, WIN_ALIGN } from "../../store/types";
+import { ROOT_PARENT_ID } from "../constants";
 
 // Native window instances (window.open). Not persisted.
 export const externalWindowInstances = new Map();
@@ -43,7 +44,7 @@ export const createLifecycleSlice = (set, get) => ({
     set(produce((self) => {
       const { preset } = params;
       // top windows are system tools — always rooted, never children
-      const validParentId = (type === WIN_TYPES.TAB || type === WIN_TYPES.TOP) ? "0" : winIdParent || "0";
+      const validParentId = (type === WIN_TYPES.TAB || type === WIN_TYPES.TOP) ? ROOT_PARENT_ID : winIdParent || ROOT_PARENT_ID;
 
       // ---------------------------------------------------------------------
       // FENESTRAE RULE: Only ONE active side window can exist at any time.
@@ -201,7 +202,7 @@ export const createLifecycleSlice = (set, get) => ({
     const componentName = name?.toLowerCase();
 
     // aquí no abrimos todavía window.open: solo creamos el registro
-    const winId = get().createWin(parentId || "0", {
+    const winId = get().createWin(parentId || ROOT_PARENT_ID, {
       type: WIN_TYPES.EXT,
       name: componentName,
       title: params.title || componentName.toUpperCase(),
@@ -218,7 +219,7 @@ export const createLifecycleSlice = (set, get) => ({
   },
 
 
-  openWin: (winData) => get().createWin("0", winData),
+  openWin: (winData) => get().createWin(ROOT_PARENT_ID, winData),
 
   // --------------------------------------------------------------------------
   // create — Creates a window in memory, always invisible (except tabs).
@@ -228,7 +229,7 @@ export const createLifecycleSlice = (set, get) => ({
     const { type = WIN_TYPES.FLOAT, x, y, width, height, params = {}, ...rest } = options;
     const componentName = name?.toLowerCase();
 
-    return get().createWin(parentWinId || "0", {
+    return get().createWin(parentWinId || ROOT_PARENT_ID, {
       type,
       name: componentName,
       title: params.title || componentName?.toUpperCase(),
@@ -273,7 +274,7 @@ export const createLifecycleSlice = (set, get) => ({
     // Transfer focus to the parent or the last window in order
     if (self.activeWinId === winId) {
       const parentId = win.parentId;
-      if (parentId && parentId !== "0" && self.wins.has(parentId)) {
+      if (parentId && parentId !== ROOT_PARENT_ID && self.wins.has(parentId)) {
         self.activeWinId = parentId;
       } else {
         const remaining = self.winOrder.filter((oid) => oid !== winId);
@@ -306,7 +307,7 @@ export const createLifecycleSlice = (set, get) => ({
     // Recalculate active window
     if (toRemove.includes(self.activeWinId)) {
       const parentId = win.parentId;
-      if (parentId && parentId !== "0" && self.wins.has(parentId) && !toRemove.includes(parentId)) {
+      if (parentId && parentId !== ROOT_PARENT_ID && self.wins.has(parentId) && !toRemove.includes(parentId)) {
         self.activeWinId = parentId;
       } else {
         const remainingWins = self.winOrder.filter((oid) => !toRemove.includes(oid));

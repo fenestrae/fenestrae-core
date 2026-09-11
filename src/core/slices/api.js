@@ -8,6 +8,7 @@ import { formsRegistry } from './misc';
 import { externalWindowInstances } from './lifecycle';
 import { resolveTrustedFrameUrl, writeBlankPopupDocument } from '../../lib/security';
 import { WIN_TYPES } from "../../store/types";
+import { ROOT_PARENT_ID } from "../constants";
 
 export const createApiSlice = (set, get) => ({
 
@@ -15,7 +16,7 @@ export const createApiSlice = (set, get) => ({
   // showTab — Opens or reuses a tab by component name
   // -------------------------------------------------------------------------
   showTab: (winIdParent, name, params = {}, route = "") => {
-    const validParentId = winIdParent && winIdParent !== "" ? winIdParent : "0";
+    const validParentId = winIdParent && winIdParent !== "" ? winIdParent : ROOT_PARENT_ID;
     if (!name || typeof name !== "string") return null;
     const componentName = name.toLowerCase();
 
@@ -74,7 +75,7 @@ export const createApiSlice = (set, get) => ({
   // -------------------------------------------------------------------------
   show: (winIdParent, name, params = {}, callbacks = {}, typeshow = WIN_TYPES.FLOAT) => {
     return new Promise((resolve, reject) => {
-      const validParentId = winIdParent && winIdParent !== "" ? winIdParent : "0";
+      const validParentId = winIdParent && winIdParent !== "" ? winIdParent : ROOT_PARENT_ID;
 
       // 1. Buscamos si el componente padre pertenece a una ventana externa (popup)
       const currentWins = get().wins || {};
@@ -160,7 +161,7 @@ export const createApiSlice = (set, get) => ({
   /*
     showPopup: (winIdParent, name, params = {}, callbacks = {}, options = {}) => {
       return new Promise((resolve, reject) => {
-        const validParentId = winIdParent && winIdParent !== "" ? winIdParent : "0";
+        const validParentId = winIdParent && winIdParent !== "" ? winIdParent : ROOT_PARENT_ID;
         const componentName = name?.toLowerCase();
   
         const entry = formsRegistry.get(componentName);
@@ -210,7 +211,7 @@ export const createApiSlice = (set, get) => ({
           const windowName = `erp_${componentName}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
           nativeWindow = window.open('', windowName, features);
           
-          if (!nativeWindow) return get().showTop("0", name, params, safeCallbacks);
+          if (!nativeWindow) return get().showTop(ROOT_PARENT_ID, name, params, safeCallbacks);
   
           const title = params.titulo || params.title || componentName.toUpperCase();
   
@@ -276,7 +277,7 @@ export const createApiSlice = (set, get) => ({
   */
   showPopup: (winIdParent, name, params = {}, callbacks = {}, options = {}) => {
     return new Promise((resolve, reject) => {
-      const validParentId = winIdParent && winIdParent !== "" ? winIdParent : "0";
+      const validParentId = winIdParent && winIdParent !== "" ? winIdParent : ROOT_PARENT_ID;
       const componentName = name?.toLowerCase();
 
       const entry = formsRegistry.get(componentName);
@@ -367,7 +368,7 @@ export const createApiSlice = (set, get) => ({
         nativeWindow = window.open("about:blank", windowName, features);
 
         if (!nativeWindow) {
-          return get().showTop("0", name, params, safeCallbacks);
+          return get().showTop(ROOT_PARENT_ID, name, params, safeCallbacks);
         }
 
         const title = params.titulo || params.title || componentName.toUpperCase();
@@ -440,5 +441,5 @@ export const createApiSlice = (set, get) => ({
   },
 
   showPopupSimple: (name, params = {}, options = {}) =>
-    get().showPopup('0', name, params, {}, options),
+    get().showPopup(ROOT_PARENT_ID, name, params, {}, options),
 });

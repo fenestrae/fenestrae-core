@@ -5,7 +5,7 @@
 // ============================================================================
 
 import { winStore, externalWindowInstances} from "./winStore";
-import { STORAGE_KEYS } from "./constants";
+import { STORAGE_KEYS, ROOT_PARENT_ID } from "./constants";
 
 import {  contextRepository} from "../database/ContextRepository";
 import { formsRegistry } from './slices/misc';
@@ -35,7 +35,7 @@ export const win = {
 
   /** Crea una estructura de ventana sin inyectarla visualmente. Retorna su winId. */
   createWindow: (
-    parentId = "0",
+    parentId = ROOT_PARENT_ID,
     {
       component,
       typeshow = WIN_TYPES.FLOAT,
@@ -201,7 +201,7 @@ export function getLaunchpadId() {
 
 
 
-export { LAUNCHPAD_LOGICAL_ID, STORAGE_KEYS } from "./constants";
+export { LAUNCHPAD_LOGICAL_ID, ROOT_PARENT_ID, STORAGE_KEYS } from "./constants";
 export { winStore, externalWindowInstances };
 
 
