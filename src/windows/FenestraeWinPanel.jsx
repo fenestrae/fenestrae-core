@@ -2,7 +2,8 @@ import React from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import FenestraeWinRenderer from "./FenestraeWinRenderer"; // 🔹 Vinculado al nuevo renderer purificado
-import { winStore } from "../core"; // Ajustado a tu exportación del core
+import { winStore } from "../core";
+import { WIN_ALIGN } from "../store/types"; // Ajustado a tu exportación del core
 
 const FenestraeWinPanel = React.memo(({ win, index, activeWinId, setActiveWinId }) => {
   const { id, width, height, align, x, y } = win;
@@ -19,7 +20,7 @@ const FenestraeWinPanel = React.memo(({ win, index, activeWinId, setActiveWinId 
       position: "absolute",
     };
 
-    if (align === "none") {
+    if (align === WIN_ALIGN.NONE) {
       // Coordenadas flotantes libres o calculadas relativas al lienzo padre
       return {
         ...baseStyle,
@@ -32,8 +33,8 @@ const FenestraeWinPanel = React.memo(({ win, index, activeWinId, setActiveWinId 
     // Comportamiento de estiramiento estructural para paneles perimetrales anclados
     return {
       ...baseStyle,
-      width: align === "alBottom" ? "100%" : `${width}px`,
-      height: align === "alBottom" ? `${height}px` : "100%",
+      width: align === WIN_ALIGN.AL_BOTTOM ? "100%" : `${width}px`,
+      height: align === WIN_ALIGN.AL_BOTTOM ? `${height}px` : "100%",
       transform: "none", // 🔹 Corregido: removido !important inline no válido en React
     };
   };
@@ -42,9 +43,9 @@ const FenestraeWinPanel = React.memo(({ win, index, activeWinId, setActiveWinId 
     // Clases anatómicas base mapeadas a variables CSS del contrato visual de Fenestrae
     "bg-[var(--color-window-bg,#ffffff)] border-[var(--color-window-border,#d1d5db)] shadow-xl z-20 flex flex-col border",
     {
-      "top-0 right-0 h-full": align === "alRight",
-      "top-0 left-0 h-full": align === "alLeft",
-      "bottom-0 left-0 w-full": align === "alBottom",
+      "top-0 right-0 h-full": align === WIN_ALIGN.AL_RIGHT,
+      "top-0 left-0 h-full": align === WIN_ALIGN.AL_LEFT,
+      "bottom-0 left-0 w-full": align === WIN_ALIGN.AL_BOTTOM,
       // Si align es "none", manda el objeto style posicionado por coordenadas (x,y)
     },
     // Efecto visual sutil si el panel es la ventana activa del viewport
@@ -76,7 +77,7 @@ FenestraeWinPanel.propTypes = {
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     width: PropTypes.number,
     height: PropTypes.number,
-    align: PropTypes.oneOf(["none", "alLeft", "alRight", "alBottom"]),
+    align: PropTypes.oneOf([WIN_ALIGN.NONE, WIN_ALIGN.AL_LEFT, WIN_ALIGN.AL_RIGHT, WIN_ALIGN.AL_BOTTOM]),
     x: PropTypes.number,
     y: PropTypes.number,
   }).isRequired,

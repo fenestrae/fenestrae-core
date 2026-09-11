@@ -5,7 +5,7 @@ import FenestraeWinRenderer from "./FenestraeWinRenderer";
 import FNButton from "../components/FNButton";
 import { useDraggable, ResizeHandles, useResizable } from "./UseResizable";
 import { winStore } from "../core";
-import { WIN_TYPES } from "../store/types";
+import { WIN_TYPES, WIN_ALIGN } from "../store/types";
 
 const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWinId }) => {
   const self = win;
@@ -78,7 +78,7 @@ const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWin
           updateWinLayout(self.id, {
             width: Math.min(targetWidth, maxWidth),
             height: Math.min(targetHeight, maxHeight),
-            align: self.align || "none",
+            align: self.align || WIN_ALIGN.NONE,
           });
         });
       }
@@ -211,8 +211,8 @@ const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWin
             }}
             onMouseDown={(e) => {
               handleFocus();
-              if (self.align && self.align !== "none") {
-                updateWinLayout(self.id, { align: "none", autoSize: false });
+              if (self.align && self.align !== WIN_ALIGN.NONE) {
+                updateWinLayout(self.id, { align: WIN_ALIGN.NONE, autoSize: false });
               }
               handleMouseDown(e);
             }}

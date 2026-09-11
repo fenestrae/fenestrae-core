@@ -10,7 +10,7 @@ import FenestraeWinRenderer from "./FenestraeWinRenderer";
 import { useDraggable, useResizable, ResizeHandles } from "./UseResizable";
 import FNButton from "../components/FNButton";
 import { winStore } from "../core";
-import { WIN_TYPES } from "../store/types";
+import { WIN_TYPES, WIN_ALIGN } from "../store/types";
 
 const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId }) => {
   const self = win; // Mantenemos tu convención 'self' para el contexto de la ventana
@@ -111,8 +111,8 @@ const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId })
 
   const handleHeaderMouseDown = useCallback((e) => {
     handleFocus();
-    if (win.align !== "none") {
-      updateWinLayout(win.id, { align: "none", autoSize: false });
+    if (win.align !== WIN_ALIGN.NONE) {
+      updateWinLayout(win.id, { align: WIN_ALIGN.NONE, autoSize: false });
     }
     handleMouseDown(e);
   }, [handleFocus, win.align, win.id, updateWinLayout, handleMouseDown]);

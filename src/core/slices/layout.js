@@ -7,7 +7,7 @@ import { produce } from "immer";
 import { calculateAlignment } from "../geometry";
 import { externalWindowInstances } from "./lifecycle";
 import { postToWindow } from "../../lib/security";
-import { WIN_TYPES } from "../../store/types";
+import { WIN_TYPES, WIN_ALIGN } from "../../store/types";
 
 export const createLayoutSlice = (set, get) => ({
   updateWinLayout: (id, layout) => set(produce((self) => {
@@ -27,7 +27,7 @@ export const createLayoutSlice = (set, get) => ({
     } else {
       if (layout.x !== undefined) win.x = layout.x;
       if (layout.y !== undefined) win.y = layout.y;
-      if (layout.align === "none") win.align = "none";
+      if (layout.align === WIN_ALIGN.NONE) win.align = WIN_ALIGN.NONE;
     }
 
     // Sincroniza ventana nativa si es un popup externo

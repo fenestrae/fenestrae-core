@@ -12,14 +12,19 @@ export const WIN_TYPES = {
 };
 
 /**
- * Constantes para las alineaciones por defecto de las ventanas flotantes/modales
+ * Alineaciones reales usadas por geometry.js y los contenedores de ventana.
+ * No confundir con zonas de docking (left/right/top/bottom) ni con presets
+ * de layout (modal90, panelSide, …).
  */
 export const WIN_ALIGN = {
-  CENTER: 'center',
-  TOP_LEFT: 'top-left',
-  TOP_RIGHT: 'top-right',
-  BOTTOM_LEFT: 'bottom-left',
-  BOTTOM_RIGHT: 'bottom-right'
+  NONE: "none",
+  CENTER: "center",
+  TOP_CENTER: "top-center",
+  RIGHT: "right",
+  AL_RIGHT: "alRight",
+  AL_LEFT: "alLeft",
+  AL_BOTTOM: "alBottom",
+  AL_SIDE: "alSide",
 };
 
 /**

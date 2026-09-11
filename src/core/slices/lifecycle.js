@@ -9,7 +9,7 @@ import { getLaunchpadId } from "../index";
 import { calculateAlignment, getStandardLayout } from "../geometry";
 import { getAllDescendants } from "../treeHelpers";
 import { contextRepository } from "../../database/ContextRepository";
-import { WIN_TYPES } from "../../store/types";
+import { WIN_TYPES, WIN_ALIGN } from "../../store/types";
 
 // Native window instances (window.open). Not persisted.
 export const externalWindowInstances = new Map();
@@ -106,10 +106,10 @@ export const createLifecycleSlice = (set, get) => ({
       } else if (type === WIN_TYPES.MODAL) {
         layout = getStandardLayout(null, preset || "modal90");
       } else if (type === WIN_TYPES.SIDE) {
-        layout = getStandardLayout(null, "alSide");
+        layout = getStandardLayout(null, WIN_ALIGN.AL_SIDE);
       } else if (type === WIN_TYPES.PANEL) {
-        layout = winData.align === "none"
-          ? { x: winData.x ?? 0, y: winData.y ?? 0, width: winData.width ?? 400, height: winData.height ?? 300, align: "none" }
+        layout = winData.align === WIN_ALIGN.NONE
+          ? { x: winData.x ?? 0, y: winData.y ?? 0, width: winData.width ?? 400, height: winData.height ?? 300, align: WIN_ALIGN.NONE }
           : getStandardLayout(null, winData.align || preset || "panelSide");
       } else if (type === WIN_TYPES.FLOAT || type === WIN_TYPES.TOP) {
         // params.width/height/x/y are accepted as fallback for convenience
@@ -158,7 +158,7 @@ export const createLifecycleSlice = (set, get) => ({
         dockZone: null,
       };
 
-      if (newWin.align && newWin.align !== "none") {
+      if (newWin.align && newWin.align !== WIN_ALIGN.NONE) {
         const coords = calculateAlignment(newWin.align, newWin.width, newWin.height);
         if (coords) { newWin.x = coords.x; newWin.y = coords.y; }
       }

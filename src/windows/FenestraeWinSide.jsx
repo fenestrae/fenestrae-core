@@ -9,6 +9,7 @@ import clsx from "clsx";
 import FenestraeWinRenderer from "./FenestraeWinRenderer";
 import FNButton from "../components/FNButton";
 import { winStore } from "../core";
+import { WIN_ALIGN } from "../store/types";
 
 const FenestraeWinSide = React.memo(({ win, activeWinId, setActiveWinId }) => {
   // 🔹 Selectores atómicos para evitar re-renders globales del store
@@ -21,7 +22,7 @@ const FenestraeWinSide = React.memo(({ win, activeWinId, setActiveWinId }) => {
   // --- Efecto para ajustar dimensiones si el navegador cambia de tamaño -------
   useEffect(() => {
     const handleResize = () => {
-      if (self.align === "alSide") {
+      if (self.align === WIN_ALIGN.AL_SIDE) {
         updateWinLayout(self.id, { 
           height: window.innerHeight,
           x: window.innerWidth - (self.width ?? 400) 

@@ -2,6 +2,8 @@
 // FENESTRAE - GEOMETRY HELPERS (core/geometry.js)
 // ============================================================================
 
+import { WIN_ALIGN } from "../store/types";
+
 /**
  * Calculates (x, y) coordinates for a window based on its alignment.
  */
@@ -11,16 +13,16 @@ export const calculateAlignment = (align, width, height) => {
   const navHeight = 60;
 
   switch (align) {
-    case "center":
+    case WIN_ALIGN.CENTER:
       return { x: Math.max(0, (vw - width) / 2), y: Math.max(0, (vh - height) / 2) };
-    case "top-center":
+    case WIN_ALIGN.TOP_CENTER:
       return { x: Math.max(0, (vw - width) / 2), y: 20 };
-    case "right":
-    case "alRight":
+    case WIN_ALIGN.RIGHT:
+    case WIN_ALIGN.AL_RIGHT:
       return { x: Math.max(0, vw - width), y: 0 };
-    case "alLeft":
+    case WIN_ALIGN.AL_LEFT:
       return { x: 0, y: 0 };
-    case "alBottom":
+    case WIN_ALIGN.AL_BOTTOM:
       return { x: 0, y: vh - navHeight - height };
     default:
       return null;
@@ -39,28 +41,29 @@ export const getStandardLayout = (parentWin, preset = "modal90") => {
 
   switch (preset) {
     case "modal97":
-      return { width: Math.floor(vw * 0.97), height: Math.floor(vh * 0.97), align: "center" };
+      return { width: Math.floor(vw * 0.97), height: Math.floor(vh * 0.97), align: WIN_ALIGN.CENTER };
     case "modal90":
-      return { width: Math.floor(vw * 0.9), height: Math.floor(vh * 0.9), align: "center" };
+      return { width: Math.floor(vw * 0.9), height: Math.floor(vh * 0.9), align: WIN_ALIGN.CENTER };
     case "modal70":
-      return { width: Math.floor(vw * 0.7), height: Math.floor(vh * 0.7), align: "center" };
+      return { width: Math.floor(vw * 0.7), height: Math.floor(vh * 0.7), align: WIN_ALIGN.CENTER };
     case "rightPanel":
-      return { width: Math.floor(vw * 0.4), height: Math.floor(vh * 0.95), x: vw - Math.floor(vw * 0.4) - 20, y: 20, align: "none" };
+      return { width: Math.floor(vw * 0.4), height: Math.floor(vh * 0.95), x: vw - Math.floor(vw * 0.4) - 20, y: 20, align: WIN_ALIGN.NONE };
     case "panelSide":
-      return { width: Math.floor(vw * 0.35), height: vh, x: vw - Math.floor(vw * 0.35), y: 0, align: "none" };
+      return { width: Math.floor(vw * 0.35), height: vh, x: vw - Math.floor(vw * 0.35), y: 0, align: WIN_ALIGN.NONE };
     case "panelSideFull":
-      return { width: Math.floor(vw * 0.95), height: Math.floor(vh * 0.90), x: vw - Math.floor(vw * 0.95), y: ((vh - Math.floor(vh * 0.90)) / 2) - 35, align: "none" };
-    case "alRight":
-      return { width: 450, height: vh - navHeight, x: vw - 450, y: 0, align: "alRight" };
-    case "alLeft":
-      return { width: 300, height: vh - navHeight, x: 0, y: 0, align: "alLeft" };
-    case "alBottom":
-      return { width: vw, height: 250, x: 0, y: vh - navHeight - 250, align: "alBottom" };
+      return { width: Math.floor(vw * 0.95), height: Math.floor(vh * 0.90), x: vw - Math.floor(vw * 0.95), y: ((vh - Math.floor(vh * 0.90)) / 2) - 35, align: WIN_ALIGN.NONE };
+    case WIN_ALIGN.AL_RIGHT:
+      return { width: 450, height: vh - navHeight, x: vw - 450, y: 0, align: WIN_ALIGN.AL_RIGHT };
+    case WIN_ALIGN.AL_LEFT:
+      return { width: 300, height: vh - navHeight, x: 0, y: 0, align: WIN_ALIGN.AL_LEFT };
+    case WIN_ALIGN.AL_BOTTOM:
+      return { width: vw, height: 250, x: 0, y: vh - navHeight - 250, align: WIN_ALIGN.AL_BOTTOM };
+    case WIN_ALIGN.AL_SIDE:
     case "alside": {
       const calculatedWidth = Math.min(450, window.innerWidth * 0.4);
-      return { width: calculatedWidth, height: vh, x: vw - calculatedWidth, y: 0, align: "alRight", isPortal: true };
+      return { width: calculatedWidth, height: vh, x: vw - calculatedWidth, y: 0, align: WIN_ALIGN.AL_RIGHT, isPortal: true };
     }
     default:
-      return { width: 700, height: 500, align: "center" };
+      return { width: 700, height: 500, align: WIN_ALIGN.CENTER };
   }
 };
