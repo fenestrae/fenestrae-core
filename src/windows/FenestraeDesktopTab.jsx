@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import { memo } from "react";
 import clsx from "clsx";
 
 import { winStore, getLaunchpadId } from "../core";
@@ -7,7 +8,7 @@ import FNButton from "../components/FNButton";
 // COMPONENTE INTERNO: DESKTOP TAB (Estabilizado, sólido y quieto)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const FenestraeDesktopTab = ({ win: w, isActive, setActiveWinId, closeWin }) => {
+const FenestraeDesktopTab = memo(({ win: w, isActive, setActiveWinId, closeWin }) => {
   const isLaunchpad = w.id === getLaunchpadId();
   const formattedTitle = w.title || w.name || "";
 
@@ -56,6 +57,6 @@ const FenestraeDesktopTab = ({ win: w, isActive, setActiveWinId, closeWin }) => 
       )}
     </div>
   );
-};
+});
 
 export default FenestraeDesktopTab;

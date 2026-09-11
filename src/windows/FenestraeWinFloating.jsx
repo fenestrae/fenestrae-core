@@ -291,8 +291,9 @@ const FenestraeWinFloating = React.memo(({ win, index, isActive, setActiveWinId 
 
 
           <FenestraeWinRenderer
-            win={{ ...self, isDragging, isResizing }}
+            win={self}
             closeWin={closeWin}
+            inputLocked={isDragging || isResizing}
           />
         </div>
 

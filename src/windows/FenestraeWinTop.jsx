@@ -267,8 +267,9 @@ const FenestraeWinTop = React.memo(({ win, index, isActive, setActiveWinId }) =>
           onMouseDown={(e) => { handleFocus(); e.stopPropagation(); }}
         >
           <FenestraeWinRenderer
-            win={{ ...self, isDragging, isResizing }}
+            win={self}
             closeWin={closeWin}
+            inputLocked={isDragging || isResizing}
           />
         </div>
 

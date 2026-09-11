@@ -4,7 +4,9 @@ import { formsRegistry } from "../core/winStore"; // Ajustado a la nomenclatura 
 import { FenestraeiFrame } from "./FenestraeiFrame";
 import { getFrameSandbox, resolveTrustedFrameUrl } from "../lib/security";
 
-const FenestraeWinRenderer = React.memo(({ win, closeWin }) => {
+const NOOP = () => {};
+
+const FenestraeWinRenderer = React.memo(({ win, closeWin, inputLocked = false }) => {
   const componentName = win?.name?.toLowerCase();
   const entry = formsRegistry.get(componentName);
  // ⭐ Ventanas externas (HTML / iframe)
@@ -18,8 +20,6 @@ const FenestraeWinRenderer = React.memo(({ win, closeWin }) => {
         );
       }
 
-      const desactive=(win.isDragging || win.isResizing)
-
      return (
       
       <iframe
@@ -30,7 +30,7 @@ const FenestraeWinRenderer = React.memo(({ win, closeWin }) => {
           height: "100%",
           border: "none",
           display: "block",
-          pointerEvents: desactive ? "none":"auto"
+          pointerEvents: inputLocked ? "none":"auto"
         }}
         loading="lazy"
         sandbox={getFrameSandbox(trusted.sameOrigin)}
@@ -53,14 +53,14 @@ const FenestraeWinRenderer = React.memo(({ win, closeWin }) => {
   const Comp = entry.component;
 
   // 🛡️ EXTRACCIÓN SEGURA DE CALLBACKS (Resistente a persistencia y rehidrataciones de Zustand)
-  const onSave   = win.onSave   || win.params?.onSave   || (() => {});
-  const onCancel = win.onCancel || win.params?.onCancel || (() => {});
-  const onClose  = win.onClose  || win.params?.onClose  || (() => {});
-  const onError  = win.onError  || win.params?.onError  || (() => {});
-  const onApply  = win.onApply  || win.params?.onApply  || (() => {});
-  const onDelete = win.onDelete || win.params?.onDelete || (() => {});
-  const onNext   = win.onNext   || win.params?.onNext   || (() => {});
-  const onPrev   = win.onPrev   || win.params?.onPrev   || (() => {});
+  const onSave   = win.onSave   || win.params?.onSave   || NOOP;
+  const onCancel = win.onCancel || win.params?.onCancel || NOOP;
+  const onClose  = win.onClose  || win.params?.onClose  || NOOP;
+  const onError  = win.onError  || win.params?.onError  || NOOP;
+  const onApply  = win.onApply  || win.params?.onApply  || NOOP;
+  const onDelete = win.onDelete || win.params?.onDelete || NOOP;
+  const onNext   = win.onNext   || win.params?.onNext   || NOOP;
+  const onPrev   = win.onPrev   || win.params?.onPrev   || NOOP;
 
   return (
     <div className="h-full w-full bg-transparent">
@@ -121,6 +121,7 @@ FenestraeWinRenderer.propTypes = {
     isPortal: PropTypes.bool,
   }).isRequired,
   closeWin: PropTypes.func.isRequired,
+  inputLocked: PropTypes.bool,
 };
 
 FenestraeWinRenderer.displayName = "FenestraeWinRenderer";

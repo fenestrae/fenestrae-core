@@ -22,6 +22,7 @@ import FenestraeWinTop from "./FenestraeWinTop";
 import FenestraeWinExtern from "./FenestraeWinExtern";
 import FenestraeDesktopTab from "./FenestraeDesktopTab";
 import FenestraeFixedZone from "./FenestraeFixedZone";
+import FreezeInactive from "./FreezeInactive";
 
 import { useShortcuts } from "../hooks/useShortcuts";
 import { postToWindow } from "../lib/security";
@@ -191,9 +192,11 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
                   )}
                 >
                   <div className="w-full h-full overflow-hidden">
-                    <React.Suspense fallback={<div>Cargando ventana...</div>}>
-                      <FenestraeWinRenderer win={w} closeWin={closeWin} />
-                    </React.Suspense>
+                    <FreezeInactive active={w.id === activeTabId}>
+                      <React.Suspense fallback={<div>Cargando ventana...</div>}>
+                        <FenestraeWinRenderer win={w} closeWin={closeWin} />
+                      </React.Suspense>
+                    </FreezeInactive>
                   </div>
                 </div>
               ))}
