@@ -1,6 +1,6 @@
 // menus/FNMainMenu.jsx
 
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import FNButton from "../components/FNButton";
 export default function FNMainMenu({

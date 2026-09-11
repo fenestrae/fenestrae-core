@@ -14,16 +14,11 @@
 // are specific to each user session (tab).
 // ============================================================================
 
-import dbManagerInstance from "./dbManager";
 import { createJSONStorage } from "zustand/middleware";
 import { setWindow, delWindow, setSession } from "./persistence";
 import {
   dbTable,
-  STORE_SESSIONS,
-  STORE_USERS,
   STORE_WINDOWS,
-  STORE_WORKSPACES,
-  STORE_CONTEXTS
 } from "./dbTable";
 import { STORAGE_KEYS, HYDRATION_STATE } from "../core/constants";
 

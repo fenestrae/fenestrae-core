@@ -11,8 +11,6 @@
 // allowing multiple users, workspaces, and browser tabs to coexist safely.
 // ============================================================================
 
-import { createJSONStorage } from "zustand/middleware";
-import dbManagerInstance from "../database/dbManager";
 import { indexedDBStorage } from "../database/indexedDBAdapter";
 import {winStore} from "../core"
 import { sanitizePersistable } from "../lib/security";

@@ -1,9 +1,8 @@
-import React, { 
+import { 
   useEffect, 
   createContext, 
   useState, 
   useMemo,
-  useRef 
 } from 'react'
 
 import { win } from '../core'
