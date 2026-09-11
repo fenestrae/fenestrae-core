@@ -22,7 +22,7 @@
 
 1. [Introduction](#introduction)  
 2. [Identity](#identity)  
-3. [What is Fenestrae](#what-is-fenestrae-version-102)  
+3. [What is Fenestrae](#what-is-fenestrae-version-103)  
 4. [Important Notice](#-important)  
 5. [Roadmap](#roadmap-toward-the-context-manager)  
 6. [Quick Start](#quick-start)  
@@ -66,9 +66,9 @@ The logo —a classic window with organic lines inspired by **Gaudí**— repres
 
 ---
 
-## What is Fenestrae (version 1.0.2)
+## What is Fenestrae (version 1.0.3)
 
-Version **1.0.2** is a **workspace manager** that brings back capabilities the modern web lost:
+Version **1.0.3** is a **workspace manager** that brings back capabilities the modern web lost:
 
 - Window management  
 - Real multitasking  
@@ -82,7 +82,7 @@ Version **1.0.2** is a **workspace manager** that brings back capabilities the m
 
 ## ❗ Important
 
-> Version **1.0.2** does not yet include context management.  
+> Version **1.0.3** does not yet include context management.  
 > This functionality will arrive in future versions **(1.1.x)**.
 
 ---
