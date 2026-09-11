@@ -3,6 +3,9 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import FNButton from "../components/FNButton";
+import { executeCommand } from "./commandRegistry";
+import { hasPermission } from "../permissions/permissions";
+
 export default function FNMainMenu({
   items = [],
   orientation = "horizontal",
@@ -138,8 +141,10 @@ function FNGroupMenu({ anchorRect, items, winId, onClose }) {
 }
 
 function FNGroupMenuItem({ item, winId, onClose }) {
+  if (item.permission && !hasPermission(item.permission)) return null;
+
   const handleClick = () => {
-    //fenestrae.executeCommand(winId, item.command, item.payload);
+    if (item.command) executeCommand(winId, item.command, item.payload);
     onClose?.();
   };
 

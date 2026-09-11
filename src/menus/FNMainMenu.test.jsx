@@ -1,10 +1,14 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { createElement } from "react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { setPermissions } from "../permissions/permissions";
+import { clearCommands, registerCommand } from "./commandRegistry";
 import FNMainMenu from "./FNMainMenu";
 
 afterEach(() => {
   document.body.innerHTML = "";
+  clearCommands();
+  setPermissions([]);
 });
 
 describe("FNMainMenu", () => {
@@ -33,5 +37,34 @@ describe("FNMainMenu", () => {
 
     fireEvent.click(screen.getByTitle("File"));
     expect(portal.textContent).toContain("Save");
+  });
+
+  it("executes the item command and hides entries without permission", () => {
+    const portal = document.createElement("div");
+    portal.id = "fenestrae-portal-root";
+    document.body.appendChild(portal);
+
+    const save = vi.fn();
+    registerCommand("file.save", save);
+    setPermissions(["clients.read"]);
+
+    render(
+      createElement(FNMainMenu, {
+        items: [{
+          caption: "File",
+          items: [
+            { caption: "Save", command: "file.save" },
+            { caption: "Admin", command: "file.admin", permission: "clients.admin" },
+          ],
+        }],
+        winId: "w1",
+      }),
+    );
+
+    fireEvent.click(screen.getByTitle("File"));
+    expect(portal.textContent).toContain("Save");
+    expect(portal.textContent).not.toContain("Admin");
+    fireEvent.click(screen.getByText("Save"));
+    expect(save).toHaveBeenCalledWith("w1", undefined);
   });
 });
