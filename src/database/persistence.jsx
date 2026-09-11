@@ -75,6 +75,7 @@ import {
 } from "./dbTable";
 import { winStore } from "../core"
 import { sanitizePersistable, clearFenestraeSessionStorage } from "../lib/security";
+import { cancelPersistWrites } from "./indexedDBAdapter";
 import { setPermissions } from "../permissions/permissions";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -378,10 +379,13 @@ export const setSession = async ({ winOrder = [], activeWinId = null } = {}) => 
 
 export const closeSession = async () => {
     const sessionId = sessionStorage.getItem(STORAGE_KEYS.SESSION);
+    cancelPersistWrites();
 
     try {
         winStore.getState().closeAllWin(true);
     } catch { }
+
+    cancelPersistWrites();
 
     if (sessionId) {
         try {
@@ -397,6 +401,8 @@ export const closeSession = async () => {
     try {
         winStore.getState().resetStore();
     } catch { }
+
+    cancelPersistWrites();
 };
 
 

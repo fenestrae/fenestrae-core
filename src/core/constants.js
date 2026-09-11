@@ -16,6 +16,8 @@ export const CONTEXT_KEY_LEGACY = "legacy";
 
 export const CONTEXT_DEBOUNCE_MS = 500;
 
+export const PERSIST_DEBOUNCE_MS = 300;
+
 export const STORAGE_KEYS = {
   USER: "fenestrae_user",
   WORKSPACE: "fenestrae_workspace",

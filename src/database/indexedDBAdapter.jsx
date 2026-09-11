@@ -20,139 +20,157 @@ import {
   dbTable,
   STORE_WINDOWS,
 } from "./dbTable";
-import { STORAGE_KEYS, HYDRATION_STATE } from "../core/constants";
+import { STORAGE_KEYS, HYDRATION_STATE, PERSIST_DEBOUNCE_MS } from "../core/constants";
 
-// ============================================================================
-// INDEXEDDB ADAPTER — Zustand Storage Interface
-// ============================================================================
-// RESPONSIBILITY:
-//   - Implement the Storage interface required by Zustand's persist middleware
-//   - Store and retrieve window state from IndexedDB
-//   - Isolate state by session (tab)
-//   - Maintain window order and active window state
-//
-// METHODS:
-//   - getItem(key)     → Retrieve state for a given key
-//   - setItem(key, value) → Store state for a given key
-//   - removeItem(key)  → Remove state for a given key
-//
-// USAGE:
-//   import { indexedDBStorage } from './persistAdapter';
-//
-//   const useStore = create(
-//     persist(
-//       (set) => ({ ... }),
-//       {
-//         name: 'wins',
-//         storage: indexedDBStorage,
-//       }
-//     )
-//   );
-// ============================================================================
+let persistTimer = null;
+let queuedKey = null;
+let queuedValue = null;
+let pendingResolvers = [];
+let writeToken = 0;
+let lastWritten = emptySnapshot();
 
-const indexedDBAdapter = {
+function emptySnapshot() {
+  return {
+    sessionId: null,
+    knownIds: null,
+    winPayloads: new Map(),
+    winOrder: null,
+    activeTabId: null,
+  };
+}
 
-  // -------------------------------------------------------------------------
-  // GET ITEM — Retrieve window state from IndexedDB
-  // -------------------------------------------------------------------------
-  // RESPONSIBILITY:
-  //   - Read the current session's window data from IndexedDB
-  //   - Restore window order and active window
-  //   - Return state in the format expected by Zustand Persist
+function settleWaiters(error) {
+  const waiters = pendingResolvers;
+  pendingResolvers = [];
+  if (error) waiters.forEach(({ reject }) => reject(error));
+  else waiters.forEach(({ resolve }) => resolve());
+}
 
-  
+export function cancelPersistWrites() {
+  writeToken += 1;
+  if (persistTimer) {
+    clearTimeout(persistTimer);
+    persistTimer = null;
+  }
+  queuedKey = null;
+  queuedValue = null;
+  lastWritten = emptySnapshot();
+  settleWaiters();
+}
 
-  //
-  // STATE FORMAT:
-  //   {
-  //     state: {
-  //       wins: [[winId, winData], ...],
-  //       winOrder: [winId, ...],
-  //       activeTabId: string | null
-  //     }
-  //   }
-  //
-  // IMPORTANT:
-  //   - The session must already exist (the session ID is read from sessionStorage)
-  //   - Windows are isolated by session (tab)
-  //   - Windows that are not in the new state are deleted
-  // ===========================================================================
+export async function flushPersistWrites() {
+  if (persistTimer) {
+    clearTimeout(persistTimer);
+    persistTimer = null;
+  }
+  if (queuedValue == null) return;
+  const key = queuedKey;
+  const value = queuedValue;
+  queuedKey = null;
+  queuedValue = null;
+  try {
+    await persistWindows(key, value);
+    settleWaiters();
+  } catch (error) {
+    settleWaiters(error);
+    throw error;
+  }
+}
 
-  setItem: async (_, value) => {
+function schedulePersist(key, value) {
+  queuedKey = key;
+  queuedValue = value;
+  return new Promise((resolve, reject) => {
+    pendingResolvers.push({ resolve, reject });
+    if (persistTimer) clearTimeout(persistTimer);
+    persistTimer = setTimeout(() => {
+      persistTimer = null;
+      flushPersistWrites().catch(() => {});
+    }, PERSIST_DEBOUNCE_MS);
+  });
+}
 
-    const sessionId = sessionStorage.getItem(STORAGE_KEYS.SESSION);
-    const hydrated = sessionStorage.getItem(STORAGE_KEYS.HYDRATED);
-    if (!sessionId || hydrated !== HYDRATION_STATE.READY) {
-      return; // ← prevents Zustand from recreating the session
-    }
+async function persistWindows(_, value) {
+  const token = writeToken;
+  const sessionId = sessionStorage.getItem(STORAGE_KEYS.SESSION);
+  const hydrated = sessionStorage.getItem(STORAGE_KEYS.HYDRATED);
+  if (!sessionId || hydrated !== HYDRATION_STATE.READY) {
+    return;
+  }
 
-    const parsed = JSON.parse(value);
+  const parsed = typeof value === "string" ? JSON.parse(value) : value;
+  const wins = parsed.state?.wins || [];
+  const winOrder = parsed.state?.winOrder || [];
+  const activeTabId = parsed.state?.activeTabId || null;
+  const newIds = new Set(wins.map(([winId]) => winId));
 
-
-    //console.log("parsed in setItem ",sessionId,parsed);
-
-    const wins = parsed.state?.wins || [];
-    const winOrder = parsed.state?.winOrder || [];
-    const activeTabId = parsed.state?.activeTabId || null;
-
+  let existingIds = lastWritten.knownIds;
+  if (!existingIds || lastWritten.sessionId !== sessionId) {
     const windowsStore = await dbTable(STORE_WINDOWS);
-
-    // 1. Ventanas existentes
+    if (token !== writeToken) return;
     const existingReq = windowsStore.index("sessionId").getAll(sessionId);
     const existingWins = await new Promise((resolve, reject) => {
       existingReq.onsuccess = () => resolve(existingReq.result || []);
       existingReq.onerror = () => reject(existingReq.error);
     });
+    if (token !== writeToken) return;
+    existingIds = new Set(existingWins.map((w) => w.winId));
+  }
 
-    const newWinIds = wins.map(([winId]) => winId);
+  for (const oldId of existingIds) {
+    if (newIds.has(oldId)) continue;
+    await delWindow(oldId);
+    lastWritten.winPayloads.delete(oldId);
+    if (token !== writeToken) return;
+  }
 
+  for (const [winId, winData] of wins) {
+    const payload = JSON.stringify(winData);
+    if (lastWritten.winPayloads.get(winId) === payload) continue;
+    await setWindow(winId, winData);
+    if (token !== writeToken) return;
+    lastWritten.winPayloads.set(winId, payload);
+  }
 
- 
-    // 2. Borrar ventanas eliminadas
-    for (const oldWin of existingWins) {
-      if (!newWinIds.includes(oldWin.winId)) {
-        await delWindow(oldWin.winId);
-      }
-    }
-
-    // 3. Crear/actualizar ventanas
-    for (const [winId, winData] of wins) {
-      await setWindow(winId, winData);
-    }
-
-    //console.log("setSession dentro de setItem:")
-    // 4. Actualizar sesión
+  const orderKey = JSON.stringify(winOrder);
+  if (lastWritten.winOrder !== orderKey || lastWritten.activeTabId !== activeTabId) {
     await setSession({
       winOrder,
-      activeWinId: activeTabId
+      activeWinId: activeTabId,
     });
-  },
+    if (token !== writeToken) return;
+    lastWritten.winOrder = orderKey;
+    lastWritten.activeTabId = activeTabId;
+  }
 
-  // -------------------------------------------------------------------------
-  // REMOVE ITEM — Delete a single window
-  // -------------------------------------------------------------------------
-  // RESPONSIBILITY:
-  //   - Remove a window from IndexedDB
-  //   - Also removes its associated context
-  //
-  // PARAMETERS:
-  //   - winId: string — The ID of the window to delete
-  //
-  // IMPORTANT:
-  //   - This only deletes the window, not the session
-  //   - The window is removed from all stores (windows and contexts)
-  // ===========================================================================
+  lastWritten.sessionId = sessionId;
+  lastWritten.knownIds = newIds;
+}
+
+const indexedDBAdapter = {
+  setItem: (key, value) => {
+    const sessionId = sessionStorage.getItem(STORAGE_KEYS.SESSION);
+    const hydrated = sessionStorage.getItem(STORAGE_KEYS.HYDRATED);
+    if (!sessionId || hydrated !== HYDRATION_STATE.READY) {
+      return Promise.resolve();
+    }
+    return schedulePersist(key, value);
+  },
 
   removeItem: async (winId) => {
     await delWindow(winId);
-  }
+  },
 };
 
-// ============================================================================
-// EXPORT — Zustand Storage Instance
-// ============================================================================
-// This creates a storage instance that Zustand's persist middleware can use.
-// It wraps the adapter with createJSONStorage to handle JSON serialization.
-// ============================================================================
+if (typeof window !== "undefined") {
+  window.addEventListener("pagehide", () => {
+    flushPersistWrites().catch(() => {});
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+      flushPersistWrites().catch(() => {});
+    }
+  });
+}
 
 export const indexedDBStorage = createJSONStorage(() => indexedDBAdapter);

@@ -153,16 +153,14 @@ export const persistOptions = {
       };
 
       // 4. Serializar de forma segura
-      const serialized = sanitizePersistable(JSON.parse(JSON.stringify(winClean)));
-
-      return [id, serialized];
+      return [id, sanitizePersistable(winClean)];
     });
+
+  const persistentIds = new Set(persistentEntries.map(([pid]) => pid));
 
   return {
     activeTabId: state.activeTabId,
-    winOrder: state.winOrder.filter((id) =>
-      persistentEntries.some(([pid]) => pid === id)
-    ),
+    winOrder: state.winOrder.filter((id) => persistentIds.has(id)),
     wins: persistentEntries,
     contexts: [] // reservado para futuro
   };

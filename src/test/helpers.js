@@ -4,6 +4,7 @@ import { externalWindowInstances, winStore } from "../core/winStore";
 import { formsRegistry } from "../core/slices/misc";
 import dbManager from "../database/dbManager";
 import { contextRepository } from "../database/ContextRepository";
+import { cancelPersistWrites } from "../database/indexedDBAdapter";
 import { clearCommands } from "../menus/commandRegistry";
 import { setPermissions } from "../permissions/permissions";
 
@@ -64,6 +65,7 @@ export function setOperator({
 }
 
 export function resetRuntime() {
+  cancelPersistWrites();
   clearSessionStorage();
   setPermissions([]);
   clearCommands();

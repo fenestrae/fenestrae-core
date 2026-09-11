@@ -67,4 +67,31 @@ describe("indexedDBStorage.setItem", () => {
       expect(wins[0].data.title).toBe("Customers");
     });
   });
+
+  it("coalesces rapid writes to the last snapshot", async () => {
+    await init({ user: "pepe", workspace: "erp" });
+    const sessionId = await createNewSession();
+    sessionStorage.setItem(STORAGE_KEYS.HYDRATED, HYDRATION_STATE.READY);
+
+    const first = indexedDBStorage.setItem("wins", {
+      state: {
+        wins: [["w1", { title: "A" }]],
+        winOrder: ["w1"],
+        activeTabId: "w1",
+      },
+    });
+    const second = indexedDBStorage.setItem("wins", {
+      state: {
+        wins: [["w1", { title: "B" }]],
+        winOrder: ["w1"],
+        activeTabId: "w1",
+      },
+    });
+
+    await Promise.all([first, second]);
+
+    const wins = await windowsForSession(sessionId);
+    expect(wins).toHaveLength(1);
+    expect(wins[0].data.title).toBe("B");
+  });
 });
