@@ -6,6 +6,7 @@
 import { produce } from "immer";
 import { calculateAlignment } from "../geometry";
 import { externalWindowInstances } from "./lifecycle";
+import { postToWindow } from "../../lib/security";
 
 export const createLayoutSlice = (set, get) => ({
   updateWinLayout: (id, layout) => set(produce((self) => {
@@ -41,9 +42,9 @@ export const createLayoutSlice = (set, get) => ({
             nativeWindow.document.title = layout.caption;
 
           nativeWindow.moveTo(win.x, win.y);
-          nativeWindow.postMessage(
+          postToWindow(
+            nativeWindow,
             { type: 'LAYOUT_UPDATED', layout: { width: win.width, height: win.height, x: win.x, y: win.y, caption: win.title } },
-            '*'
           );
         } catch (err) {
           console.warn('[Fenestrae] Error actualizando popup nativa:', err);
@@ -59,9 +60,9 @@ export const createLayoutSlice = (set, get) => ({
       childPopups.forEach((popup) => {
         const nativePopup = externalWindowInstances.get(popup.id);
         if (nativePopup && !nativePopup.closed) {
-          nativePopup.postMessage(
+          postToWindow(
+            nativePopup,
             { type: 'PARENT_LAYOUT_CHANGED', parentId: id, parentLayout: { width: win.width, height: win.height, x: win.x, y: win.y } },
-            '*'
           );
         }
       });

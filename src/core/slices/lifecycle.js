@@ -5,7 +5,6 @@
 
 import { produce } from "immer";
 import { v4 as uuidv4 } from "uuid";
-import { injectPopupBridge } from '../../events/injectPopupBridge';
 import { getLaunchpadId } from "../index";
 import { calculateAlignment, getStandardLayout } from "../geometry";
 import { getAllDescendants } from "../treeHelpers";

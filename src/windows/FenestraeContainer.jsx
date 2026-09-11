@@ -21,6 +21,7 @@ import FenestraeDesktopTab from "./FenestraeDesktopTab";
 import FenestraeFixedZone from "./FenestraeFixedZone";
 
 import { useShortcuts } from "../hooks/useShortcuts";
+import { postToWindow } from "../lib/security";
 
 const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
   const hasHydrated = winStore((s) => s.hasHydrated);
@@ -43,7 +44,7 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
       const birth = birthRef.current;
       externalWindowInstances.forEach((win) => {
         try {
-          win.postMessage({ type: "fenestrae-heartbeat", birth }, "*");
+          postToWindow(win, { type: "fenestrae-heartbeat", birth });
         } catch { }
       });
     }, 1000);

@@ -2,19 +2,29 @@ import React from "react";
 import PropTypes from "prop-types";
 import { formsRegistry } from "../core/winStore"; // Ajustado a la nomenclatura interna de Fenestrae
 import { FenestraeiFrame } from "./FenestraeiFrame";
+import { getFrameSandbox, resolveTrustedFrameUrl } from "../lib/security";
 
 const FenestraeWinRenderer = React.memo(({ win, closeWin }) => {
   const componentName = win?.name?.toLowerCase();
   const entry = formsRegistry.get(componentName);
  // ⭐ Ventanas externas (HTML / iframe)
   if (win?.params?.url) {
-      const desactive=(win.isDragging || win.isResizing) 
+      const trusted = resolveTrustedFrameUrl(win.params.url, win.params.allowedOrigins);
+      if (!trusted) {
+        return (
+          <div className="flex items-center justify-center h-full text-red-400 text-[10px] font-mono p-4 select-none">
+            [ERROR: URL_NOT_ALLOWED]
+          </div>
+        );
+      }
+
+      const desactive=(win.isDragging || win.isResizing)
 
      return (
       
       <iframe
-        ref={(iframe) => FenestraeiFrame(iframe, win, closeWin)}
-        src={win.params.url}
+        ref={(iframe) => FenestraeiFrame(iframe, win, closeWin, trusted.sameOrigin)}
+        src={trusted.href}
         style={{
           width: "100%",
           height: "100%",
@@ -23,7 +33,7 @@ const FenestraeWinRenderer = React.memo(({ win, closeWin }) => {
           pointerEvents: desactive ? "none":"auto"
         }}
         loading="lazy"
-        sandbox="allow-scripts allow-forms allow-same-origin"
+        sandbox={getFrameSandbox(trusted.sameOrigin)}
         
         referrerPolicy="no-referrer"
         title={win.title || "Fenestrae External Window"}

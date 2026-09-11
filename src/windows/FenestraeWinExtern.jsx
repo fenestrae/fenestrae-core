@@ -100,6 +100,8 @@ const FenestraeWinExtern = React.memo(({ win }) => {
         let parentBirth = null;   // ← sello de vida del padre
 
         const messageHandler = (event) => {
+          if (event.origin !== window.location.origin) return;
+          if (dw.opener && event.source !== dw.opener) return;
           if (event.data?.type === "fenestrae-heartbeat") {
 
             // Actualizar latido

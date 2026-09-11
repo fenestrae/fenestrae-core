@@ -25,7 +25,8 @@ export const POPUP_BRIDGE_SCRIPT = `
      */
     setupMessageListener() {
       window.addEventListener('message', (event) => {
-        // Solo aceptar mensajes del opener (ventana principal)
+        // Solo aceptar mensajes del opener y del mismo origen.
+        if (event.origin !== window.location.origin) return;
         if (event.source !== window.opener) return;
 
         const { type, channel, payload } = event.data;
@@ -67,7 +68,7 @@ export const POPUP_BRIDGE_SCRIPT = `
           ...data,
           _source: 'popup',
           _timestamp: Date.now()
-        }, '*');
+        }, window.location.origin);
       }
     }
 

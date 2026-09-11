@@ -1,30 +1,16 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client'; 
 import { POPUP_BRIDGE_SCRIPT } from './popupBridge';
 
-export const injectPopupBridge = (popupWindow, componentName, params = {}, storeInstance) => {
+export const injectPopupBridge = (popupWindow) => {
   if (!popupWindow || popupWindow.closed) return;
 
   try {
-    // 1. Inyectar dependencias globales en el contexto del hijo
-    popupWindow.React = React;
-    popupWindow.ReactDOM = ReactDOM;
-
-    // 2. Guardar la instancia del store principal
-    popupWindow.__fenestraeStore__ = storeInstance;
-
-    // 3. Inyectar el script del bridge (event bus)
+    // El popup se pinta con createPortal desde el padre. No se inyecta React
+    // ni el store: un XSS en el hijo tendría el Zustand completo del workspace.
     const script = popupWindow.document.createElement('script');
     script.textContent = POPUP_BRIDGE_SCRIPT;
     popupWindow.document.head.appendChild(script);
 
-    // 4. Copiar estilos globales y variables CSS
     copyGlobalStyles(popupWindow);
-
-    // ❗ IMPORTANTE:
-    // Ya NO renderizamos nada aquí.
-    // El renderizado del formulario lo hace FenestraeWinExtern vía createPortal.
-
   } catch (err) {
     console.error('Error inyectando bridge:', err);
   }
@@ -46,7 +32,6 @@ const copyGlobalStyles = (targetWindow) => {
       }
     });
 
-    // Copiar variables CSS del :root
     const targetRoot = targetWindow.document.documentElement;
     targetRoot.style.cssText = document.documentElement.style.cssText;
 

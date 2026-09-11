@@ -6,6 +6,7 @@
 import { injectPopupBridge } from '../../events/injectPopupBridge';
 import { formsRegistry } from './misc';
 import { externalWindowInstances } from './lifecycle';
+import { resolveTrustedFrameUrl, writeBlankPopupDocument } from '../../lib/security';
 
 export const createApiSlice = (set, get) => ({
 
@@ -20,6 +21,8 @@ export const createApiSlice = (set, get) => ({
 
   // Si viene una URL → TAB
   if (params?.url) {
+    if (!resolveTrustedFrameUrl(params.url, params.allowedOrigins)) return null;
+
     const newId = get().createWin(validParentId, {
       type: "tab",
       name: componentName,
@@ -87,6 +90,9 @@ export const createApiSlice = (set, get) => ({
       const url=params?.url;
 
       if (!entry&&!url) return reject({ status: "error", message: `[Fenestrae] Component not registered: "${name}"` });
+      if (url && !resolveTrustedFrameUrl(url, params.allowedOrigins)) {
+        return reject({ status: "error", message: `[Fenestrae] URL not allowed: "${url}"` });
+      }
 
       const safeCallbacks = {
         ...callbacks,
@@ -344,7 +350,6 @@ export const createApiSlice = (set, get) => ({
         "toolbar=no",
         "location=no",
         "popup=yes",
-        "noopener",
         "directories=no",
         "personalbar=no",
       ].join(",");
@@ -356,8 +361,7 @@ export const createApiSlice = (set, get) => ({
           .toString(36)
           .substring(2, 11)}`;
 
-        // 🔥 SOLUCIÓN CLAVE: Usar javascript:void(0) para evitar la barra
-        nativeWindow = window.open("javascript:void(0)", windowName, features);
+        nativeWindow = window.open("about:blank", windowName, features);
 
         if (!nativeWindow) {
           return get().showTop("0", name, params, safeCallbacks);
@@ -365,31 +369,15 @@ export const createApiSlice = (set, get) => ({
 
         const title = params.titulo || params.title || componentName.toUpperCase();
 
-        // Escribir el HTML directamente (sin navegación)
-        nativeWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>${title}</title>
-            <meta charset="utf-8">
-            <base href="${window.location.origin}">
-            <style>
-              body { margin: 0; padding: 0; overflow: hidden; font-family: system-ui, sans-serif; }
-              #root { width: 100vw; height: 100vh; overflow: auto; }
-            </style>
-          </head>
-          <body><div id="root"></div></body>
-        </html>
-      `);
-        nativeWindow.document.close();
+        writeBlankPopupDocument(nativeWindow, title);
 
         if (nativeWindow.document.readyState === "complete") {
-          injectPopupBridge(nativeWindow, componentName, params, get());
+          injectPopupBridge(nativeWindow);
         } else {
           nativeWindow.addEventListener(
             "load",
             () => {
-              injectPopupBridge(nativeWindow, componentName, params, get());
+              injectPopupBridge(nativeWindow);
             },
             { once: true }
           );

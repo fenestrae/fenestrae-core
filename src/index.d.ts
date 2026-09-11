@@ -9,6 +9,7 @@ export interface WindowParams {
   id?: string;
   name?: string;
   initialData?: Record<string, unknown>;
+  allowedOrigins?: string[];
   [key: string]: unknown;
 }
 
