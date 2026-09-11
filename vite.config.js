@@ -3,6 +3,21 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { resolve } from 'path';
 
+const peerDeps = [
+  'react',
+  'react-dom',
+  'react-router-dom',
+  'zustand',
+  'immer',
+  'uuid',
+  'clsx',
+  'prop-types',
+  'react-icons',
+];
+
+const isPeerDep = (id) =>
+  peerDeps.some((dep) => id === dep || id.startsWith(`${dep}/`));
+
 export default defineConfig({
   plugins: [
     tailwindcss(),
@@ -35,31 +50,26 @@ export default defineConfig({
     },
 
     rollupOptions: {
-      external: [
-        'react',
-        'react-dom',
-        'react/jsx-runtime',
-        'react-router-dom',
-        'zustand',
-        'immer',
-        'uuid',
-        'clsx',
-        'prop-types',
-        'react-icons'
-      ],
+      // Incluye subpaths (react-dom/client, zustand/middleware, react-icons/md…)
+      // Si no, Rollup los empaqueta y el bundle se dispara.
+      external: isPeerDep,
       output: {
         exports: 'named',
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
+          'react-dom/client': 'ReactDOM',
           'react/jsx-runtime': 'JSXRuntime',
           'react-router-dom': 'ReactRouterDOM',
           zustand: 'zustand',
+          'zustand/middleware': 'zustandMiddleware',
+          'zustand/react/shallow': 'zustandShallow',
           immer: 'immer',
           uuid: 'uuid',
           clsx: 'clsx',
           'prop-types': 'PropTypes',
-          'react-icons': 'ReactIcons'
+          'react-icons': 'ReactIcons',
+          'react-icons/md': 'ReactIconsMd',
         }
       }
     }
