@@ -31,7 +31,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "playground": "vite --config playground/vite.config.js",
-    "playground:dist": "vite build && vite --config playground/vite.config.js --mode dist"
+    "playground:dist": "vite build && vite --config playground/vite.config.js --mode dist",
+    "prepare": "husky"
   },
   "peerDependencies": {
     "clsx": "^2.1.1",
@@ -45,6 +46,8 @@
     "zustand": "^4.0.0 || ^5.0.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
     "@tailwindcss/vite": "^4.3.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
@@ -53,6 +56,7 @@
     "@vitest/coverage-v8": "^4.1.11",
     "clsx": "^2.1.1",
     "fake-indexeddb": "^6.2.5",
+    "husky": "^9.1.7",
     "immer": "^11.1.18",
     "jsdom": "^29.1.1",
     "prop-types": "^15.8.1",

@@ -10,6 +10,24 @@ Contributions are welcome.
 6. Include tests when the change can break window lifecycle, sessions, permissions or URL handling.
 7. Open a pull request with the *why*, not a file list.
 
+## Commit messages
+
+This repository uses [Conventional Commits](https://www.conventionalcommits.org/). A Husky `commit-msg` hook runs commitlint on every commit.
+
+```
+<type>(<optional-scope>): <description>
+```
+
+Types: `feat`, `fix`, `perf`, `refactor`, `docs`, `test`, `build`, `ci`, `chore`, `style`, `revert`.
+
+Keep the subject under 100 characters. Put the *why* in the body when the one-liner is not enough. Scopes are optional; useful ones here are `windows`, `sessions`, `security`, `persistence`, `docs`.
+
+```
+perf(windows): baja el sondeo del título de los popups de 100 ms a 1 s
+fix(security): cierra XSS e iframes con origen fijo en postMessage
+docs: mueve la guía, la API y la arquitectura a doc/
+```
+
 Build:
 
 ```bash
