@@ -6,7 +6,7 @@ import FNButton from "../components/FNButton"; // 🔹 Vinculación al botón pu
 import { useDraggable, useResizable } from "./UseResizable";
 import { winStore } from "../core";
 
-const FenestraeWinModal = React.memo(({ win, index, activeWinId, setActiveWinId }) => {
+const FenestraeWinModal = React.memo(({ win, index, isActive, setActiveWinId }) => {
   const self = win; // Mantenemos tu convención 'self' para el contexto de la ventana
 
   // 🔹 Selectores atómicos para evitar re-renders por cambios en estados ajenos del store
@@ -28,7 +28,6 @@ const FenestraeWinModal = React.memo(({ win, index, activeWinId, setActiveWinId 
     (layout) => updateWinLayout(self.id, layout)
   );
 
-    const isActive = activeWinId === win.id;
   // 3. Hook de Arrastre con callback de sincronización
   const { position, isDragging, handleMouseDown } = useDraggable(
     currentX,
@@ -77,7 +76,7 @@ const FenestraeWinModal = React.memo(({ win, index, activeWinId, setActiveWinId 
     left: 0,
     // 🚀 Activamos translate3d real para un movimiento ultra-fluido de 60fps sin jittering
     transform: `translate3d(${finalX}px, ${finalY}px, 0)`,
-    zIndex: activeWinId === self.id ? 2000 : 1000 + index,
+    zIndex: isActive ? 2000 : 1000 + index,
     display: "flex",
     flexDirection: "column",
     willChange: isDragging || isResizing ? "transform, width, height" : "auto",
@@ -85,10 +84,10 @@ const FenestraeWinModal = React.memo(({ win, index, activeWinId, setActiveWinId 
   };
 
   const handleFocus = useCallback(() => {
-    if (activeWinId !== self.id && typeof setActiveWinId === "function") {
+    if (!isActive && typeof setActiveWinId === "function") {
       setActiveWinId(self.id);
     }
-  }, [activeWinId, self.id, setActiveWinId]);
+  }, [isActive, self.id, setActiveWinId]);
 
   if (win.visible === false) return null;
 
@@ -103,7 +102,7 @@ const FenestraeWinModal = React.memo(({ win, index, activeWinId, setActiveWinId 
           // Delegamos la pintura y el radio de borde al motor de temas
           backgroundColor: "var(--color-window-bg, #ffffff)",
           // En XP el borde activo cambia de color, así que usamos una condición para el color del borde
-          borderColor: activeWinId === self.id
+          borderColor: isActive
             ? "var(--color-window-active-border, #0054e3)"
             : "var(--color-window-border, #cbd5e1)",
           // Permitimos que cada tema decida si es cuadrado (XP abajo) o redondeado completo
@@ -113,7 +112,7 @@ const FenestraeWinModal = React.memo(({ win, index, activeWinId, setActiveWinId 
           // Dejamos en Tailwind solo el layout físico y el comportamiento
           "border overflow-hidden select-none",
           // Las sombras de XP son muy sutiles o inexistentes, pero puedes modularlas si quieres
-          activeWinId === self.id ? "shadow-2xl" : "shadow-md",
+          isActive ? "shadow-2xl" : "shadow-md",
           isDragging && "opacity-90 cursor-grabbing"
         )}
         onMouseDown={(e) => e.stopPropagation()}
@@ -187,7 +186,7 @@ FenestraeWinModal.propTypes = {
     visible: PropTypes.bool,
   }).isRequired,
   index: PropTypes.number.isRequired,
-  activeWinId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isActive: PropTypes.bool,
   setActiveWinId: PropTypes.func.isRequired,
 };
 

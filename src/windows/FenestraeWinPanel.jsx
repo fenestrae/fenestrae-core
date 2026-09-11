@@ -5,7 +5,7 @@ import FenestraeWinRenderer from "./FenestraeWinRenderer"; // 🔹 Vinculado al 
 import { winStore } from "../core";
 import { WIN_ALIGN } from "../store/types"; // Ajustado a tu exportación del core
 
-const FenestraeWinPanel = React.memo(({ win, index, activeWinId, setActiveWinId }) => {
+const FenestraeWinPanel = React.memo(({ win, index, isActive, setActiveWinId }) => {
   const { id, width, height, align, x, y } = win;
   
   // 🔹 Selector optimizado para evitar re-renders masivos por cambios en otros estados del store
@@ -49,7 +49,7 @@ const FenestraeWinPanel = React.memo(({ win, index, activeWinId, setActiveWinId 
       // Si align es "none", manda el objeto style posicionado por coordenadas (x,y)
     },
     // Efecto visual sutil si el panel es la ventana activa del viewport
-    id === activeWinId && "ring-1 ring-blue-500/20"
+    isActive && "ring-1 ring-blue-500/20"
   );
 
   return (
@@ -57,7 +57,7 @@ const FenestraeWinPanel = React.memo(({ win, index, activeWinId, setActiveWinId 
       style={getStyle()}
       className={alignClasses}
       onMouseDown={() => {
-        if (activeWinId !== id && typeof setActiveWinId === "function") {
+        if (!isActive && typeof setActiveWinId === "function") {
           setActiveWinId(id);
         }
       }}
@@ -82,7 +82,7 @@ FenestraeWinPanel.propTypes = {
     y: PropTypes.number,
   }).isRequired,
   index: PropTypes.number.isRequired,
-  activeWinId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isActive: PropTypes.bool,
   setActiveWinId: PropTypes.func.isRequired,
 };
 

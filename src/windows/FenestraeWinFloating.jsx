@@ -7,7 +7,7 @@ import { useDraggable, ResizeHandles, useResizable } from "./UseResizable";
 import { winStore } from "../core";
 import { WIN_TYPES, WIN_ALIGN } from "../store/types";
 
-const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWinId }) => {
+const FenestraeWinFloating = React.memo(({ win, index, isActive, setActiveWinId }) => {
   const self = win;
 
   // 🔹 Selectores de Zustand atómicos
@@ -30,8 +30,6 @@ const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWin
     currentY,
     (layout) => updateWinLayout(self.id, layout)
   );
-
-  const isActive = activeWinId === self.id;
 
   // 3. Hook de Arrastre
   const { position, isDragging, handleMouseDown } = useDraggable(
@@ -326,7 +324,7 @@ FenestraeWinFloating.propTypes = {
     visible: PropTypes.bool,
   }).isRequired,
   index: PropTypes.number.isRequired,
-  activeWinId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isActive: PropTypes.bool,
   setActiveWinId: PropTypes.func.isRequired,
 };
 

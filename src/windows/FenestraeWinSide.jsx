@@ -11,7 +11,7 @@ import FNButton from "../components/FNButton";
 import { winStore } from "../core";
 import { WIN_ALIGN } from "../store/types";
 
-const FenestraeWinSide = React.memo(({ win, activeWinId, setActiveWinId }) => {
+const FenestraeWinSide = React.memo(({ win, isActive, setActiveWinId }) => {
   // 🔹 Selectores atómicos para evitar re-renders globales del store
   const closeWin = winStore((s) => s.closeWin);
   const updateWinLayout = winStore((s) => s.updateWinLayout);
@@ -39,7 +39,7 @@ const FenestraeWinSide = React.memo(({ win, activeWinId, setActiveWinId }) => {
     e.stopPropagation();
     
     // Enfocar ventana al interactuar con el borde
-    if (activeWinId !== self.id) setActiveWinId(self.id);
+    if (!isActive) setActiveWinId(self.id);
 
     resizeRef.current = {
       startX: e.clientX,
@@ -67,10 +67,9 @@ const FenestraeWinSide = React.memo(({ win, activeWinId, setActiveWinId }) => {
     document.addEventListener("pointermove", handlePointerMove);
     document.addEventListener("pointerup", handlePointerUp);
     document.body.style.cursor = "ew-resize";
-  }, [self.id, self.width, activeWinId, setActiveWinId, updateWinLayout]);
+  }, [self.id, self.width, isActive, setActiveWinId, updateWinLayout]);
 
   // --- Estilos Estructurados --------------------------------------------------
-  const isActive = activeWinId === self.id;
   const currentWidth = self.width ?? 400;
 
   const style = {
@@ -97,7 +96,7 @@ const FenestraeWinSide = React.memo(({ win, activeWinId, setActiveWinId }) => {
           ? "border-[var(--color-window-active-border,#4b5563)] ring-1 ring-[var(--color-window-active-border,#4b5563)]" 
           : "border-[var(--color-window-border,#cbd5e1)] opacity-98"
       )}
-      onMouseDown={() => activeWinId !== self.id && setActiveWinId(self.id)}
+      onMouseDown={() => !isActive && setActiveWinId(self.id)}
     >
       {/* CABECERA ESTILO FIORI SIDE PANEL */}
       <div 
@@ -153,7 +152,7 @@ const FenestraeWinSide = React.memo(({ win, activeWinId, setActiveWinId }) => {
 
 FenestraeWinSide.propTypes = {
   win: PropTypes.object.isRequired,
-  activeWinId: PropTypes.string,
+  isActive: PropTypes.bool,
   setActiveWinId: PropTypes.func.isRequired,
 };
 

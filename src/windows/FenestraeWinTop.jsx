@@ -12,7 +12,7 @@ import FNButton from "../components/FNButton";
 import { winStore } from "../core";
 import { WIN_TYPES, WIN_ALIGN } from "../store/types";
 
-const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId }) => {
+const FenestraeWinTop = React.memo(({ win, index, isActive, setActiveWinId }) => {
   const self = win; // Mantenemos tu convención 'self' para el contexto de la ventana
   // 🔹 Selectores atómicos e individuales de Zustand para mitigar re-renders globales
   const updateWinLayout = winStore((s) => s.updateWinLayout);
@@ -98,7 +98,6 @@ const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId })
   }, [win.id, dockWin]);
 
   // --- Focus -----------------------------------------------------------------
-  const isActive = activeWinId === win.id;
 
   const handleFocus = useCallback(() => {
     if (!isActive) setActiveWinId(win.id);
@@ -287,7 +286,7 @@ const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId })
 FenestraeWinTop.propTypes = {
   win: PropTypes.object.isRequired,
   index: PropTypes.number.isRequired,
-  activeWinId: PropTypes.string,
+  isActive: PropTypes.bool,
   setActiveWinId: PropTypes.func.isRequired,
 };
 

@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
+import { useShallow } from "zustand/react/shallow";
 import { winStore } from "../core";
-import FenestraeWinRenderer from "./FenestraeWinRenderer"; // 🔹 Renderer unificado
+import { selectDockedInZone } from "../core/windowSelectors";
+import FenestraeWinRenderer from "./FenestraeWinRenderer";
 import FNButton from "../components/FNButton";
-import { useResizable, ResizeHandles } from "./UseResizable";
 
 
 const ZONE_BASE_CONFIG = {
@@ -21,21 +22,16 @@ const FenestraeDockZone = React.memo(({ zone, initialSize }) => {
   const [customSize, setCustomSize] = useState(initialSize ?? defaultFallback);
   const isResizingRef = useRef(false);
 
-  // 🔹 Selectores atómicos de Zustand para optimizar rendimiento de renderizado
-  const wins = winStore((self) => self.wins);
   const closeWin = winStore((self) => self.closeWin);
+  const dockedWins = winStore(
+    useShallow((s) => selectDockedInZone(s.wins, zone)),
+  );
 
   useEffect(() => {
     if (initialSize !== undefined) {
       setCustomSize(initialSize);
     }
   }, [initialSize]);
-
-  const dockedWins = useMemo(
-    // Estructura Map de Zustand optimizada
-    () => Array.from(wins.values()).filter((w) => w.docked && w.dockZone === zone),
-    [wins, zone]
-  );
 
   // Escuchamos el evento matemático emitido fluidamente desde el useDraggable
   useEffect(() => {

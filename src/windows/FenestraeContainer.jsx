@@ -1,13 +1,17 @@
-import React, { useRef, useMemo, useEffect } from "react";
-import { createPortal } from "react-dom";
+import React, { useRef, useMemo, useCallback, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 import clsx from "clsx";
-import { useNavigate, useLocation } from "react-router-dom";
 import { winStore, externalWindowInstances } from "../core";
 import { restoreWindows } from "../database/persistence";
 import { STORAGE_KEYS, LAUNCHPAD_LOGICAL_ID } from "../core/constants";
+import {
+  selectDockedZones,
+  selectFixedByZone,
+  selectFloatingTops,
+  selectOrderedByType,
+  selectTabs,
+} from "../core/windowSelectors";
 
-// Componentes existentes
 import FenestraeDockZone from "./FenestraeDockedWindow";
 import FenestraeWinRenderer from "./FenestraeWinRenderer";
 import FenestraeWinModal from "./FenestraeWinModal";
@@ -17,18 +21,21 @@ import FenestraeWinSide from "./FenestraeWinSide";
 import FenestraeWinTop from "./FenestraeWinTop";
 import FenestraeWinExtern from "./FenestraeWinExtern";
 import FenestraeDesktopTab from "./FenestraeDesktopTab";
-
-// 🔹 NUEVO: zonas fijas
 import FenestraeFixedZone from "./FenestraeFixedZone";
 
 import { useShortcuts } from "../hooks/useShortcuts";
 import { postToWindow } from "../lib/security";
 import { WIN_TYPES } from "../store/types";
 
+const SECONDARY_TYPES = new Set([
+  WIN_TYPES.PANEL,
+  WIN_TYPES.MODAL,
+  WIN_TYPES.FLOAT,
+  WIN_TYPES.SIDE,
+]);
+
 const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
   const hasHydrated = winStore((s) => s.hasHydrated);
-  const wins = winStore((s) => s.wins);
-  const winOrder = winStore((s) => s.winOrder);
   const activeTabId = winStore((s) => s.activeTabId);
   const activeWinId = winStore((s) => s.activeWinId);
 
@@ -39,7 +46,19 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
     }))
   );
 
-  // Heartbeat para ventanas externas
+  const tabWinsFijas = winStore(useShallow((s) => selectTabs(s.wins)));
+  const floatWins = winStore(useShallow((s) => selectOrderedByType(s.wins, s.winOrder, WIN_TYPES.FLOAT)));
+  const modalWins = winStore(useShallow((s) => selectOrderedByType(s.wins, s.winOrder, WIN_TYPES.MODAL)));
+  const panelWins = winStore(useShallow((s) => selectOrderedByType(s.wins, s.winOrder, WIN_TYPES.PANEL)));
+  const sideWins = winStore(useShallow((s) => selectOrderedByType(s.wins, s.winOrder, WIN_TYPES.SIDE)));
+  const extWins = winStore(useShallow((s) => selectOrderedByType(s.wins, s.winOrder, WIN_TYPES.EXT)));
+  const topWins = winStore(useShallow((s) => selectFloatingTops(s.wins, s.winOrder)));
+  const dockedZones = winStore(useShallow((s) => selectDockedZones(s.wins)));
+  const fixedTop = winStore(useShallow((s) => selectFixedByZone(s.wins, "top")));
+  const fixedLeft = winStore(useShallow((s) => selectFixedByZone(s.wins, "left")));
+  const fixedRight = winStore(useShallow((s) => selectFixedByZone(s.wins, "right")));
+  const fixedBottom = winStore(useShallow((s) => selectFixedByZone(s.wins, "bottom")));
+
   const birthRef = React.useRef(Date.now());
   useEffect(() => {
     const interval = setInterval(() => {
@@ -53,7 +72,6 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Restauración inicial
   const firstRunRef = useRef(false);
   useEffect(() => {
     if (firstRunRef.current) return;
@@ -69,183 +87,82 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
     runRestore();
   }, []);
 
-  // Re-registro de ventanas externas
   useEffect(() => {
     if (!hasHydrated) return;
-    wins.forEach((w) => {
+    winStore.getState().wins.forEach((w) => {
       if (w.type === WIN_TYPES.EXT && w.params?.popupWindowInstance) {
         externalWindowInstances.set(w.id, w.params.popupWindowInstance);
       }
     });
   }, [hasHydrated]);
 
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Tabs
-  const tabWinsFijas = useMemo(() => {
-    return Array.from(wins.values()).filter((w) => w.type === WIN_TYPES.TAB);
-  }, [wins]);
-
-  // Ventanas flotantes, paneles, side, top, externas
-  const { topWins, sideWins, panelWins, floatWins, modalWins, extWins } =
-    useMemo(() => {
-      const groups = {
-        topWins: [],
-        sideWins: [],
-        panelWins: [],
-        floatWins: [],
-        modalWins: [],
-        extWins: [],
-      };
-
-      // ✔ Filtrar ventanas que NO deben entrar en docking
-      const filtered = winOrder
-        .map(id => wins.get(id))
-        .filter(w => w && !w.fixed);
-
-      // ✔ Clasificar por tipo
-      filtered.forEach(w => {
-        switch (w.type) {
-          case WIN_TYPES.TOP:
-            groups.topWins.push(w);
-            break;
-          case WIN_TYPES.SIDE:
-            groups.sideWins.push(w);
-            break;
-          case WIN_TYPES.PANEL:
-            groups.panelWins.push(w);
-            break;
-          case WIN_TYPES.FLOAT:
-            groups.floatWins.push(w);
-            break;
-          case WIN_TYPES.MODAL:
-            groups.modalWins.push(w);
-            break;
-          case WIN_TYPES.EXT:
-            groups.extWins.push(w);
-            break;
-        }
-      });
-
-      return groups;
-    }, [winOrder, wins]);
-
-
-  const hasWindowsInZone = (zone) =>
-    topWins.some((w) => w.docked && w.dockZone === zone);
-
-  // 🔹 NUEVO: Filtrar ventanas fijas
-  const fixedWins = useMemo(() => {
-    return Array.from(wins.values()).filter((w) => w.fixed);
-  }, [wins]);
-
-  const fixedTop = fixedWins.filter((w) => w.fixedZone === "top");
-  const fixedLeft = fixedWins.filter((w) => w.fixedZone === "left");
-  const fixedRight = fixedWins.filter((w) => w.fixedZone === "right");
-  const fixedBottom = fixedWins.filter((w) => w.fixedZone === "bottom");
-
-
-
-  // Función de rotación (la definimos dentro para usar los datos del store actualizados)
-  const rotateTab = (direction) => {
-    if (tabWinsFijas.length <= 1) return;
-    const currentIndex = tabWinsFijas.findIndex((w) => w.id === activeTabId);
+  const rotateTab = useCallback((direction) => {
+    const { wins, activeTabId: currentTab, setActiveWinId: setActive } = winStore.getState();
+    const tabs = selectTabs(wins);
+    if (tabs.length <= 1) return;
+    const currentIndex = tabs.findIndex((w) => w.id === currentTab);
     let nextIndex = currentIndex + direction;
+    if (nextIndex >= tabs.length) nextIndex = 0;
+    if (nextIndex < 0) nextIndex = tabs.length - 1;
+    setActive(tabs[nextIndex].id);
+  }, []);
 
-    if (nextIndex >= tabWinsFijas.length) nextIndex = 0;
-    if (nextIndex < 0) nextIndex = tabWinsFijas.length - 1;
-
-    setActiveWinId(tabWinsFijas[nextIndex].id);
-  };
-
-  // Registro de Atajos
-  useShortcuts(
-    {
-      // 1. Navegación (Intentamos Tab y damos alternativa con Flechas)
+  const shortcuts = useMemo(
+    () => ({
       "Ctrl+Tab": () => rotateTab(1),
       "Ctrl+Shift+Tab": () => rotateTab(-1),
       "Alt+ArrowRight": () => rotateTab(1),
       "Alt+ArrowLeft": () => rotateTab(-1),
-
-
-      "F7": (e) => {
+      F7: (e) => {
         e.preventDefault();
-
-        // Opción A: Alert nativo (bloqueante, pero efectivo)
-        // alert("El refresco de pantalla está deshabilitado para proteger tus cambios.");
-
-        // Opción B: Si tienes un sistema de notificaciones (Recomendado)
-        // notify.warn("Acción no permitida", "Usa el botón de actualizar del formulario.");
-
-        console.log("%c [Sistema] F7 Bloqueado ", "background: #f00; color: #fff; font-weight: bold;");
-
-        // Ejemplo: Podrías usar un estado local para mostrar un mensaje temporal en el UI
-        // showFlashMessage("Usa los controles internos del ERP para navegar.");
       },
-
-
-      // 2. Cerrar ventana (Alt+F4 suele fallar en Chrome, añadimos Alt+w como en CBuilder)
       "Alt+F4": () => {
-        if (activeWinId && activeWinId !== LAUNCHPAD_LOGICAL_ID) closeWin(activeWinId);
+        const { activeWinId: id, closeWin: close } = winStore.getState();
+        if (id && id !== LAUNCHPAD_LOGICAL_ID) close(id);
       },
       "Alt+w": () => {
-        // Minúscula porque Alt+w no lleva Shift
-        if (activeWinId && activeWinId !== LAUNCHPAD_LOGICAL_ID) closeWin(activeWinId);
+        const { activeWinId: id, closeWin: close } = winStore.getState();
+        if (id && id !== LAUNCHPAD_LOGICAL_ID) close(id);
       },
-
-      // 3. Escape para capas secundarias
       Escape: () => {
-        const currentWin = wins.get(activeWinId);
+        const { wins, activeWinId: id, closeWin: close } = winStore.getState();
+        const currentWin = wins.get(id);
         if (!currentWin) return;
-
-        // Si es un panel, modal o float, lo cerramos
-        const isSecondary = [WIN_TYPES.PANEL, WIN_TYPES.MODAL, WIN_TYPES.FLOAT, WIN_TYPES.SIDE].includes(
-          currentWin.type,
-        );
-        if (isSecondary) {
-          closeWin(activeWinId);
-        }
+        if (SECONDARY_TYPES.has(currentWin.type)) close(id);
       },
-    },
-    true,
-  ); // Siempre activo en el contenedor principal
+    }),
+    [rotateTab],
+  );
 
+  useShortcuts(shortcuts, true);
 
   return (
     <div className="flex flex-col h-screen w-screen bg-[var(--fn-canvas,#f3f4f6)] overflow-hidden text-[var(--color-window-text,#1f2937)] font-sans antialiased select-none relative">
 
-      {/* 🔹 ZONA FIJA TOP */}
       {fixedTop.map((w) => (
         <FenestraeFixedZone key={w.id} win={w} />
       ))}
 
-      {/* ZONA DOCK TOP */}
-      {hasWindowsInZone("top") && (
+      {dockedZones.top && (
         <div className="flex-shrink-0 border-b bg-[var(--color-window-header,#0a6ed1)]">
           <FenestraeDockZone zone="top" initialSize={80} />
         </div>
       )}
 
-      {/* FILA CENTRAL */}
       <div className="flex flex-1 flex-row min-h-0 w-full overflow-hidden relative">
 
-        {/* 🔹 ZONA FIJA LEFT */}
         {fixedLeft.map((w) => (
           <FenestraeFixedZone key={w.id} win={w} />
         ))}
 
-        {/* ZONA DOCK LEFT */}
-        {hasWindowsInZone("left") && (
+        {dockedZones.left && (
           <div className="flex-shrink-0 border-r bg-[var(--color-window-header,#0a6ed1)]">
             <FenestraeDockZone zone="left" initialSize={300} />
           </div>
         )}
 
-        {/* WORKSPACE */}
         <div className="flex flex-col flex-1 min-w-0 h-full bg-[var(--color-window-bg,#ffffff)] overflow-hidden relative">
 
-          {/* TAB BAR */}
           <nav
             className="bg-[var(--color-window-content,#fafafa)] border-b flex-shrink-0 z-10 shadow-sm flex items-center"
             style={{ height: "var(--fn-tab-height, 48px)" }}
@@ -263,7 +180,6 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
             </div>
           </nav>
 
-          {/* CONTENIDO */}
           <main className="flex-1 relative overflow-hidden min-h-0 w-full">
             <div className="h-full w-full relative">
               {tabWinsFijas.map((w) => (
@@ -283,106 +199,77 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
               ))}
             </div>
 
-            {/* MODALES */}
             {modalWins.map((w, index) => (
               <FenestraeWinModal
                 key={w.id}
                 win={w}
                 index={index}
-                activeWinId={activeWinId}
+                isActive={activeWinId === w.id}
                 setActiveWinId={setActiveWinId}
               />
             ))}
           </main>
-          {/* ZONA DOCK BOTTOM */}
-          {hasWindowsInZone("bottom") && (
+          {dockedZones.bottom && (
             <div className="flex-shrink-0 border-t bg-[var(--color-window-header,#0a6ed1)]">
               <FenestraeDockZone zone="bottom" />
             </div>
           )}
         </div>
 
-        {/* ZONA DOCK RIGHT */}
-        {hasWindowsInZone("right") && (
+        {dockedZones.right && (
           <div className="flex-shrink-0 border-l bg-[var(--color-window-header,#0a6ed1)]">
             <FenestraeDockZone zone="right" />
           </div>
         )}
 
-        {/* 🔹 ZONA FIJA RIGHT */}
         {fixedRight.map((w) => (
           <FenestraeFixedZone key={w.id} win={w} />
         ))}
       </div>
 
-
-
-      {/* 🔹 ZONA FIJA BOTTOM */}
       {fixedBottom.map((w) => (
         <FenestraeFixedZone key={w.id} win={w} />
       ))}
 
-      {wins.size > 0 && Array.from(wins.values()).some(w => w.isDragging || w.isResizing) && (
-        createPortal(
-          <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "transparent",
-              zIndex: 999998,
-              pointerEvents: "auto",
-            }}
-          />,
-          document.body
-        )
-      )}
-      {/* FLOTANTES */}
       {floatWins.map((w, index) => (
         <FenestraeWinFloating
           key={w.id}
           win={w}
           index={index}
-          activeWinId={activeWinId}
+          isActive={activeWinId === w.id}
           setActiveWinId={setActiveWinId}
         />
       ))}
 
-      {/* PANEL */}
       {panelWins.map((w, index) => (
         <FenestraeWinPanel
           key={w.id}
           win={w}
           index={index}
-          activeWinId={activeWinId}
+          isActive={activeWinId === w.id}
           setActiveWinId={setActiveWinId}
         />
       ))}
 
-      {/* SIDE */}
-      {sideWins.map((w, index) => (
+      {sideWins.map((w) => (
         <FenestraeWinSide
           key={w.id}
           win={w}
-          index={index}
-          activeWinId={activeWinId}
+          isActive={activeWinId === w.id}
           setActiveWinId={setActiveWinId}
         />
       ))}
 
-      {/* TOP flotante */}
-      {topWins
-        .filter((w) => !w.docked && !w.fixed)
-        .map((w, index) => (
-          <FenestraeWinTop
-            key={w.id}
-            win={w}
-            index={index}
-            activeWinId={activeWinId}
-            setActiveWinId={setActiveWinId}
-          />
-        ))}
+      {topWins.map((w, index) => (
+        <FenestraeWinTop
+          key={w.id}
+          win={w}
+          index={index}
+          isActive={activeWinId === w.id}
+          setActiveWinId={setActiveWinId}
+        />
+      ))}
 
-      {/* EXTERNAS */}
       {extWins.map((w) => (
         <FenestraeWinExtern key={w.id} win={w}>
           <React.Suspense fallback={<div>Cargando ventana externa...</div>}>
