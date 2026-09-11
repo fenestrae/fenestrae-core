@@ -23,6 +23,10 @@ export function registerCommand(name, fn, options = {}) {
   });
 }
 
+export function clearCommands() {
+  commandRegistry.clear();
+}
+
 /**
  * ============================================================================
  * executeCommand — Executes a registered command
