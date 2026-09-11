@@ -5,6 +5,7 @@ import FenestraeWinRenderer from "./FenestraeWinRenderer";
 import FNButton from "../components/FNButton";
 import { useDraggable, ResizeHandles, useResizable } from "./UseResizable";
 import { winStore } from "../core";
+import { WIN_TYPES } from "../store/types";
 
 const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWinId }) => {
   const self = win;
@@ -91,7 +92,7 @@ const FenestraeWinFloating = React.memo(({ win, index, activeWinId, setActiveWin
     };
   }, [self.autoSize, self.align, self.id, updateWinLayout, self.state]);
 
-  const isTopWindow = self.type === "top";
+  const isTopWindow = self.type === WIN_TYPES.TOP;
 
   const combinedStyles = isMobileView
     ? {

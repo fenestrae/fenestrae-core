@@ -86,6 +86,7 @@ import {
     buildLegacyContextId,
     buildLaunchpadPhysicalId,
 } from '../core/constants';
+import { WIN_TYPES } from "../store/types";
 
 function getCurrentOperator() {
     const user = sessionStorage.getItem(STORAGE_KEYS.USER);
@@ -659,7 +660,7 @@ export async function restoreWindows(initialWinConfig) {
 
         const launchpadWin = {
             id: physicalId,
-            type: "tab",
+            type: WIN_TYPES.TAB,
             launchpad: true,
             index: -1,
             title: initialWinConfig.title,

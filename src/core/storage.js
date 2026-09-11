@@ -16,6 +16,7 @@ import dbManagerInstance from "../database/dbManager";
 import { indexedDBStorage } from "../database/indexedDBAdapter";
 import {winStore} from "../core"
 import { sanitizePersistable } from "../lib/security";
+import { WIN_TYPES } from "../store/types";
 
 // ============================================================================
 // loadSavedState — Default empty state for winStore
@@ -95,7 +96,7 @@ export const persistOptions = {
 
   
   const persistentEntries = Array.from(state.wins.entries())
-    .filter(([id, win]) => win.type !== "ext") // External windows NO se persisten
+    .filter(([id, win]) => win.type !== WIN_TYPES.EXT) // External windows NO se persisten
     .map(([id, win]) => {
 
       // 1. Eliminar TODAS las propiedades no serializables

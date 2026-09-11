@@ -23,5 +23,5 @@ export const WIN_ALIGN = {
 };
 
 /**
- * ID reservado para el Launchpad / Escritorio Base (Equivalente al Desktop de Windows)
+ * ID reservado para el Launchpad — ver LAUNCHPAD_LOGICAL_ID en core/constants.js
  */

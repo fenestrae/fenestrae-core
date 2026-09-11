@@ -9,6 +9,7 @@ import { getLaunchpadId } from "../index";
 import { calculateAlignment, getStandardLayout } from "../geometry";
 import { getAllDescendants } from "../treeHelpers";
 import { contextRepository } from "../../database/ContextRepository";
+import { WIN_TYPES } from "../../store/types";
 
 // Native window instances (window.open). Not persisted.
 export const externalWindowInstances = new Map();
@@ -17,16 +18,16 @@ export const createLifecycleSlice = (set, get) => ({
   createWin: (winIdParent, winData) => {
     let newId = null;
     const { nativeWindow, ...params } = winData.params || {};
-    const { type = "tab", name } = winData;
+    const { type = WIN_TYPES.TAB, name } = winData;
 
-    const uniqueKey = type === "ext"
+    const uniqueKey = type === WIN_TYPES.EXT
       ? `${name}-${uuidv4()}`
       : `${name}-${params.id || "0"}-${params.param1 || ""}-${params.param2 || ""}-${params.param3 || ""}`;
 
     // Tabs with the same uniqueKey are reused instead of duplicated
-    if (type === "tab") {
+    if (type === WIN_TYPES.TAB) {
       const existing = Array.from(get().wins.values()).find(
-        (w) => w.uniqueKey === uniqueKey && w.type === "tab"
+        (w) => w.uniqueKey === uniqueKey && w.type === WIN_TYPES.TAB
       );
       if (existing) {
         set(produce((state) => {
@@ -42,12 +43,12 @@ export const createLifecycleSlice = (set, get) => ({
     set(produce((self) => {
       const { preset } = params;
       // top windows are system tools — always rooted, never children
-      const validParentId = (type === "tab" || type === "top") ? "0" : winIdParent || "0";
+      const validParentId = (type === WIN_TYPES.TAB || type === WIN_TYPES.TOP) ? "0" : winIdParent || "0";
 
       // Side with isMatchCode: replaces any previous side with that flag
-      /*if (type === "side" && params.isMatchCode === true) {
+      /*if (type === WIN_TYPES.SIDE && params.isMatchCode === true) {
         const existingMatchSide = Array.from(self.wins.values()).find(
-          (w) => w.type === "side" && w.params?.isMatchCode === true
+          (w) => w.type === WIN_TYPES.SIDE && w.params?.isMatchCode === true
         );
         */
            // ---------------------------------------------------------------------
@@ -67,9 +68,9 @@ export const createLifecycleSlice = (set, get) => ({
       // ---------------------------------------------------------------------
 
       // Side: replace any existing side window
-      if (type === "side") {
+      if (type === WIN_TYPES.SIDE) {
         const existingMatchSide = Array.from(self.wins.values()).find(
-          (w) => w.type === "side"
+          (w) => w.type === WIN_TYPES.SIDE
         );
 
         if (existingMatchSide) {
@@ -81,10 +82,10 @@ export const createLifecycleSlice = (set, get) => ({
         }
       }
 
-      const isVisible = winData.hasOwnProperty("visible") ? winData.visible : type === "tab";
+      const isVisible = winData.hasOwnProperty("visible") ? winData.visible : type === WIN_TYPES.TAB;
       let layout = {};
 
-      if (type === "ext") {
+      if (type === WIN_TYPES.EXT) {
         const opts = winData.options || {};
         layout = {
           width: winData.width ?? opts.width ?? 800,
@@ -102,15 +103,15 @@ export const createLifecycleSlice = (set, get) => ({
           persistLayout: !!opts.persistLayout,
         };
 
-      } else if (type === "modal") {
+      } else if (type === WIN_TYPES.MODAL) {
         layout = getStandardLayout(null, preset || "modal90");
-      } else if (type === "side") {
+      } else if (type === WIN_TYPES.SIDE) {
         layout = getStandardLayout(null, "alSide");
-      } else if (type === "panel") {
+      } else if (type === WIN_TYPES.PANEL) {
         layout = winData.align === "none"
           ? { x: winData.x ?? 0, y: winData.y ?? 0, width: winData.width ?? 400, height: winData.height ?? 300, align: "none" }
           : getStandardLayout(null, winData.align || preset || "panelSide");
-      } else if (type === "float" || type === "top") {
+      } else if (type === WIN_TYPES.FLOAT || type === WIN_TYPES.TOP) {
         // params.width/height/x/y are accepted as fallback for convenience
         const pw = params.width;
         const ph = params.height;
@@ -123,7 +124,7 @@ export const createLifecycleSlice = (set, get) => ({
             y: winData.y ?? py ?? Math.random() * 100 + 50,
             width: winData.width ?? pw ?? 700,
             height: winData.height ?? ph ?? 500,
-            state: type === "top" ? "z-900" : "normal",
+            state: type === WIN_TYPES.TOP ? "z-900" : "normal",
           };
       }
 
@@ -133,19 +134,19 @@ export const createLifecycleSlice = (set, get) => ({
         type,
         uniqueKey,
         parentId: validParentId,
-        visible: type === "top" || type === "ext" ? true : isVisible,
+        visible: type === WIN_TYPES.TOP || type === WIN_TYPES.EXT ? true : isVisible,
         ...layout,
         params: {
           ...params,
           winId: newId,
           parentId: validParentId,
-          isTab: type === "tab",
-          isFloat: type === "float",
-          isModal: type === "modal",
-          isPanel: type === "panel",
-          isSide: type === "side",
+          isTab: type === WIN_TYPES.TAB,
+          isFloat: type === WIN_TYPES.FLOAT,
+          isModal: type === WIN_TYPES.MODAL,
+          isPanel: type === WIN_TYPES.PANEL,
+          isSide: type === WIN_TYPES.SIDE,
           isMatchCode: params.isMatchCode || false,
-          isExternal: type === "ext",
+          isExternal: type === WIN_TYPES.EXT,
         },
 
         // Layout fijo
@@ -176,7 +177,7 @@ export const createLifecycleSlice = (set, get) => ({
         .sort((a, b) => self.wins.get(a).index - self.wins.get(b).index);
 
 
-      if (type === "tab") self.activeTabId = newId;
+      if (type === WIN_TYPES.TAB) self.activeTabId = newId;
       self.activeWinId = newId;
 
 
@@ -207,7 +208,7 @@ export const createLifecycleSlice = (set, get) => ({
 
     // aquí no abrimos todavía window.open: solo creamos el registro
     const winId = get().createWin(parentId || "0", {
-      type: "ext",
+      type: WIN_TYPES.EXT,
       name: componentName,
       title: params.title || componentName.toUpperCase(),
       width: options.width,
@@ -230,14 +231,14 @@ export const createLifecycleSlice = (set, get) => ({
   // Returns winId. Use win.show(winId) when ready to display.
   // --------------------------------------------------------------------------
   create: (parentWinId, name, options = {}) => {
-    const { type = "float", x, y, width, height, params = {}, ...rest } = options;
+    const { type = WIN_TYPES.FLOAT, x, y, width, height, params = {}, ...rest } = options;
     const componentName = name?.toLowerCase();
 
     return get().createWin(parentWinId || "0", {
       type,
       name: componentName,
       title: params.title || componentName?.toUpperCase(),
-      visible: type === "tab", // tabs visible by default, everything else hidden
+      visible: type === WIN_TYPES.TAB, // tabs visible by default, everything else hidden
       x, y, width, height,
       params,
       ...rest,
@@ -256,11 +257,11 @@ export const createLifecycleSlice = (set, get) => ({
     self.winOrder.push(winId);
     self.activeWinId = winId;
 
-    if (win.type !== "side") {
+    if (win.type !== WIN_TYPES.SIDE) {
       let current = win;
       while (current) {
-        if (current.type === "tab") { self.activeTabId = current.id; break; }
-        if (current.type === "ext") break;
+        if (current.type === WIN_TYPES.TAB) { self.activeTabId = current.id; break; }
+        if (current.type === WIN_TYPES.EXT) break;
         current = self.wins.get(current.parentId);
       }
     }
@@ -271,7 +272,7 @@ export const createLifecycleSlice = (set, get) => ({
   // --------------------------------------------------------------------------
   hide: (winId) => set(produce((self) => {
     const win = self.wins.get(winId);
-    if (!win || win.type === "tab") return; // tabs cannot be hidden, only switched
+    if (!win || win.type === WIN_TYPES.TAB) return; // tabs cannot be hidden, only switched
 
     win.visible = false;
 
@@ -320,9 +321,9 @@ export const createLifecycleSlice = (set, get) => ({
     }
 
     // Recalculate active tab if it was the one being closed
-    if (win.type === "tab" && self.activeTabId === id) {
+    if (win.type === WIN_TYPES.TAB && self.activeTabId === id) {
       const remainingTabs = Array.from(self.wins.values()).filter(
-        (w) => w.type === "tab" && !toRemove.includes(w.id)
+        (w) => w.type === WIN_TYPES.TAB && !toRemove.includes(w.id)
       );
       const lastTab = remainingTabs[remainingTabs.length - 1];
       self.activeTabId = lastTab ? lastTab.id : getLaunchpadId();
@@ -375,7 +376,7 @@ export const createLifecycleSlice = (set, get) => ({
   // --------------------------------------------------------------------------
   dockWin: (winId, zone) => set(produce((self) => {
     const win = self.wins.get(winId);
-    if (!win || win.type !== "top") return;
+    if (!win || win.type !== WIN_TYPES.TOP) return;
     if (!["left", "right", "top", "bottom"].includes(zone)) return;
 
     // Save current position for later restore
@@ -477,6 +478,6 @@ export const createLifecycleSlice = (set, get) => ({
 
   externalizeWin: (id) => set(produce((self) => {
     const win = self.wins.get(id);
-    if (win) { win.type = "ext"; win.visible = true; }
+    if (win) { win.type = WIN_TYPES.EXT; win.visible = true; }
   })),
 });

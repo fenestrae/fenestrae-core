@@ -7,6 +7,7 @@ import { injectPopupBridge } from '../../events/injectPopupBridge';
 import { formsRegistry } from './misc';
 import { externalWindowInstances } from './lifecycle';
 import { resolveTrustedFrameUrl, writeBlankPopupDocument } from '../../lib/security';
+import { WIN_TYPES } from "../../store/types";
 
 export const createApiSlice = (set, get) => ({
 
@@ -24,7 +25,7 @@ export const createApiSlice = (set, get) => ({
     if (!resolveTrustedFrameUrl(params.url, params.allowedOrigins)) return null;
 
     const newId = get().createWin(validParentId, {
-      type: "tab",
+      type: WIN_TYPES.TAB,
       name: componentName,
       title: params.titulo || params.title || name.toUpperCase(),
       path: params.url, // ← ruta externa directa
@@ -54,7 +55,7 @@ export const createApiSlice = (set, get) => ({
     const fullPath = queryString ? `${fullPathBase}?${queryString}` : fullPathBase;
 
     const newId = get().createWin(validParentId, {
-      type: "tab",
+      type: WIN_TYPES.TAB,
       name: componentName,
       title: params.titulo || params.title || entry.title || name.toUpperCase(),
       path: fullPath,
@@ -71,7 +72,7 @@ export const createApiSlice = (set, get) => ({
   // -------------------------------------------------------------------------
   // show — Opens any window type: float, modal, panel, side, ext
   // -------------------------------------------------------------------------
-  show: (winIdParent, name, params = {}, callbacks = {}, typeshow = "float") => {
+  show: (winIdParent, name, params = {}, callbacks = {}, typeshow = WIN_TYPES.FLOAT) => {
     return new Promise((resolve, reject) => {
       const validParentId = winIdParent && winIdParent !== "" ? winIdParent : "0";
 
@@ -80,7 +81,7 @@ export const createApiSlice = (set, get) => ({
       const parentWin = currentWins[validParentId];
 
       // 2. Averiguamos si el padre está corriendo dentro de un popup externo
-      const isParentPopup = parentWin && (parentWin.type === "ext" || parentWin.params?.extSubtype === "popup");
+      const isParentPopup = parentWin && (parentWin.type === WIN_TYPES.EXT || parentWin.params?.extSubtype === "popup");
 
       // Si el padre es un popup, extraemos su ventana nativa, si no, es el window principal
       const targetNativeWindow = isParentPopup && parentWin.params?.popupWindowInstance
@@ -138,18 +139,18 @@ export const createApiSlice = (set, get) => ({
   // -------------------------------------------------------------------------
   // Atajos por tipo (mapeo imperativo a show) — Permanecen limpios e intactos
   // -------------------------------------------------------------------------
-  showModal: (winIdParent, name, params = {}, callbacks = {}) => get().show(winIdParent, name, params, callbacks, "modal"),
-  showFloat: (winIdParent, name, params = {}, callbacks = {}) => get().show(winIdParent, name, params, callbacks, "float"),
+  showModal: (winIdParent, name, params = {}, callbacks = {}) => get().show(winIdParent, name, params, callbacks, WIN_TYPES.MODAL),
+  showFloat: (winIdParent, name, params = {}, callbacks = {}) => get().show(winIdParent, name, params, callbacks, WIN_TYPES.FLOAT),
   showTop: (winIdParent, name, params = {}, callbacks = {}) =>
     get().show(winIdParent, name, {
       showMinimize: params.showMinimize ?? false,
       showMaximize: params.showMaximize ?? false,
       ...params,
-    }, callbacks, "top"),
+    }, callbacks, WIN_TYPES.TOP),
 
-  showPanel: (winIdParent, name, params = {}, callbacks = {}) => get().show(winIdParent, name, params, callbacks, "panel"),
-  showSide: (winIdParent, name, params = {}, callbacks = {}) => get().show(winIdParent, name, params, callbacks, "side"),
-  showExt: (winIdParent, name, params = {}, callbacks = {}) => get().show(winIdParent, name, params, callbacks, "ext"),
+  showPanel: (winIdParent, name, params = {}, callbacks = {}) => get().show(winIdParent, name, params, callbacks, WIN_TYPES.PANEL),
+  showSide: (winIdParent, name, params = {}, callbacks = {}) => get().show(winIdParent, name, params, callbacks, WIN_TYPES.SIDE),
+  showExt: (winIdParent, name, params = {}, callbacks = {}) => get().show(winIdParent, name, params, callbacks, WIN_TYPES.EXT),
   // -------------------------------------------------------------------------
   // showPopup — Opens in a native browser window (window.open)
   // -------------------------------------------------------------------------
@@ -256,7 +257,7 @@ export const createApiSlice = (set, get) => ({
         }
   
         const winId = get().createWin(validParentId, {
-          type: 'ext',
+          type: WIN_TYPES.EXT,
           name: componentName,
           title: params.titulo || params.title || componentName.toUpperCase(),
           width: defaultOptions.width, height: defaultOptions.height,
@@ -417,7 +418,7 @@ export const createApiSlice = (set, get) => ({
                     : "popup";
 
       const winId = get().createWin(validParentId, {
-        type: "ext",
+        type: WIN_TYPES.EXT,
         name: componentName,
         title: params.titulo || params.title || componentName.toUpperCase(),
         width: defaultOptions.width,

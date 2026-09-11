@@ -10,6 +10,7 @@ import { STORAGE_KEYS } from "./constants";
 import { mapThemeToCSSVariables, THEME_PRESETS, getThemeStyles } from "../themes/themeMapper";
 import {  contextRepository} from "../database/ContextRepository";
 import { formsRegistry } from './slices/misc';
+import { WIN_TYPES } from "../store/types";
 
 const s = () => winStore.getState();
 
@@ -38,7 +39,7 @@ export const win = {
     parentId = "0",
     {
       component,
-      typeshow = "float",
+      typeshow = WIN_TYPES.FLOAT,
       x = 100,
       y = 100,
       width = 600,
@@ -202,6 +203,7 @@ export function getLaunchpadId() {
 
 
 export { LAUNCHPAD_LOGICAL_ID, STORAGE_KEYS } from "./constants";
+export { WIN_TYPES };
 export { winStore, externalWindowInstances };
 export { mapThemeToCSSVariables, THEME_PRESETS, getThemeStyles };
 export { getStandardLayout } from "./geometry";

@@ -7,6 +7,7 @@ import { produce } from "immer";
 import { calculateAlignment } from "../geometry";
 import { externalWindowInstances } from "./lifecycle";
 import { postToWindow } from "../../lib/security";
+import { WIN_TYPES } from "../../store/types";
 
 export const createLayoutSlice = (set, get) => ({
   updateWinLayout: (id, layout) => set(produce((self) => {
@@ -30,7 +31,7 @@ export const createLayoutSlice = (set, get) => ({
     }
 
     // Sincroniza ventana nativa si es un popup externo
-    if (win.type === 'ext' && win.params?.extSubtype === 'popup') {
+    if (win.type === WIN_TYPES.EXT && win.params?.extSubtype === 'popup') {
       const nativeWindow = externalWindowInstances.get(id);
       if (nativeWindow && !nativeWindow.closed) {
         try {
@@ -53,9 +54,9 @@ export const createLayoutSlice = (set, get) => ({
     }
 
     // Notifica cambio de layout del padre a los popups hijos
-    if (win.type === 'tab' || win.type === 'float' || win.type === 'modal') {
+    if (win.type === WIN_TYPES.TAB || win.type === WIN_TYPES.FLOAT || win.type === WIN_TYPES.MODAL) {
       const childPopups = Array.from(self.wins.values()).filter(
-        (w) => w.type === 'ext' && w.params?.extSubtype === 'popup' && w.parentId === id
+        (w) => w.type === WIN_TYPES.EXT && w.params?.extSubtype === 'popup' && w.parentId === id
       );
       childPopups.forEach((popup) => {
         const nativePopup = externalWindowInstances.get(popup.id);

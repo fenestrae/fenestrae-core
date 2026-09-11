@@ -6,6 +6,7 @@
 import { produce } from "immer";
 import { initialState } from "../constants";
 import { getLaunchpadId } from "../index";
+import { WIN_TYPES } from "../../store/types";
 // Global component registry (equivalent to Win32 class registration)
 export const formsRegistry = new Map();
 
@@ -69,8 +70,8 @@ export const createMiscSlice = (set, get) => ({
     if (win) win.activeControl = fieldName;
   })),
 
-  isModal: (id) => get().wins.get(id)?.type === "modal",
-  isFloat: (id) => get().wins.get(id)?.type === "float",
+  isModal: (id) => get().wins.get(id)?.type === WIN_TYPES.MODAL,
+  isFloat: (id) => get().wins.get(id)?.type === WIN_TYPES.FLOAT,
   isRestored: (id) => get().wins.get(id)?.isRestored || false,
 
   resetStore: () => {

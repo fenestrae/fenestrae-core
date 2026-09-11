@@ -23,6 +23,7 @@ import FenestraeFixedZone from "./FenestraeFixedZone";
 
 import { useShortcuts } from "../hooks/useShortcuts";
 import { postToWindow } from "../lib/security";
+import { WIN_TYPES } from "../store/types";
 
 const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
   const hasHydrated = winStore((s) => s.hasHydrated);
@@ -72,7 +73,7 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
   useEffect(() => {
     if (!hasHydrated) return;
     wins.forEach((w) => {
-      if (w.type === "ext" && w.params?.popupWindowInstance) {
+      if (w.type === WIN_TYPES.EXT && w.params?.popupWindowInstance) {
         externalWindowInstances.set(w.id, w.params.popupWindowInstance);
       }
     });
@@ -83,7 +84,7 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
 
   // Tabs
   const tabWinsFijas = useMemo(() => {
-    return Array.from(wins.values()).filter((w) => w.type === "tab");
+    return Array.from(wins.values()).filter((w) => w.type === WIN_TYPES.TAB);
   }, [wins]);
 
   // Ventanas flotantes, paneles, side, top, externas
@@ -106,22 +107,22 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
       // ✔ Clasificar por tipo
       filtered.forEach(w => {
         switch (w.type) {
-          case "top":
+          case WIN_TYPES.TOP:
             groups.topWins.push(w);
             break;
-          case "side":
+          case WIN_TYPES.SIDE:
             groups.sideWins.push(w);
             break;
-          case "panel":
+          case WIN_TYPES.PANEL:
             groups.panelWins.push(w);
             break;
-          case "float":
+          case WIN_TYPES.FLOAT:
             groups.floatWins.push(w);
             break;
-          case "modal":
+          case WIN_TYPES.MODAL:
             groups.modalWins.push(w);
             break;
-          case "ext":
+          case WIN_TYPES.EXT:
             groups.extWins.push(w);
             break;
         }
@@ -199,7 +200,7 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
         if (!currentWin) return;
 
         // Si es un panel, modal o float, lo cerramos
-        const isSecondary = ["panel", "modal", "float", "side"].includes(
+        const isSecondary = [WIN_TYPES.PANEL, WIN_TYPES.MODAL, WIN_TYPES.FLOAT, WIN_TYPES.SIDE].includes(
           currentWin.type,
         );
         if (isSecondary) {

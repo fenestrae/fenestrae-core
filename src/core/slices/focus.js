@@ -6,6 +6,7 @@
 import { produce } from "immer";
 import { externalWindowInstances } from "./lifecycle";
 import { getLaunchpadId } from "../index"
+import { WIN_TYPES } from "../../store/types";
 
 export const createFocusSlice = (set, get) => ({
 
@@ -34,7 +35,7 @@ export const createFocusSlice = (set, get) => ({
     // Focus native window if present in the parent chain
     let focusRunner = targetWin;
     while (focusRunner) {
-      if (focusRunner.type === "ext" || externalWindowInstances.has(focusRunner.id)) {
+      if (focusRunner.type === WIN_TYPES.EXT || externalWindowInstances.has(focusRunner.id)) {
         const nativeWin = externalWindowInstances.get(focusRunner.id);
         if (nativeWin && !nativeWin.closed) nativeWin.focus();
         break;
@@ -43,12 +44,12 @@ export const createFocusSlice = (set, get) => ({
     }
 
     // Update active tab by walking up the hierarchy (except side panels)
-    if (targetWin.type !== "side") {
+    if (targetWin.type !== WIN_TYPES.SIDE) {
       let current = targetWin;
       let rootTabCandidate = null;
       while (current) {
-        if (current.type === "tab") { rootTabCandidate = current.id; break; }
-        if (current.type === "ext") break;
+        if (current.type === WIN_TYPES.TAB) { rootTabCandidate = current.id; break; }
+        if (current.type === WIN_TYPES.EXT) break;
         current = self.wins.get(current.parentId);
       }
       if (rootTabCandidate) self.activeTabId = rootTabCandidate;
@@ -61,23 +62,23 @@ export const createFocusSlice = (set, get) => ({
     // Recalculate visibility for all windows
     const checkVisibility = (win) => {
       if (win.id === getLaunchpadId()) return true;
-      if (win.type === "top") return true;
-      if (win.type === "side") return true;
-      if (win.type === "ext") return true;
+      if (win.type === WIN_TYPES.TOP) return true;
+      if (win.type === WIN_TYPES.SIDE) return true;
+      if (win.type === WIN_TYPES.EXT) return true;
 
-      if (win.type === "modal" || win.type === "float" || win.type === "panel") {
+      if (win.type === WIN_TYPES.MODAL || win.type === WIN_TYPES.FLOAT || win.type === WIN_TYPES.PANEL) {
         let runner = win;
         while (runner) {
           const p = self.wins.get(runner.parentId);
           if (!p) break;
-          if (p.id === self.activeTabId || p.type === "ext") return true;
+          if (p.id === self.activeTabId || p.type === WIN_TYPES.EXT) return true;
           runner = p;
         }
         const root = self.wins.get(win.parentId);
-        if (root && root.type === "top") return true;
+        if (root && root.type === WIN_TYPES.TOP) return true;
       }
 
-      if (win.type === "tab") return win.id === self.activeTabId;
+      if (win.type === WIN_TYPES.TAB) return win.id === self.activeTabId;
 
       const parent = self.wins.get(win.parentId);
       if (!parent) return false;
@@ -86,8 +87,8 @@ export const createFocusSlice = (set, get) => ({
 
     self.wins.forEach((win) => { win.visible = checkVisibility(win); });
 
-    if (targetWin.type === "tab") {
-      const focusableTypes = new Set(["float", "modal", "side", "panel"]);
+    if (targetWin.type === WIN_TYPES.TAB) {
+      const focusableTypes = new Set([WIN_TYPES.FLOAT, WIN_TYPES.MODAL, WIN_TYPES.SIDE, WIN_TYPES.PANEL]);
       const { wins, winOrder, activeTabId } = self;
 
       let lastChild = null;
@@ -123,11 +124,11 @@ export const createFocusSlice = (set, get) => ({
       self.activeWinId = id;
 
       // Update active tab if applicable
-      if (win.type !== "side") {
+      if (win.type !== WIN_TYPES.SIDE) {
         let current = win;
         while (current) {
-          if (current.type === "tab") { self.activeTabId = current.id; break; }
-          if (current.type === "ext") break;
+          if (current.type === WIN_TYPES.TAB) { self.activeTabId = current.id; break; }
+          if (current.type === WIN_TYPES.EXT) break;
           current = self.wins.get(current.parentId);
         }
       }
@@ -139,22 +140,22 @@ export const createFocusSlice = (set, get) => ({
     const win = wins.get(winId);
     if (!win) return;
 
-    if (win.type === 'ext') {
+    if (win.type === WIN_TYPES.EXT) {
       const dw = externalWindowInstances.get(winId);
       if (dw && !dw.closed) { dw.focus(); set({ activeWinId: winId }); }
     } else {
       set({ activeWinId: winId });
-      if (win.type === 'tab') set({ activeTabId: winId });
+      if (win.type === WIN_TYPES.TAB) set({ activeTabId: winId });
     }
   },
 
   getActiveTab: () => {
     const { wins, activeWinId } = get();
     let current = wins.get(activeWinId);
-    while (current && current.type !== "tab" && current.parentId !== "0") {
+    while (current && current.type !== WIN_TYPES.TAB && current.parentId !== "0") {
       current = wins.get(current.parentId);
     }
-    return current?.type === "tab" ? current.id : getLaunchpadId();
+    return current?.type === WIN_TYPES.TAB ? current.id : getLaunchpadId();
   },
     getActiveWin: () => {
     const {  activeWinId } = get();

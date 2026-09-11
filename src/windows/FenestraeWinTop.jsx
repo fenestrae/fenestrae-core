@@ -10,6 +10,7 @@ import FenestraeWinRenderer from "./FenestraeWinRenderer";
 import { useDraggable, useResizable, ResizeHandles } from "./UseResizable";
 import FNButton from "../components/FNButton";
 import { winStore } from "../core";
+import { WIN_TYPES } from "../store/types";
 
 const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId }) => {
   const self = win; // Mantenemos tu convención 'self' para el contexto de la ventana
@@ -121,7 +122,7 @@ const FenestraeWinTop = React.memo(({ win, index, activeWinId, setActiveWinId })
     width: `${size.width}px`,
     height: `${size.height}px`,
     transform: `translate3d(${finalX}px, ${finalY}px, 0)`,
-    zIndex: win.type === "top"
+    zIndex: win.type === WIN_TYPES.TOP
       ? 2000 + index
       : isActive ? 1000 : 50 + index,
     position: win.isPortal ? "fixed" : "absolute",
