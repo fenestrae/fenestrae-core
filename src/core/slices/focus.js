@@ -86,7 +86,10 @@ export const createFocusSlice = (set, get) => ({
       return checkVisibility(parent);
     };
 
-    self.wins.forEach((win) => { win.visible = checkVisibility(win); });
+    self.wins.forEach((win) => {
+      const next = checkVisibility(win);
+      if (win.visible !== next) win.visible = next;
+    });
 
     if (targetWin.type === WIN_TYPES.TAB) {
       const focusableTypes = new Set([WIN_TYPES.FLOAT, WIN_TYPES.MODAL, WIN_TYPES.SIDE, WIN_TYPES.PANEL]);
@@ -158,9 +161,8 @@ export const createFocusSlice = (set, get) => ({
     }
     return current?.type === WIN_TYPES.TAB ? current.id : getLaunchpadId();
   },
-    getActiveWin: () => {
-    const {  activeWinId } = get();
-    let current = wins.get(activeWinId);
-    return current.id ;
+  getActiveWin: () => {
+    const { wins, activeWinId } = get();
+    return wins.get(activeWinId)?.id ?? null;
   },
 });

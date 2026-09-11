@@ -26,6 +26,7 @@ describe("focus slice", () => {
 
     winStore.getState().bringToFront(second);
     expect(winStore.getState().activeWinId).toBe(second);
+    expect(winStore.getState().getActiveWin()).toBe(second);
   });
 
   it("walks up to the owning tab", () => {
