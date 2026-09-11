@@ -25,6 +25,7 @@ import {
   STORE_WORKSPACES,
   STORE_CONTEXTS
 } from "./dbTable";
+import { STORAGE_KEYS, HYDRATION_STATE } from "../core/constants";
 
 // ============================================================================
 // INDEXEDDB ADAPTER — Zustand Storage Interface
@@ -84,9 +85,9 @@ const indexedDBAdapter = {
 
   setItem: async (_, value) => {
 
-    const sessionId = sessionStorage.getItem("fenestrae_session");
-    const hydrated = sessionStorage.getItem("fenestrae_hydrated");
-    if (!sessionId || hydrated !== "1") {
+    const sessionId = sessionStorage.getItem(STORAGE_KEYS.SESSION);
+    const hydrated = sessionStorage.getItem(STORAGE_KEYS.HYDRATED);
+    if (!sessionId || hydrated !== HYDRATION_STATE.READY) {
       return; // ← prevents Zustand from recreating the session
     }
 

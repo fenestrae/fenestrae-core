@@ -1,3 +1,5 @@
+import { STORAGE_KEYS } from "../core/constants";
+
 let activePermissions = [];
 
 /**
@@ -14,7 +16,7 @@ export function setPermissions(permissions) {
   activePermissions = Array.isArray(permissions)
     ? permissions.filter((p) => typeof p === "string")
     : [];
-  sessionStorage.setItem("fenestrae_permissions", JSON.stringify(activePermissions));
+  sessionStorage.setItem(STORAGE_KEYS.PERMISSIONS, JSON.stringify(activePermissions));
 }
 
 /**
@@ -74,7 +76,7 @@ export function hasPermission(required) {
  * ============================================================================
  */
 export function hydratePermissions() {
-  const saved = sessionStorage.getItem("fenestrae_permissions");
+  const saved = sessionStorage.getItem(STORAGE_KEYS.PERMISSIONS);
   if (!saved) return;
 
   try {

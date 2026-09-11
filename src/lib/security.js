@@ -1,3 +1,5 @@
+import { STORAGE_KEYS } from "../core/constants";
+
 // Helpers de origen, iframes y popups. Sin estos controles un título o una URL
 // controlados por el huésped se convierten en XSS o en un iframe con el origen de la app.
 
@@ -107,14 +109,7 @@ export function writeBlankPopupDocument(nativeWindow, title) {
   doc.title = String(title ?? "");
 }
 
-export const FENESTRAE_SESSION_KEYS = [
-  "fenestrae_session",
-  "fenestrae_user",
-  "fenestrae_workspace",
-  "fenestrae_permissions",
-  "fenestrae_hydrated",
-  "fenestrae_launchpadId",
-];
+export const FENESTRAE_SESSION_KEYS = Object.values(STORAGE_KEYS);
 
 export function clearFenestraeSessionStorage() {
   FENESTRAE_SESSION_KEYS.forEach((key) => sessionStorage.removeItem(key));

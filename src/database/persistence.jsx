@@ -2,10 +2,10 @@
  * ============================================================================
  * IMPORTANT NOTE ABOUT sessionStorage AND RELOADS (F5)
  * ============================================================================
- * Fenestrae uses sessionStorage to store:
- *   - fenestrae_user      → logical operator user
- *   - fenestrae_workspace → business workspace
- *   - fenestrae_session   → active session selected by the operator
+ * Fenestrae uses sessionStorage to store (see STORAGE_KEYS):
+ *   - USER      → logical operator user
+ *   - WORKSPACE → business workspace
+ *   - SESSION   → active session selected by the operator
  *
  * This design is INTENTIONAL and addresses a critical behavior:
  *
@@ -73,17 +73,25 @@ import {
     STORE_WORKSPACES,
     STORE_CONTEXTS
 } from "./dbTable";
-import { winStore, getLaunchpadId } from "../core"
+import { winStore } from "../core"
 import { sanitizePersistable, clearFenestraeSessionStorage } from "../lib/security";
 import { setPermissions } from "../permissions/permissions";
 import { v4 as uuidv4 } from "uuid";
-import { initialState } from '../core/constants';
+import {
+    STORAGE_KEYS,
+    HYDRATION_STATE,
+    CONTEXT_KEY_LEGACY,
+    buildUserId,
+    buildContextId,
+    buildLegacyContextId,
+    buildLaunchpadPhysicalId,
+} from '../core/constants';
 
 function getCurrentOperator() {
-    const user = sessionStorage.getItem("fenestrae_user");
-    const workspace = sessionStorage.getItem("fenestrae_workspace");
+    const user = sessionStorage.getItem(STORAGE_KEYS.USER);
+    const workspace = sessionStorage.getItem(STORAGE_KEYS.WORKSPACE);
     if (!user || !workspace) return null;
-    return { user, workspace, userId: `${workspace}::${user}` };
+    return { user, workspace, userId: buildUserId(workspace, user) };
 }
 
 
@@ -103,13 +111,13 @@ function getCurrentOperator() {
  * ============================================================================
  */
 export const init = async ({ user, workspace }) => {
-    sessionStorage.setItem("fenestrae_hydrated", "0");
-    sessionStorage.setItem("fenestrae_session", "");
+    sessionStorage.setItem(STORAGE_KEYS.HYDRATED, HYDRATION_STATE.PENDING);
+    sessionStorage.setItem(STORAGE_KEYS.SESSION, "");
     //console.log("inicializacion");
-    sessionStorage.setItem("fenestrae_user", user);
-    sessionStorage.setItem("fenestrae_workspace", workspace);
+    sessionStorage.setItem(STORAGE_KEYS.USER, user);
+    sessionStorage.setItem(STORAGE_KEYS.WORKSPACE, workspace);
 
-    const userId = `${workspace}::${user}`;
+    const userId = buildUserId(workspace, user);
 
     // Registrar usuario y workspace
     const usersStore = await dbTable(STORE_USERS);
@@ -189,7 +197,7 @@ export const getSessionsByUserAndWorkspace = async (user, workspace) => {
     if (!user) throw new Error("getSessionsByUserAndWorkspace: user requerido");
     if (!workspace) throw new Error("getSessionsByUserAndWorkspace: workspace requerido");
 
-    const userId = `${workspace}::${user}`;
+    const userId = buildUserId(workspace, user);
 
     const sessionsStore = await dbTable(STORE_SESSIONS);
     const req = sessionsStore.index("userId").getAll(userId);
@@ -209,9 +217,9 @@ export const getSessionsByUserAndWorkspace = async (user, workspace) => {
  * ============================================================================
  */
 export const getSessions = async () => {
-    const user = sessionStorage.getItem("fenestrae_user");
-    const workspace = sessionStorage.getItem("fenestrae_workspace");
-    const userId = `${workspace}::${user}`;
+    const user = sessionStorage.getItem(STORAGE_KEYS.USER);
+    const workspace = sessionStorage.getItem(STORAGE_KEYS.WORKSPACE);
+    const userId = buildUserId(workspace, user);
 
     const sessionsStore = await dbTable(STORE_SESSIONS);
     const req = sessionsStore.index("userId").getAll(userId);
@@ -238,8 +246,8 @@ export const getSessions = async () => {
  */
 export const createNewSession = async (userId = null, workspace = null) => {
     // 1. Leer valores del sessionStorage solo si no vienen como parámetros
-    const user = sessionStorage.getItem("fenestrae_user");
-    const workspace_ok = workspace ?? sessionStorage.getItem("fenestrae_workspace");
+    const user = sessionStorage.getItem(STORAGE_KEYS.USER);
+    const workspace_ok = workspace ?? sessionStorage.getItem(STORAGE_KEYS.WORKSPACE);
 
     // 2. Validación fuerte
     if (!workspace_ok) {
@@ -251,7 +259,7 @@ export const createNewSession = async (userId = null, workspace = null) => {
     }
 
     // 3. Construcción del userId final
-    const userId_ok = userId ?? `${workspace_ok}::${user}`;
+    const userId_ok = userId ?? buildUserId(workspace_ok, user);
 
     // 4. IndexedDB
     const sessionsStore = await dbTable(STORE_SESSIONS);
@@ -270,7 +278,7 @@ export const createNewSession = async (userId = null, workspace = null) => {
     });
 
     // 5. Registrar la sesión activa
-    sessionStorage.setItem("fenestrae_session", sessionId);
+    sessionStorage.setItem(STORAGE_KEYS.SESSION, sessionId);
 
     return sessionId;
 };
@@ -314,7 +322,7 @@ export const activateSession = async (sessionId) => {
             if (sessionData.userId !== operator.userId) {
                 throw new Error("activateSession: la sesión no pertenece al operador actual");
             }
-            sessionStorage.setItem("fenestrae_session", finalSessionId);
+            sessionStorage.setItem(STORAGE_KEYS.SESSION, finalSessionId);
         }
     }
 
@@ -342,11 +350,11 @@ export const activateSession = async (sessionId) => {
  */
 
 export const setSession = async ({ winOrder = [], activeWinId = null } = {}) => {
-    const user = sessionStorage.getItem("fenestrae_user");
-    const workspace = sessionStorage.getItem("fenestrae_workspace");
-    let sessionId = sessionStorage.getItem("fenestrae_session");
+    const user = sessionStorage.getItem(STORAGE_KEYS.USER);
+    const workspace = sessionStorage.getItem(STORAGE_KEYS.WORKSPACE);
+    let sessionId = sessionStorage.getItem(STORAGE_KEYS.SESSION);
 
-    const userId = `${workspace}::${user}`;
+    const userId = buildUserId(workspace, user);
     const sessionsStore = await dbTable(STORE_SESSIONS);
 
     // Si no existe sesión activa → crear una nueva
@@ -371,7 +379,7 @@ export const setSession = async ({ winOrder = [], activeWinId = null } = {}) => 
 
 
 export const closeSession = async () => {
-    const sessionId = sessionStorage.getItem("fenestrae_session");
+    const sessionId = sessionStorage.getItem(STORAGE_KEYS.SESSION);
 
     try {
         winStore.getState().closeAllWin(true);
@@ -515,9 +523,9 @@ export const delSession = async (sessionId, { force = false } = {}) => {
  */
 
 export const clearSessions = async () => {
-    const user = sessionStorage.getItem("fenestrae_user");
-    const workspace = sessionStorage.getItem("fenestrae_workspace");
-    const userId = `${workspace}::${user}`;
+    const user = sessionStorage.getItem(STORAGE_KEYS.USER);
+    const workspace = sessionStorage.getItem(STORAGE_KEYS.WORKSPACE);
+    const userId = buildUserId(workspace, user);
 
     const sessionsStore = await dbTable(STORE_SESSIONS);
     const windowsStore = await dbTable(STORE_WINDOWS);
@@ -570,16 +578,16 @@ function sanitize(data) {
  * ============================================================================
  */
 export const setWindow = async (winId, data) => {
-    const user = sessionStorage.getItem("fenestrae_user");
-    const workspace = sessionStorage.getItem("fenestrae_workspace");
-    const sessionId = sessionStorage.getItem("fenestrae_session");
+    const user = sessionStorage.getItem(STORAGE_KEYS.USER);
+    const workspace = sessionStorage.getItem(STORAGE_KEYS.WORKSPACE);
+    const sessionId = sessionStorage.getItem(STORAGE_KEYS.SESSION);
 
       if (!sessionId || sessionId === "null") {
      
         return;
     }
 
-    const userId = `${workspace}::${user}`;
+    const userId = buildUserId(workspace, user);
     const windowsStore = await dbTable(STORE_WINDOWS);
 
     await windowsStore.put({
@@ -634,7 +642,7 @@ export async function restoreWindows(initialWinConfig) {
     const data = await readSessionWindows();
     if (!data) return;
 
-    sessionStorage.setItem("fenestrae_hydrated", "0");
+    sessionStorage.setItem(STORAGE_KEYS.HYDRATED, HYDRATION_STATE.PENDING);
 
     let winsArray = data.wins;
     let winOrder = data.winOrder;
@@ -644,10 +652,10 @@ export async function restoreWindows(initialWinConfig) {
     if (winsArray.length === 0) {
         //console.log("restoreWindows: sesión vacía → inserto Launchpad");
          isnew=true;
-        const physicalId = `LAUNCHPAD::${uuidv4()}`;
+        const physicalId = buildLaunchpadPhysicalId(uuidv4());
 
         // Guardar el ID físico del launchpad para esta sesión
-        sessionStorage.setItem("fenestrae_launchpadId", physicalId);
+        sessionStorage.setItem(STORAGE_KEYS.LAUNCHPAD_ID, physicalId);
 
         const launchpadWin = {
             id: physicalId,
@@ -670,7 +678,7 @@ export async function restoreWindows(initialWinConfig) {
         // Si la sesión ya tiene ventanas, recuperar el launchpadId
         const lp = winsArray.find(([id, win]) => win.launchpad);
         if (lp) {
-            sessionStorage.setItem("fenestrae_launchpadId", lp[0]);
+            sessionStorage.setItem(STORAGE_KEYS.LAUNCHPAD_ID, lp[0]);
         }
     }
 
@@ -694,14 +702,14 @@ export async function restoreWindows(initialWinConfig) {
     setTimeout(() => {
         winStore.setState({ hasHydrated: true });
     }, 0);
-    sessionStorage.setItem("fenestrae_hydrated", "1");
+    sessionStorage.setItem(STORAGE_KEYS.HYDRATED, HYDRATION_STATE.READY);
     //console.log("Fenestrae: ventanas restauradas manualmente.", winsArray);
     return isnew;
 }
 
 
 export async function readSessionWindows() {
-    const sessionId = sessionStorage.getItem("fenestrae_session");
+    const sessionId = sessionStorage.getItem(STORAGE_KEYS.SESSION);
     if (!sessionId) return null;
     //console.log("readSessionWindows", sessionId);
     // ⭐ Obtener stores en una sola transacción
@@ -783,17 +791,17 @@ export const getWindowsBySession = async (sessionId) => {
  * ============================================================================
  */
 export const saveContext = async (winId, data) => {
-    const sessionId = sessionStorage.getItem("fenestrae_session");
+    const sessionId = sessionStorage.getItem(STORAGE_KEYS.SESSION);
     if (!sessionId) return;
 
     const contextsStore = await dbTable(STORE_CONTEXTS);
-    const contextId = `${sessionId}::${winId}::legacy`;
+    const contextId = buildContextId(sessionId, winId, CONTEXT_KEY_LEGACY);
 
     await contextsStore.put({
         contextId,
         winId,
         sessionId,
-        key: "legacy",
+        key: CONTEXT_KEY_LEGACY,
         value: sanitizePersistable(data),
         data: sanitizePersistable(data)
     });
@@ -812,9 +820,9 @@ export const saveContext = async (winId, data) => {
  * ============================================================================
  */
 export const loadContext = async (winId) => {
-    const sessionId = sessionStorage.getItem("fenestrae_session");
+    const sessionId = sessionStorage.getItem(STORAGE_KEYS.SESSION);
     const contextsStore = await dbTable(STORE_CONTEXTS);
-    const contextId = sessionId ? `${sessionId}::${winId}::legacy` : winId;
+    const contextId = sessionId ? buildContextId(sessionId, winId, CONTEXT_KEY_LEGACY) : winId;
     const req = contextsStore.get(contextId);
 
     return await new Promise((resolve, reject) => {
@@ -843,13 +851,13 @@ export const loadContext = async (winId) => {
  * ============================================================================
  */
 export const deleteContext = async (winId) => {
-    const sessionId = sessionStorage.getItem("fenestrae_session");
+    const sessionId = sessionStorage.getItem(STORAGE_KEYS.SESSION);
     const contextsStore = await dbTable(STORE_CONTEXTS);
     if (sessionId) {
-        contextsStore.delete(`${sessionId}::${winId}::legacy`);
+        contextsStore.delete(buildContextId(sessionId, winId, CONTEXT_KEY_LEGACY));
     }
     contextsStore.delete(winId);
-    contextsStore.delete(`${winId}::legacy`);
+    contextsStore.delete(buildLegacyContextId(winId));
 };
 
 
@@ -869,10 +877,10 @@ export const deleteContext = async (winId) => {
  * ============================================================================
  */
 export const cleanOldSessions = async (maxAgeDays = 30) => {
-    const user = sessionStorage.getItem("fenestrae_user");
-    const workspace = sessionStorage.getItem("fenestrae_workspace");
-    const activeSessionId = sessionStorage.getItem("fenestrae_session");
-    const userId = `${workspace}::${user}`;
+    const user = sessionStorage.getItem(STORAGE_KEYS.USER);
+    const workspace = sessionStorage.getItem(STORAGE_KEYS.WORKSPACE);
+    const activeSessionId = sessionStorage.getItem(STORAGE_KEYS.SESSION);
+    const userId = buildUserId(workspace, user);
 
     const sessionsStore = await dbTable(STORE_SESSIONS);
     const windowsStore = await dbTable(STORE_WINDOWS);

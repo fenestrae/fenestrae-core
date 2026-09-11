@@ -5,6 +5,7 @@
 // ============================================================================
 
 import { winStore, externalWindowInstances} from "./winStore";
+import { STORAGE_KEYS } from "./constants";
 
 import { mapThemeToCSSVariables, THEME_PRESETS, getThemeStyles } from "../themes/themeMapper";
 import {  contextRepository} from "../database/ContextRepository";
@@ -195,12 +196,12 @@ export const win = {
 // EXPORTACIONES COMPORTAMIENTALES (Para consumo interno y avanzado)
 // --------------------------------------------------------------------------
 export function getLaunchpadId() {
-  return sessionStorage.getItem("fenestrae_launchpadId");
-} 
+  return sessionStorage.getItem(STORAGE_KEYS.LAUNCHPAD_ID);
+}
 
 
 
-//export { LAUNCHPAD_ID } from "./constants";
+export { LAUNCHPAD_LOGICAL_ID, STORAGE_KEYS } from "./constants";
 export { winStore, externalWindowInstances };
 export { mapThemeToCSSVariables, THEME_PRESETS, getThemeStyles };
 export { getStandardLayout } from "./geometry";

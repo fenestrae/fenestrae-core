@@ -22,9 +22,15 @@
 
 import { dbTable, STORE_CONTEXTS } from "./dbTable";
 import { sanitizePersistable } from "../lib/security";
+import {
+  STORAGE_KEYS,
+  CONTEXT_DEBOUNCE_MS,
+  buildContextId as composeContextId,
+  buildLegacyContextId,
+} from "../core/constants";
 
 function currentSessionId() {
-  return sessionStorage.getItem("fenestrae_session");
+  return sessionStorage.getItem(STORAGE_KEYS.SESSION);
 }
 
 function requestToPromise(req) {
@@ -58,11 +64,11 @@ class ContextRepository {
   //   A string in the format: "sessionId::winId::key"
   // -------------------------------------------------------------------------
   buildContextId(winId, key, sessionId = currentSessionId()) {
-    return `${sessionId}::${winId}::${key}`;
+    return composeContextId(sessionId, winId, key);
   }
 
   legacyContextId(winId, key) {
-    return `${winId}::${key}`;
+    return buildLegacyContextId(winId, key);
   }
 
   belongsToSession(record, sessionId) {
@@ -124,7 +130,7 @@ class ContextRepository {
   //   - Schedules a new write after the delay
   //   - Ensures IndexedDB is not spammed with rapid writes
   // -------------------------------------------------------------------------
-  saveDebounced(winId, key, value, delay = 500) {
+  saveDebounced(winId, key, value, delay = CONTEXT_DEBOUNCE_MS) {
     const contextId = this.buildContextId(winId, key);
 
     this.pendingValues.set(contextId, value);

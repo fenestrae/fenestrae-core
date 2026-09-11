@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { useNavigate, useLocation } from "react-router-dom";
 import { winStore, externalWindowInstances } from "../core";
 import { restoreWindows } from "../database/persistence";
+import { STORAGE_KEYS, LAUNCHPAD_LOGICAL_ID } from "../core/constants";
 
 // Componentes existentes
 import FenestraeDockZone from "./FenestraeDockedWindow";
@@ -60,7 +61,7 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
     async function runRestore() {
       const isNew = await restoreWindows(initialWinConfig);
       if (isNew && typeof bootStrap === "function") {
-        const workspace = sessionStorage.getItem("fenestrae_workspace");
+        const workspace = sessionStorage.getItem(STORAGE_KEYS.WORKSPACE);
         bootStrap(workspace);
       }
     }
@@ -185,11 +186,11 @@ const FenestraeContainer = ({ initialWinConfig, bootStrap = null }) => {
 
       // 2. Cerrar ventana (Alt+F4 suele fallar en Chrome, añadimos Alt+w como en CBuilder)
       "Alt+F4": () => {
-        if (activeWinId && activeWinId !== "LAUNCHPAD") closeWin(activeWinId);
+        if (activeWinId && activeWinId !== LAUNCHPAD_LOGICAL_ID) closeWin(activeWinId);
       },
       "Alt+w": () => {
         // Minúscula porque Alt+w no lleva Shift
-        if (activeWinId && activeWinId !== "LAUNCHPAD") closeWin(activeWinId);
+        if (activeWinId && activeWinId !== LAUNCHPAD_LOGICAL_ID) closeWin(activeWinId);
       },
 
       // 3. Escape para capas secundarias
