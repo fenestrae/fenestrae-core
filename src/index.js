@@ -37,7 +37,7 @@ import { registerCommand, executeCommand } from "./menus/commandRegistry";
 
 import { setPermissions, getPermissions, hasPermission } from "./permissions/permissions";
 
-import FNMainMenu from "./menus/fnMainMenu";
+import FNMainMenu from "./menus/FNMainMenu";
 
 
 // 🧠 2. Exportamos el store y la API global imperativa
