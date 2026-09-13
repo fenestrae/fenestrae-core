@@ -18,14 +18,30 @@ const peerDeps = [
 const isPeerDep = (id) =>
   peerDeps.some((dep) => id === dep || id.startsWith(`${dep}/`));
 
+const PURE_ANNOTATION_RE = /\/\*+\s*[@#]__PURE__\s*\*+\//g;
+
+// jsxSideEffects stops PURE on jsx(). esbuild still emits it on new Map/Set/Date;
+// Terser keeps those annotations and Vite 8/Rolldown warns.
+function stripPureAnnotations() {
+  return {
+    name: 'strip-pure-annotations',
+    generateBundle(_options, bundle) {
+      for (const file of Object.values(bundle)) {
+        if (file.type === 'chunk' && file.code.includes('__PURE__')) {
+          file.code = file.code.replace(PURE_ANNOTATION_RE, '');
+        }
+      }
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
     tailwindcss(),
-    react()
+    react(),
+    stripPureAnnotations(),
   ],
 
-  // Without this, esbuild marks every JSX call as /* @__PURE__ */.
-  // Those comments land in invalid spots after minify and Vite 8/Rolldown warns.
   esbuild: {
     jsxSideEffects: true,
   },
@@ -40,8 +56,9 @@ export default defineConfig({
         pure_funcs: [], // evita anotaciones automáticas
       },
       format: {
-        comments: false, // elimina TODO
-      }
+        comments: false,
+        preserve_annotations: false,
+      },
     },
 
     lib: {
