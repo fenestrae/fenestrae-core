@@ -24,8 +24,10 @@ export default defineConfig({
     react()
   ],
 
+  // Without this, esbuild marks every JSX call as /* @__PURE__ */.
+  // Those comments land in invalid spots after minify and Vite 8/Rolldown warns.
   esbuild: {
-    pure: [] // ← elimina PURE de JSX transform
+    jsxSideEffects: true,
   },
 
   build: {

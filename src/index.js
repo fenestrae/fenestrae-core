@@ -1,5 +1,5 @@
 /**
- * Fenestrae v1.0.3
+ * Fenestrae v1.0.4
  * React Window Manager for Enterprise Web Applications
  * * Copyright 2026 Toni Raventós
  * Licensed under the Apache License, Version 2.0
