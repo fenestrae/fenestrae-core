@@ -2,7 +2,7 @@
 
 Workspace manager for enterprise web applications — windowing, docking, sessions and continuity in React.
 
-![Fenestrae Logo](https://raw.githubusercontent.com/fenestrae/fenestrae/main/logo.png)
+![Fenestrae Logo](https://raw.githubusercontent.com/fenestrae/fenestrae-core/main/logo.png)
 
 ![npm version](https://img.shields.io/npm/v/fenestrae)
 ![license](https://img.shields.io/badge/license-Apache%202.0-blue)
